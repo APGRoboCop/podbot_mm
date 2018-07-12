@@ -4020,7 +4020,7 @@ bool BotDoWaypointNav (bot_t *pBot)
                if (g_b_DebugNavig || g_b_DebugTasks)
                   ALERT (at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is pushing a lift button from inside and waits.\n", pBot->name);
 
-               bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 0.5, FALSE};
+               bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 0.5f, FALSE};
                BotPushTask (pBot, &TempTask);
             }
 
@@ -4195,7 +4195,7 @@ bool BotDoWaypointNav (bot_t *pBot)
                      pEdict->v.button |= IN_USE;
                      pBot->fButtonPushTime = gpGlobals->time + 2.0;
                      pBot->iAimFlags &= ~AIM_ENTITY;
-                     bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 0.5, FALSE};
+                     bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 0.5f, FALSE};
 
                      if (g_b_DebugNavig || g_b_DebugTasks)
                         ALERT (at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is pushing a lift button (outside).\n", pBot->name);
@@ -4571,7 +4571,7 @@ breakabledoorcheck:
                   if (g_b_DebugNavig || g_b_DebugTasks)
                      ALERT (at_logged, "[DEBUG] BotDoWaypointNav - Bot %s has reached the previous WP while waiting for the door open (pause 1).\n", pBot->name);
 
-                   bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 1.0, FALSE};  // KWo 08.02.2006
+                   bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 1.0f, FALSE};  // KWo 08.02.2006
                    BotPushTask (pBot, &TempTask);
                }
             }
@@ -4580,7 +4580,7 @@ breakabledoorcheck:
                if (g_b_DebugNavig || g_b_DebugTasks)
                   ALERT (at_logged, "[DEBUG] BotDoWaypointNav - Bot %s haven't had the previous WP to wait for the door open (pause 2).\n", pBot->name);
 
-               bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 1.5, FALSE};  // KWo 06.01.2006
+               bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 1.5f, FALSE};  // KWo 06.01.2006
                BotPushTask (pBot, &TempTask);
 			   }
          }
@@ -4594,7 +4594,7 @@ breakabledoorcheck:
                ALERT (at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is USE'ing the door to open it (pause 3).\n", pBot->name);
 
             pEdict->v.button |= IN_USE;
-            bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 1.0, FALSE};
+            bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 1.0f, FALSE};
             BotPushTask (pBot, &TempTask);
          }
 
@@ -4606,7 +4606,7 @@ breakabledoorcheck:
             if (g_b_DebugNavig || g_b_DebugTasks)
                ALERT (at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is waiting until the door is open (pause 4).\n", pBot->name);
 
-            bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 0.5, FALSE};
+            bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_PAUSE, -1, gpGlobals->time + 0.5f, FALSE};
             BotPushTask (pBot, &TempTask);
             pBot->f_timeDoorOpen = gpGlobals->time + 1.0; // retry in 1 sec until door is open
             if (!pBot->bHitDoor) // KWo - 17.01.2010

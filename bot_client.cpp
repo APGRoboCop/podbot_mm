@@ -392,6 +392,8 @@ void BotClient_CS_Damage (void *p, int bot_index)
 
       if ((damage_armor > 0) || (damage_taken > 0))
       {
+		  if (!g_b_cv_ffrev && !g_b_cv_ffa && (UTIL_GetTeam (pEdict->v.dmg_inflictor) == pBot->bot_team)) // The Storm - 01.07.2018
+			  return;
          pBot->iLastDamageType = damage_bits;
          BotCollectGoalExperience (pBot, damage_taken);
          pEnt = pEdict->v.dmg_inflictor;
@@ -420,14 +422,9 @@ void BotClient_CS_Damage (void *p, int bot_index)
                         pBot->vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0,200.0);  // KWo - 12.08.2007
                         pBot->vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0,200.0);  // KWo - 12.08.2007
                         pBot->fLastHeardEnOrgUpdateTime = gpGlobals->time + 1.0;
-
-                        pBot->fAgressionLevel += 0.1;   // KWo - 14.06.2018
-                        if (pBot->fAgressionLevel > 1.0) // KWo - 14.06.2018
-                           pBot->fAgressionLevel = 1.0;
-
                      }
                   }
-               } 
+               }
                else
                {
                   if (pBot->pEdict->v.health > 70)

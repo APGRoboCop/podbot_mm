@@ -222,6 +222,7 @@ bool g_b_cv_autokill;                           // KWo - 02.05.2006
 float g_f_cv_autokilldelay;                     // KWo - 02.05.2006
 float g_f_cv_maxcamptime;                       // KWo - 23.03.2008
 bool g_b_cv_ffa;                                // KWo - 04.10.2006
+bool g_b_cv_ffrev;								// The Storm - 01.07.2018
 bool g_b_cv_firsthumanrestart;                  // KWo - 04.10.2010
 bool g_b_cv_radio;                              // KWo - 03.02.2007
 int g_i_cv_aim_type;                            // KWo - 06.04.2006
@@ -344,6 +345,7 @@ const char *g_rgpszPbCvars[NUM_PBCVARS + 1] =
    "pb_" "debuglevel",                          // KWo - 20.04.2013
    "pb_" "detailnames",
    "pb_" "ffa",                                 // KWo - 04.10.2006
+   "pb_" "ffrev",                               // The Storm - 01.07.2018
    "pb_" "firsthumanrestart",                   // KWo - 04.10.2010
    "pb_" "jasonmode",
    "pb_" "latencybot",                          // KWo - 16.05.2008

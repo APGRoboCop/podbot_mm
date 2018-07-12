@@ -48,6 +48,7 @@ cvar_t g_rgcvarTemp[NUM_PBCVARS] =
    {const_cast<char *>(g_rgpszPbCvars[PBCVAR_DEBUGLEVEL]),                    "0",    FCVAR_SERVER | FCVAR_EXTDLL},      // KWo - 20.04.2013
    {const_cast<char *>(g_rgpszPbCvars[PBCVAR_DETAILNAMES]),                   "0",    FCVAR_SERVER | FCVAR_EXTDLL},
    {const_cast<char *>(g_rgpszPbCvars[PBCVAR_FFA]),                           "0",    FCVAR_SERVER | FCVAR_EXTDLL},      // KWo - 04.10.2006
+   {const_cast<char *>(g_rgpszPbCvars[PBCVAR_FFREV]),                         "0",    FCVAR_SERVER | FCVAR_EXTDLL},      // The Storm - 01.07.2018
    {const_cast<char *>(g_rgpszPbCvars[PBCVAR_FIRSTHUMANRESTART]),             "0",    FCVAR_SERVER | FCVAR_EXTDLL},      // KWo - 04.10.2010
    {const_cast<char *>(g_rgpszPbCvars[PBCVAR_JASONMODE]),                     "0",    FCVAR_SERVER | FCVAR_EXTDLL},
    {const_cast<char *>(g_rgpszPbCvars[PBCVAR_LATENCYBOT]),                    "0",    FCVAR_SERVER | FCVAR_EXTDLL},      // KWo - 16.05.2008
@@ -1403,7 +1404,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    replynode_t **pReply = NULL;
    char arg0[80];
    char arg1[80];
-   int *ptrWeaponPrefs;
+   int *ptrWeaponPrefsLoc;
    int iParseWeapons;
    int iWeaponPrefsType = MAP_DE; // KWo - to remove warning uninitialised
    char *pszStart;
@@ -1703,7 +1704,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    else
    {
       iParseWeapons = 0;
-      ptrWeaponPrefs = NULL;
+      ptrWeaponPrefsLoc = NULL;
 
       while (fgets (line_buffer, iBufferSize, fp) != NULL)
       {
@@ -1748,11 +1749,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
          else
          {
             if (FStrEq (arg0, "[NORMAL]"))
-               ptrWeaponPrefs = &NormalWeaponPrefs[0];
+               ptrWeaponPrefsLoc = &NormalWeaponPrefs[0];
             else if (FStrEq (arg0, "[AGRESSIVE]"))
-               ptrWeaponPrefs = &AgressiveWeaponPrefs[0];
+               ptrWeaponPrefsLoc = &AgressiveWeaponPrefs[0];
             else if (FStrEq (arg0, "[DEFENSIVE]"))
-               ptrWeaponPrefs = &DefensiveWeaponPrefs[0];
+               ptrWeaponPrefsLoc = &DefensiveWeaponPrefs[0];
             else
             {
                pszStart = &line_buffer[0];
@@ -1760,7 +1761,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
                for (i = 0; i < NUM_WEAPONS; i++)
                {
                   pszEnd = strchr (pszStart, ',');
-                  *ptrWeaponPrefs++ = atoi (pszStart);
+                  *ptrWeaponPrefsLoc++ = atoi (pszStart);
                   pszStart = pszEnd + 1;
                }
             }

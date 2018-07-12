@@ -100,7 +100,7 @@ RES_WIN32=windres
 ifeq "$(ARCH)" "amd64"
 	LIBFILE_LINUX = $(MODNAME)_amd64.so
 else
-	LIBFILE_LINUX = $(MODNAME).so
+	LIBFILE_LINUX = $(MODNAME)_dbg.so
 endif
 
 LIBFILE_WIN32 = $(MODNAME).dll

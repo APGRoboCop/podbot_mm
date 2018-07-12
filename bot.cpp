@@ -5026,7 +5026,7 @@ void BotCheckRadioCommands (bot_t *pBot)
                            ALERT(at_logged, "[DEBUG] Start Following - Bot %s is following the player; current wp index = %i, target wp_index = %i.\n",
                               pBot->name, pBot->curr_wpt_index, pBot->chosengoal_index);
                         pBot->f_bot_use_time = gpGlobals->time;
-                        bottask_t TempTask = {NULL, NULL, TASK_FOLLOWUSER, TASKPRI_FOLLOWUSER, -1, gpGlobals->time + 60.0, TRUE};
+                        bottask_t TempTask = {NULL, NULL, TASK_FOLLOWUSER, TASKPRI_FOLLOWUSER, -1, gpGlobals->time + 60.0f, TRUE};
                         TempTask.iData = iDestIndex;
                         BotPushTask (pBot, &TempTask);
                      }
@@ -6260,7 +6260,7 @@ void BotExecuteTask (bot_t *pBot)
             {
                if (RANDOM_LONG (1, 100) < 50)
                {
-                  bottask_t TempTask = {NULL, NULL, TASK_SPRAYLOGO, TASKPRI_SPRAYLOGO, -1, gpGlobals->time + 1.0, FALSE};
+                  bottask_t TempTask = {NULL, NULL, TASK_SPRAYLOGO, TASKPRI_SPRAYLOGO, -1, gpGlobals->time + 1.0f, FALSE};
                   BotPushTask (pBot, &TempTask);
                }
             }
@@ -6270,8 +6270,8 @@ void BotExecuteTask (bot_t *pBot)
                ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_NORMAL - Bot %s has reached the goal.\n", pBot->name);
             }
 
-            pBot->prev_time = gpGlobals->time + 1.5;     // KWo - 25.02.2008
-            pBot->fNoCollTime = gpGlobals->time + 2.0;   // KWo - 02.01.2010
+            pBot->prev_time = gpGlobals->time + 1.5f;     // KWo - 25.02.2008
+            pBot->fNoCollTime = gpGlobals->time + 2.0f;   // KWo - 02.01.2010
 
             // Reached Waypoint is a Camp Waypoint
             if (paths[pBot->curr_wpt_index]->flags & W_FL_CAMP)
@@ -7609,7 +7609,7 @@ void BotExecuteTask (bot_t *pBot)
                      ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_MOVETOPOSITION - Bot %s forced to stay away from the ladder - WPTindex = %i and to pause a bit...\n",
                         pBot->name, pBot->curr_wpt_index);
 
-                  bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_DEFUSEBOMB, -1, gpGlobals->time + 3.0, TRUE};
+                  bottask_t TempTask = {NULL, NULL, TASK_PAUSE, TASKPRI_DEFUSEBOMB, -1, gpGlobals->time + 3.0f, TRUE};
                   BotPushTask (pBot, &TempTask);
                }
             }
@@ -8836,7 +8836,7 @@ void BotThink (bot_t *pBot)
 
       if ((RANDOM_LONG (1, 100) < 20) && (g_b_cv_spray)) // KWo - 06.04.2006
       {
-         bottask_t TempTask = {NULL, NULL, TASK_SPRAYLOGO, TASKPRI_SPRAYLOGO, -1, gpGlobals->time + 1.0, FALSE};
+         bottask_t TempTask = {NULL, NULL, TASK_SPRAYLOGO, TASKPRI_SPRAYLOGO, -1, gpGlobals->time + 1.0f, FALSE};
          BotPushTask (pBot, &TempTask);
       }
 

@@ -1156,6 +1156,18 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
          g_b_cv_ffa = true;
    }
 
+   g_b_cv_ffrev = false;  // The Storm - 01.07.2018
+   if (g_rgcvarPointer[PBCVAR_FFREV])  // The Storm - 01.07.2018
+   {
+	   if (g_rgcvarPointer[PBCVAR_FFREV]->value > 0.f)
+		   g_b_cv_ffrev = true;
+   }
+   else
+   {
+	   if (CVAR_GET_FLOAT( g_rgpszPbCvars[PBCVAR_FFREV] ) > 0.f)
+		   g_b_cv_ffrev = true;
+   }
+
    g_b_cv_radio = false;  // KWo - 03.02.2007
    if (g_rgcvarPointer[PBCVAR_RADIO])
    {

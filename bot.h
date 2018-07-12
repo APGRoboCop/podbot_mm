@@ -20,7 +20,7 @@
 
 #include <assert.h>
 
-#define PBMM_VERSION_STRING		"V3B23-APG"    // [APG]RoboCop - 27.05.2018
+#define PBMM_VERSION_STRING		"V3B23"    // KWo - 18.04.2016
 
 
 typedef struct bottask_s
@@ -128,6 +128,7 @@ enum podbotcvarindex
    PBCVAR_DEBUGLEVEL,        // KWo - 20.04.2013
    PBCVAR_DETAILNAMES,
    PBCVAR_FFA,               // KWo - 04.10.2006
+   PBCVAR_FFREV,             // The Storm - 01.07.2018
    PBCVAR_FIRSTHUMANRESTART, // KWo - 04.10.2010
    PBCVAR_JASONMODE,
    PBCVAR_LATENCYBOT,        // KWo - 16.05.2008

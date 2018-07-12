@@ -727,7 +727,7 @@ Vector BotBodyTarget (edict_t *pBotEnemy, bot_t *pBot)
       {
          target = GetGunPosition (pBotEnemy);  // aim for the head
          // the idea taken rom YapB
-         if (1 > 0) // just to have the same identation like above...
+         if (true) // just to have the same identation like above...
          {
             if ((fDistance < 3000.0) && (fDistance > 2 * MIN_BURST_DISTANCE)) // KWo - 09.04.2010
             {
@@ -1073,9 +1073,8 @@ bool FireHurtsFriend (bot_t *pBot, float fDistance)
       i = ENTINDEX (tr.pHit) - 1;
       if ((i >= 0) && (i < gpGlobals->maxClients))  // KWo - 13.03.2006
       {
-         if ((clients[i].iTeam == pBot->bot_team) 
-            && ((pEdict->v.dmg_inflictor != clients[i].pEdict) || ((pEdict->v.dmgtime + 1.5 * pBot->fAgressionLevel) <= gpGlobals->time))
-            && ((clients[i].iFlags & CLIENT_ALIVE) || (clients[i].fDeathTime >= gpGlobals->time)))  // KWo - 13.06.2018
+         if ((clients[i].iTeam == pBot->bot_team) && (pEdict->v.dmg_inflictor != clients[i].pEdict || !g_b_cv_ffrev)  // The Storm - 01.07.2018
+            && ((clients[i].iFlags & CLIENT_ALIVE) || (clients[i].fDeathTime >= gpGlobals->time)))  // KWo - 18.01.2011
          {
             if (g_b_DebugCombat)
                ALERT (at_logged,"[DEBUG] FireHurtsFriend - Bot %s cannot fire because it may hurt its friend %s (1).\n", pBot->name, STRING (clients[i].pEdict->v.netname));
@@ -1083,7 +1082,7 @@ bool FireHurtsFriend (bot_t *pBot, float fDistance)
             return (TRUE);
          }
       }
-   }  
+   }
 
    // search the world for players...
    for (i = 0; i < gpGlobals->maxClients; i++)

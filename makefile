@@ -100,7 +100,7 @@ RES_WIN32=windres
 ifeq "$(ARCH)" "amd64"
 	LIBFILE_LINUX = $(MODNAME)_amd64.so
 else
-	LIBFILE_LINUX = $(MODNAME)_dbg.so
+	LIBFILE_LINUX = $(MODNAME).so
 endif
 
 LIBFILE_WIN32 = $(MODNAME).dll
@@ -119,7 +119,7 @@ OBJ_WIN32 := $(SRCFILES:%.cpp=$(OBJDIR_WIN32)/%.o)
 RES_OBJ_WIN32 := $(RESFILE:%.rc=$(OBJDIR_WIN32)/%.o)
 
 # optimisation level; overridden for certain problematic files
-#CCO = -O2 -fomit-frame-pointer -msse -msse2 -mfpmath=sse
+CCO = -O2 -fomit-frame-pointer -msse -msse2 -mfpmath=sse
 
 #use this one for debug
 #CCO = -ggdb
@@ -135,8 +135,8 @@ endif
 BASEFLAGS = -Dstricmp=strcasecmp -Dstrcmpi=strcasecmp
 #BASEFLAGS =
 
-#CCOPT = $(CCO) $(CCOPT_ARCH) -fno-exceptions -fno-rtti -DNDEBUG
-CCOPT = $(CCO) $(CCOPT_ARCH) -DNDEBUG -D_DEBUG
+CCOPT = $(CCO) $(CCOPT_ARCH) -fno-exceptions -fno-rtti -DNDEBUG
+#CCOPT = $(CCO) $(CCOPT_ARCH) -DNDEBUG -D_DEBUG
 
 
 INCLUDEDIRS= -I$(SRCDIR) -I$(METADIR) -I$(SDKSRC)/engine -I$(SDKSRC)/common -I$(SDKSRC)/pm_shared -I$(SDKSRC)/dlls -I$(SDKSRC) $(EXTRA_INCLUDEDIRS)
@@ -144,7 +144,7 @@ INCLUDEDIRS= -I$(SRCDIR) -I$(METADIR) -I$(SDKSRC)/engine -I$(SDKSRC)/common -I$(
 CFLAGS=$(BASEFLAGS) -Wall -Wno-unknown-pragmas
 #CFLAGS=$(BASEFLAGS)
 
-ODEF = -DOPT_TYPE=\"debugged\"
+ODEF = -DOPT_TYPE=\"optimized\"
 #ODEF =
 CFLAGS:=$(CCOPT) $(CFLAGS) $(ODEF)
 
@@ -155,11 +155,11 @@ DO_CC_WIN32=$(CC_WIN32) $(CFLAGS) $(INCLUDEDIRS) -DWIN32 -o $@ -c $<
 DO_RES_WIN32=$(RES_WIN32) -I$(SRCDIR) -I$(METADIR) -i $< -O coff -o $@
 
 #LINK_LINUX=$(CC_LINUX) $(CFLAGS) -shared -ldl -lm -static-libgcc $(OBJ_LINUX) $(EXTRA_LIBDIRS_LINUX) $(EXTRA_LIBS_LINUX) -s -o $@
-#LINK_LINUX=$(CC_LINUX) $(CFLAGS) -shared -ldl -lm -static-libgcc -L. $(OBJ_LINUX) $(EXTRA_LIBDIRS_LINUX) $(EXTRA_LIBS_LINUX) -s -o $@
-#LINK_WIN32=$(CC_WIN32) -mdll -Xlinker --add-stdcall-alias $(OBJ_WIN32) $(RES_OBJ_WIN32) $(EXTRA_LIBDIRS_WIN32) $(EXTRA_LIBS_WIN32) -s -o $@
+LINK_LINUX=$(CC_LINUX) $(CFLAGS) -shared -ldl -lm -static-libgcc -L. $(OBJ_LINUX) $(EXTRA_LIBDIRS_LINUX) $(EXTRA_LIBS_LINUX) -s -o $@
+LINK_WIN32=$(CC_WIN32) -mdll -Xlinker --add-stdcall-alias $(OBJ_WIN32) $(RES_OBJ_WIN32) $(EXTRA_LIBDIRS_WIN32) $(EXTRA_LIBS_WIN32) -s -o $@
 #for debug use 2 below
-LINK_LINUX=$(CC_LINUX) $(CFLAGS) -shared -ldl -lm -static-libgcc $(OBJ_LINUX) $(EXTRA_LIBDIRS_LINUX) $(EXTRA_LIBS_LINUX) -o $@
-LINK_WIN32=$(CC_WIN32) -mdll -Xlinker --add-stdcall-alias $(OBJ_WIN32) $(RES_OBJ_WIN32) $(EXTRA_LIBDIRS_WIN32) $(EXTRA_LIBS_WIN32) -o $@
+#LINK_LINUX=$(CC_LINUX) $(CFLAGS) -shared -ldl -lm -static-libgcc $(OBJ_LINUX) $(EXTRA_LIBDIRS_LINUX) $(EXTRA_LIBS_LINUX) -o $@
+#LINK_WIN32=$(CC_WIN32) -mdll -Xlinker --add-stdcall-alias $(OBJ_WIN32) $(RES_OBJ_WIN32) $(EXTRA_LIBDIRS_WIN32) $(EXTRA_LIBS_WIN32) -o $@
 
 $(OBJDIR_LINUX)/%.o: $(SRCDIR)/%.cpp
 	$(DO_CC_LINUX)

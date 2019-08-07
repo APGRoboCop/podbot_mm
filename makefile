@@ -119,7 +119,7 @@ OBJ_WIN32 := $(SRCFILES:%.cpp=$(OBJDIR_WIN32)/%.o)
 RES_OBJ_WIN32 := $(RESFILE:%.rc=$(OBJDIR_WIN32)/%.o)
 
 # optimisation level; overridden for certain problematic files
-CCO = -O2 -fomit-frame-pointer -msse -msse2 -mfpmath=sse
+CCO = -O2 -fomit-frame-pointer -s -pipe -mmmx -msse -msse2 -mfpmath=sse
 
 #use this one for debug
 #CCO = -ggdb

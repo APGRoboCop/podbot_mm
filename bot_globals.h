@@ -54,13 +54,13 @@
 inline void UTIL_ClampAngle (float *fAngle)
 {
    // Whistler, TEST your bugfixes before submitting them!!! :D
-   if (*fAngle >= 180)
-      *fAngle -= 360 * ((int) (*fAngle / 360) + 1); // and not 0.5
-   if (*fAngle < -180)
-      *fAngle += 360 * ((int) (-*fAngle / 360) + 1); // and not 0.5
+   if (*fAngle >= 180.0f)
+      *fAngle -= 360.0f * ((int) (*fAngle / 360) + 1); // and not 0.5
+   if (*fAngle < -180.0f)
+      *fAngle += 360.0f * ((int) (-*fAngle / 360) + 1); // and not 0.5
 
-   if ((*fAngle >= 180) || (*fAngle < -180))
-      *fAngle = 0; // heck, if we're still above the limit then something's REALLY fuckedup!
+   if ((*fAngle >= 180.0f) || (*fAngle < -180.0f))
+      *fAngle = 0.0f; // heck, if we're still above the limit then something's REALLY fuckedup!
    return;
 }
 /*
@@ -71,28 +71,28 @@ inline void UTIL_ClampAngle (float *fAngle) // KWo - 17.02.2008 (inline again)
    // the engine have a hand on angles that are outside these bounds may cause the game
    // to freeze by screwing up the engine math code.
 
-   *fAngle = (360.0 / 65536.0) * (static_cast <int> ((*fAngle + 180.0) * (65536.0 / 360.0)) & 65535) - 180.0;
-   if (*fAngle == -180.0)
-      *fAngle = 180.0;
+   *fAngle = (360.0f / 65536.0f) * (static_cast <int> ((*fAngle + 180.0f) * (65536.0f / 360.0f)) & 65535) - 180.0f;
+   if (*fAngle == -180.0f)
+      *fAngle = 180.0f;
    return;
 }
 */
 /*
 inline void UTIL_ClampVector (Vector *vecAngles) // KWo - 17.02.2008 (inline again)
 {
-   vecAngles->x = (180.0 / 65536.0) * (static_cast <int> ((vecAngles->x + 90.0) * (65536.0 / 180.0)) & 65535) - 90.0;
-   vecAngles->y = (360.0 / 65536.0) * (static_cast <int> ((vecAngles->y + 180.0) * (65536.0 / 360.0)) & 65535) - 180.0;
-   if (vecAngles->x > 89.0)
-      vecAngles->x = 89.0;
-   else if (vecAngles->x < -89.0)
-      vecAngles->x = -89.0;
-   if (vecAngles->y > 180.0)
-      vecAngles->y = 180.0;
-   else if (vecAngles->y == -180.0)
-      vecAngles->y = 180.0;
-   else if (vecAngles->y < -179.0)
-      vecAngles->y = -179.0;
-   vecAngles->z = 0.0;
+   vecAngles->x = (180.0f / 65536.0f) * (static_cast <int> ((vecAngles->x + 90.0f) * (65536.0f / 180.0f)) & 65535) - 90.0f;
+   vecAngles->y = (360.0f / 65536.0f) * (static_cast <int> ((vecAngles->y + 180.0f) * (65536.0f / 360.0f)) & 65535) - 180.0f;
+   if (vecAngles->x > 89.0f)
+      vecAngles->x = 89.0f;
+   else if (vecAngles->x < -89.0f)
+      vecAngles->x = -89.0f;
+   if (vecAngles->y > 180.0f)
+      vecAngles->y = 180.0f;
+   else if (vecAngles->y == -180.0f)
+      vecAngles->y = 180.0f;
+   else if (vecAngles->y < -179.0f)
+      vecAngles->y = -179.0f;
+   vecAngles->z = 0.0f;
    return;
 }
 */
@@ -260,7 +260,7 @@ extern bool g_b_cv_autokill;                    // KWo - 02.05.2006
 extern float g_f_cv_autokilldelay;              // KWo - 02.05.2006
 extern float g_f_cv_maxcamptime;                // KWo - 23.03.2008
 extern bool g_b_cv_ffa;                         // KWo - 04.10.2006
-extern bool g_b_cv_ffrev;						// The Storm - 01.07.2018
+extern bool g_b_cv_ffrev;                       // The Storm - 01.07.2018
 extern bool g_b_cv_firsthumanrestart;           // KWo - 04.10.2010
 extern bool g_b_cv_radio;                       // KWo - 03.02.2007
 extern int g_i_cv_aim_type;                     // KWo - 06.04.2006
@@ -282,6 +282,7 @@ extern const char *g_sz_cv_WPT_Folder;          // KWo - 17.11.2006
 extern float g_f_cvars_upd_time;                // KWo - 02.05.2006
 extern float g_f_host_upd_time;                 // KWo - 18.05.2006
 extern float g_fTimeAvoidGrenade;               // KWo - 29.01.2008
+extern float g_fTimeBotThink;                   // KWo - 25.04.2016
 
 extern float g_fAutoKillTime;                   // KWo - 02.05.2006
 extern bool g_bAliveHumansPrevious;             // KWo - 02.05.2006

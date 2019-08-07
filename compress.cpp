@@ -31,6 +31,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <malloc.h>
+#if defined __linux__
+#include "bot_globals.h"
+#endif
+
 
 #define N 4096 // size of ring buffer
 #define F 18 // upper limit for match_length
@@ -191,7 +195,7 @@ int Encode (char *filename, unsigned char* header, int headersize, unsigned char
    int bufptr = 0;
    FILE *pOut;
 
-   pOut  = fopen (filename, "wb");
+   fopen_s (&pOut, filename, "wb");
    if (pOut == NULL)
       return (-1); // bail
 
@@ -314,7 +318,7 @@ int Decode (char *filename, int headersize, unsigned char *buffer, int bufsize)
    int bufptr = 0;
    FILE *pIn;
 
-   pIn  = fopen (filename, "rb");
+   fopen_s (&pIn, filename, "rb");
    if (pIn == NULL)
       return (-1); // bail
 

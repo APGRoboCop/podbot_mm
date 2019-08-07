@@ -22,32 +22,31 @@ inline void StripClanTags (char *pszTemp1, char *pszReturn, char *cTag1, char *c
    // Strips out Words between Chars like []
 
    unsigned char ucLen = (unsigned char)strlen (pszTemp1);
-   char* pszEndPattern;
+   int cnt;
+   char* pszEndPattern = strstr(pszTemp1, cTag2);
    char* pszStartPattern = strstr (pszTemp1, cTag1);
 
-   if (pszStartPattern)
+   if ((pszStartPattern) && (pszEndPattern))
    {
-      pszStartPattern++;
-
-      if (*pszStartPattern != 0)
+      if (pszEndPattern - pszStartPattern - 1 < ucLen - 2)
       {
-         pszEndPattern = strstr (pszTemp1, cTag2);
-
-         if (pszEndPattern)
+         if (pszStartPattern != pszTemp1)
          {
-            if (pszEndPattern - pszStartPattern < ucLen)
-            {
-               if (pszStartPattern - 1 != pszTemp1)
-                  strncpy (pszReturn,pszTemp1, (pszStartPattern - pszTemp1) - 1);
+            cnt = (int)(pszStartPattern - pszTemp1);
+            strncpy_s(pszReturn, cnt + 1, pszTemp1, cnt);
+         }
 
-               if (pszEndPattern < pszTemp1 + ucLen)
-                  strcat (pszReturn,pszEndPattern + 1);
-            }
+         if (pszEndPattern < pszTemp1 + ucLen)
+         {
+            cnt = (int)ucLen - (pszEndPattern - pszStartPattern - 1);
+            strcat_s(pszReturn, cnt, pszEndPattern + 1);
          }
       }
+      else
+         strncpy_s(pszReturn, (int)strlen(pszTemp1) + 1, pszTemp1, (int)strlen(pszTemp1));
    }
    else
-      strcpy (pszReturn, pszTemp1);
+      strncpy_s (pszReturn, (int)strlen(pszTemp1) + 1, pszTemp1, (int)strlen(pszTemp1));
 }
 
 
@@ -57,14 +56,13 @@ void ConvertNameToHuman (char *pszName, char *pszReturn)
 
    char szTemp1[80];
    char szTemp2[80];
-   char* pszLast;
+//   char* pszLast;
 
 //   unsigned char ucLen = 1;
    unsigned char ucActLen = 1;
 
    memset (szTemp1, 0, sizeof (szTemp1));
-   memset (szTemp2, 0, sizeof (szTemp2));
-   memset (pszReturn, 0, sizeof (pszReturn));
+   memset (szTemp2, 0, sizeof(szTemp2));
 
    StripClanTags (pszName, szTemp1, "[", "]");
    StripClanTags (szTemp1, szTemp2, "(", ")");
@@ -73,7 +71,7 @@ void ConvertNameToHuman (char *pszName, char *pszReturn)
 
    // strip out all spaces at the end of the name...
    ucActLen = (unsigned char)strlen (szTemp1);
-   pszLast = szTemp1 + ucActLen - 1;
+//   pszLast = szTemp1 + ucActLen - 1;
    while (ucActLen > 0)
    {
       if (szTemp1[ucActLen - 1] == ' ')
@@ -87,7 +85,7 @@ void ConvertNameToHuman (char *pszName, char *pszReturn)
       else
          ucActLen = 0;
    }
-   strcpy (pszReturn, szTemp1);
+   strcpy_s(pszReturn, (unsigned int)strlen(szTemp1) + 1, szTemp1);
 
    if (g_b_DebugChat)
       ALERT (at_logged, "[DEBUG] ConvertNameToHuman(3) - Player's name %s.\n", pszReturn);
@@ -120,7 +118,8 @@ void BotPrepareChatMessage (bot_t *pBot, char *pszText)
       {
          iLen = pszPattern - pszTextStart;
          if (iLen > 0)
-            strncpy (pBot->szMiscStrings, pszTextStart, iLen);
+            strncat_s(pBot->szMiscStrings, sizeof(pBot->szMiscStrings), pszTextStart, iLen);
+//            strncpy_s (pBot->szMiscStrings, iLen + 1, pszTextStart, iLen);
          pszPattern++;
 
          // Player with most frags ?
@@ -152,14 +151,14 @@ void BotPrepareChatMessage (bot_t *pBot, char *pszText)
                if (!FNullEnt (pTalkEdict))
                {
                   ConvertNameToHuman ((char *) STRING (pTalkEdict->v.netname), szNamePlaceholder);
-                  strcat (pBot->szMiscStrings, szNamePlaceholder);
+                  strncat_s (pBot->szMiscStrings, sizeof(pBot->szMiscStrings), szNamePlaceholder, strlen(szNamePlaceholder));
                }
             }
          }
 
          // Mapname ?
          else if (*pszPattern == 'm')
-            strcat (pBot->szMiscStrings, STRING (gpGlobals->mapname));
+            strncat_s (pBot->szMiscStrings, sizeof(pBot->szMiscStrings), STRING (gpGlobals->mapname), strlen(STRING(gpGlobals->mapname)));
 
          // Roundtime ?
          else if (*pszPattern == 'r')
@@ -167,8 +166,8 @@ void BotPrepareChatMessage (bot_t *pBot, char *pszText)
             char szTime[] = "000:00";
             int iTime = (int) (g_fTimeRoundEnd - gpGlobals->time);
 
-            sprintf (szTime, "%02d:%02d", iTime / 60, iTime % 60);
-            strcat (pBot->szMiscStrings, szTime);
+            sprintf_s (szTime, sizeof(szTime), "%02d:%02d", iTime / 60, iTime % 60);
+            strncat_s (pBot->szMiscStrings, sizeof(pBot->szMiscStrings), szTime, strlen(szTime));
          }
 
          // Chat Reply ?
@@ -211,7 +210,7 @@ void BotPrepareChatMessage (bot_t *pBot, char *pszText)
                   if (g_b_DebugChat)
                      ALERT (at_logged, "[DEBUG] BotPrepareChatMessage(2) - Player's name %s.\n", szNamePlaceholder);
 
-                  strcat (pBot->szMiscStrings, szNamePlaceholder);
+                  strncat_s (pBot->szMiscStrings, sizeof(pBot->szMiscStrings), szNamePlaceholder, strlen(szNamePlaceholder));
                }
             }
          }
@@ -237,11 +236,12 @@ void BotPrepareChatMessage (bot_t *pBot, char *pszText)
                if (!FNullEnt (pTalkEdict))
                {
                   ConvertNameToHuman ((char *) STRING (pTalkEdict->v.netname), szNamePlaceholder);
-                  strcat (pBot->szMiscStrings, szNamePlaceholder);
+                  strncat_s (pBot->szMiscStrings, sizeof(pBot->szMiscStrings), szNamePlaceholder, strlen(szNamePlaceholder));
                }
             }
          }
 
+         // Killed victim ?
          else if (*pszPattern == 'v')
          {
             pTalkEdict = pBot->pLastVictim;
@@ -249,7 +249,7 @@ void BotPrepareChatMessage (bot_t *pBot, char *pszText)
             if (!FNullEnt (pTalkEdict))
             {
                ConvertNameToHuman ((char *) STRING (pTalkEdict->v.netname), szNamePlaceholder);
-               strcat (pBot->szMiscStrings, szNamePlaceholder);
+               strncat_s (pBot->szMiscStrings, sizeof(pBot->szMiscStrings), szNamePlaceholder, strlen(szNamePlaceholder));
             }
          }
 
@@ -258,7 +258,7 @@ void BotPrepareChatMessage (bot_t *pBot, char *pszText)
       }
    }
 
-   strcat (pBot->szMiscStrings, pszTextStart);
+   strncat_s (pBot->szMiscStrings, sizeof(pBot->szMiscStrings), pszTextStart, strlen(pszTextStart));
 
    // removes trailing '\n'
    iLen = (int)strlen (pBot->szMiscStrings);
@@ -293,7 +293,7 @@ bool BotCheckKeywords(bot_t *pBot, char *pszMessage, char *pszReply)
          if (pszKeywordEnd)
          {
             iLen = pszKeywordEnd - pszCurrKeyword;
-            strncpy (szKeyword, pszCurrKeyword, iLen);
+            strncpy_s (szKeyword, iLen, pszCurrKeyword, iLen - 1);
 
             szKeyword[iLen] = 0x0;
 
@@ -305,7 +305,7 @@ bool BotCheckKeywords(bot_t *pBot, char *pszMessage, char *pszReply)
                STRINGNODE *pNode = pReply->pReplies;
 
                if (pReply->cNumReplies == 1)
-                  strcpy (pszReply, pNode->szString);
+                  strcpy_s (pszReply, sizeof(pNode->szString), pNode->szString);
                else
                {
                   cNumRetries = 0;
@@ -329,7 +329,7 @@ bool BotCheckKeywords(bot_t *pBot, char *pszMessage, char *pszReply)
                      cNumRetries++;
                   }
 
-                  strcpy (pszReply, pNode->szString);
+                  strcpy_s (pszReply, sizeof(pNode->szString), pNode->szString);
                }
 
                if (g_b_DebugChat)
@@ -355,7 +355,7 @@ bool BotCheckKeywords(bot_t *pBot, char *pszMessage, char *pszReply)
    {
       iRandom = RANDOM_LONG (0, iNumNoKwChats - 1);
       cNumRetries = 0;
-      while ((cNumRetries < 5) 
+      while ((cNumRetries < 5)
          && ((iUsedUnknownChatIndex[0] == iRandom)
             || (iUsedUnknownChatIndex[1] == iRandom)
             || (iUsedUnknownChatIndex[2] == iRandom)
@@ -370,10 +370,11 @@ bool BotCheckKeywords(bot_t *pBot, char *pszMessage, char *pszReply)
       iUsedUnknownChatIndex[2] = iUsedUnknownChatIndex[1];
       iUsedUnknownChatIndex[1] = iUsedUnknownChatIndex[0];
       iUsedUnknownChatIndex[0] = iRandom;
-      strcpy (pszReply, szNoKwChat[iRandom]);
 
       if (g_b_DebugChat)
          ALERT(at_logged, "[DEBUG] BotCheckKeywords - Bot %s didn't find a keyword; uses some universal reply %s.\n", pBot->name, pszReply);
+
+      strcpy_s (pszReply, sizeof(szNoKwChat[iRandom]), szNoKwChat[iRandom]);
 
       return (TRUE);
    }
@@ -388,7 +389,7 @@ bool BotParseChat (bot_t *pBot, char *pszReply)
    int i = 0;
 
    // Copy to safe place
-   strcpy (szMessage, pBot->SaytextBuffer.szSayText);
+   strcpy_s (szMessage, sizeof(pBot->SaytextBuffer.szSayText), pBot->SaytextBuffer.szSayText);
 
    // Text to uppercase for Keyword parsing
    iMessageLen = (int)strlen (szMessage);
@@ -424,8 +425,8 @@ bool BotRepliesToPlayer (bot_t *pBot)
        && (pBot->SaytextBuffer.iEntityIndex <= gpGlobals->maxClients)
        && (pBot->SaytextBuffer.szSayText[0] != 0))
    {
-      if ((pBot->SaytextBuffer.fTimeNextChat < gpGlobals->time) 
-         && (g_fLastChatTime + 2.0 < gpGlobals->time)) // KWo - 10.03.2013
+      if ((pBot->SaytextBuffer.fTimeNextChat < gpGlobals->time)
+         && (g_fLastChatTime + 2.0f < gpGlobals->time)) // KWo - 10.03.2013
       {
          if ((RANDOM_LONG (0, 100) < pBot->SaytextBuffer.cChatProbability)  // KWo - 06.03.2010
              && BotParseChat (pBot, (char *) &szText))

@@ -81,7 +81,7 @@ int WaypointFindNearest (void)
    float min_distance;
 
    // find the nearest waypoint...
-   min_distance = 9999.0;
+   min_distance = 9999.0f;
 
    for (i = 0; i < g_iNumWaypoints; i++)
    {
@@ -95,7 +95,7 @@ int WaypointFindNearest (void)
    }
 
    // if not close enough to a waypoint then just return
-   if (min_distance > 50)
+   if (min_distance > 50.0f)
       return (-1);
 
    return (index);
@@ -146,14 +146,14 @@ bool WaypointNodeReachable (int i_src, int i_dest) // KWo - 06.01.2008
    v_src = paths[i_src]->origin; // KWo - 06.01.2008
 
    if (paths[i_src]->flags & W_FL_LADDER) // KWo - 06.01.2008
-      v_src = v_src + Vector(0.0, 0.0, 16.0);
+      v_src = v_src + Vector(0.0f, 0.0f, 16.0f);
 
    float distance = (v_dest - v_src).Length ();
 
    // is the destination NOT close enough?
    if (g_bWaypointOn) // 13.01.2008
    {
-      if ((distance > g_fAutoPathMaxDistance) || ((g_bAutoWaypoint) && (distance > 160.0))) // KWo - 09.11.2007
+      if ((distance > g_fAutoPathMaxDistance) || ((g_bAutoWaypoint) && (distance > 160.0f))) // KWo - 09.11.2007
          return (FALSE);
    }
 
@@ -170,7 +170,7 @@ bool WaypointNodeReachable (int i_src, int i_dest) // KWo - 06.01.2008
    TRACE_LINE (v_src, v_dest, igm, pHostEdict, &tr);  // KWo - 13.01.2008
 
    // if waypoint is visible from current position (even behind head)...
-   if ((tr.flFraction >= 1.0) || (strncmp ("func_door", STRING (tr.pHit->v.classname), 9) == 0))
+   if ((tr.flFraction >= 1.0f) || (strncmp ("func_door", STRING (tr.pHit->v.classname), 9) == 0))
    {
       // If it's a door check if nothing blocks behind
       if (strncmp ("func_door", STRING (tr.pHit->v.classname), 9) == 0)
@@ -178,7 +178,7 @@ bool WaypointNodeReachable (int i_src, int i_dest) // KWo - 06.01.2008
          Vector vDoorEnd = tr.vecEndPos;
 
          TRACE_LINE (vDoorEnd, v_dest, igm, tr.pHit, &tr);  // KWo - 13.01.2008
-         if (tr.flFraction < 1.0)
+         if (tr.flFraction < 1.0f)
             return (FALSE);
       }
 
@@ -190,17 +190,17 @@ bool WaypointNodeReachable (int i_src, int i_dest) // KWo - 06.01.2008
       // check for special case of waypoint being suspended in mid-air...
 
       // is dest waypoint higher than src? (45 is max jump height)
-      if (v_dest.z > v_src.z + 45.0)
+      if (v_dest.z > v_src.z + 45.0f)
       {
          Vector v_new_src = v_dest;
          Vector v_new_dest = v_dest;
 
-         v_new_dest.z = v_new_dest.z - 50; // straight down 50 units
+         v_new_dest.z = v_new_dest.z - 50.0f; // straight down 50 units
 
          TRACE_LINE (v_new_src, v_new_dest, igm, pHostEdict, &tr); // KWo - 13.01.2008
 
          // check if we didn't hit anything, if not then it's in mid-air
-         if (tr.flFraction >= 1.0)
+         if (tr.flFraction >= 1.0f)
             return (FALSE); // can't reach this one
       }
 
@@ -213,32 +213,32 @@ bool WaypointNodeReachable (int i_src, int i_dest) // KWo - 06.01.2008
 
       distance = (v_dest - v_check).Length (); // distance from goal
 
-      if ((paths[i_src]->flags & W_FL_LADDER) && (distance > 32.0)) // KWo - 06.01.2008
+      if ((paths[i_src]->flags & W_FL_LADDER) && (distance > 32.0f)) // KWo - 06.01.2008
       {
-         v_check = v_check + (v_direction * 32.0);
+         v_check = v_check + (v_direction * 32.0f);
          v_down = v_check;
       }
 
-      v_down.z = v_down.z - 1000.0; // straight down 1000 units
+      v_down.z = v_down.z - 1000.0f; // straight down 1000 units
 
       TRACE_LINE (v_check, v_down, igm, pHostEdict, &tr); // KWo - 13.01.2008
 
-      last_height = tr.flFraction * 1000.0; // height from ground
+      last_height = tr.flFraction * 1000.0f; // height from ground
 
-      while (distance > 10.0)
+      while (distance > 10.0f)
       {
          // move 10 units closer to the goal...
-         v_check = v_check + (v_direction * 10.0);
+         v_check = v_check + (v_direction * 10.0f);
 
          v_down = v_check;
-         v_down.z = v_down.z - 1000.0; // straight down 1000 units
+         v_down.z = v_down.z - 1000.0f; // straight down 1000 units
 
          TRACE_LINE (v_check, v_down, igm, pHostEdict, &tr); // KWo - 13.01.2008
 
-         height = tr.flFraction * 1000.0; // height from ground
+         height = tr.flFraction * 1000.0f; // height from ground
 
          // is the current height greater than the step height?
-         if (height < last_height - 18.0)
+         if (height < last_height - 18.0f)
             return (FALSE); // can't get there without jumping...
 
          last_height = height;
@@ -300,13 +300,13 @@ void CalculateWaypointWayzone (void)
       v_direction = UTIL_VecToAngles (v_direction);
       p->Radius = iScanDistance;
 
-      for (fRadCircle = 0.0; fRadCircle < 360.0; fRadCircle += 20)
+      for (fRadCircle = 0.0f; fRadCircle < 360.0f; fRadCircle += 20)
       {
          MAKE_VECTORS (v_direction);
          vRadiusEnd = start + (gpGlobals->v_forward * iScanDistance);
          TRACE_LINE (start, vRadiusEnd, ignore_monsters, pHostEdict, &tr);
 
-         if (tr.flFraction < 1.0)
+         if (tr.flFraction < 1.0f)
          {
             if (strncmp ("func_door", STRING (tr.pHit->v.classname), 9) == 0)
             {
@@ -323,7 +323,7 @@ void CalculateWaypointWayzone (void)
          vRadiusEnd.z += 34;
          TRACE_LINE (start, vRadiusEnd, ignore_monsters, pHostEdict, &tr);
 
-         if (tr.flFraction < 1.0)
+         if (tr.flFraction < 1.0f)
          {
             bWayBlocked = TRUE;
             p->Radius -= 16;
@@ -351,7 +351,7 @@ void WaypointAdd (int wpt_type)
    int index, i, j, k;
    float distance;
    float min_distance;
-   float fLongestDist = 0.0;
+   float fLongestDist = 0.0f;
    PATH *pPath, *pPrev; // KWo - 06.01.2008 changed names...
    bool bPlaceNew = TRUE;
    Vector vecNewWaypoint;
@@ -417,7 +417,7 @@ void WaypointAdd (int wpt_type)
       {
          distance = (paths[index]->origin - pHostEdict->v.origin).Length ();
 
-         if (distance < 50)
+         if (distance < 50.0f)
          {
             bPlaceNew = FALSE;
             pPath = paths[index];
@@ -434,7 +434,7 @@ void WaypointAdd (int wpt_type)
       {
          distance = (paths[index]->origin - pHostEdict->v.origin).Length ();
 
-         if (distance < 50)
+         if (distance < 50.0f)
          {
             bPlaceNew = FALSE;
             pPath = paths[index];
@@ -488,10 +488,10 @@ void WaypointAdd (int wpt_type)
 
       // store the origin (location) of this waypoint
       pPath->origin = vecNewWaypoint;
-      pPath->fcampstartx = 0;
-      pPath->fcampstarty = 0;
-      pPath->fcampendx = 0;
-      pPath->fcampendy = 0;
+      pPath->fcampstartx = 0.0f;
+      pPath->fcampstarty = 0.0f;
+      pPath->fcampendx = 0.0f;
+      pPath->fcampendy = 0.0f;
 
       for (i = 0; i < MAX_PATH_INDEX; i++)
       {
@@ -560,7 +560,7 @@ void WaypointAdd (int wpt_type)
    // Ladder waypoints need careful connections
    if (wpt_type == WAYPOINT_ADD_LADDER)
    {
-      min_distance = 9999.0;
+      min_distance = 9999.0f;
       iDestIndex = -1;
 
       // calculate all the paths to this new waypoint
@@ -574,9 +574,9 @@ void WaypointAdd (int wpt_type)
          {
             // check if the waypoint is reachable from the new one
             TRACE_LINE (vecNewWaypoint, paths[i]->origin, ignore_monsters, pHostEdict, &tr);
-            if ((tr.flFraction == 1.0)
-                && (fabs (vecNewWaypoint.x - paths[i]->origin.x) < 32)
-                && (fabs (vecNewWaypoint.y - paths[i]->origin.y) < 32)
+            if ((tr.flFraction == 1.0f)
+                && (fabs (vecNewWaypoint.x - paths[i]->origin.x) < 32.0f)
+                && (fabs (vecNewWaypoint.y - paths[i]->origin.y) < 32.0f)
                 && (fabs (vecNewWaypoint.z - paths[i]->origin.z) < g_fAutoPathMaxDistance))
             {
                distance = (paths[i]->origin - vecNewWaypoint).Length ();
@@ -588,7 +588,7 @@ void WaypointAdd (int wpt_type)
          {
             // check if the waypoint is reachable from the new one
             if ((WaypointNodeReachable (index, i)
-                || (WaypointNodeReachable (i, index)) && (fabs (vecNewWaypoint.z + 16.0 - paths[i]->origin.z) < 64.0))) // KWo - 16.12.2007 - I don't like stupid connections...
+                || ((WaypointNodeReachable (i, index)) && (fabs (vecNewWaypoint.z + 16.0f - paths[i]->origin.z) < 64.0f)))) // KWo - 16.12.2007 - I don't like stupid connections...
             {
                distance = (paths[i]->origin - vecNewWaypoint).Length ();
 
@@ -625,8 +625,8 @@ void WaypointAdd (int wpt_type)
       for (k = 0; k < MAX_PATH_INDEX; k++)
       {
          TempInd[k] = -1;
-         TempDistance[k] = 9999;
-         TempAngleY[k] = 360.0;
+         TempDistance[k] = 9999.0f;
+         TempAngleY[k] = 360.0f;
       }
 
       for (i = 0; i < g_iNumWaypoints; i++) // this loop is to find 8 closests waypoints to just added WP...
@@ -656,11 +656,11 @@ void WaypointAdd (int wpt_type)
                {
                   if (distance < fLongestDist)
                   {
-                     fLongestDist = 0.0;
+                     fLongestDist = 0.0f;
                      TempInd[iPathIndexOfLongest] = i; // here we are replacing the longest path by the closer one...
                      TempDistance[iPathIndexOfLongest] = (int)distance;
                      bLongestCalculated = FALSE;
-                     fLongestDist = 0.0;
+                     fLongestDist = 0.0f;
                      for (k = 0; k < MAX_PATH_INDEX; k++)
                      {
                         if (TempDistance[k] > (int)fLongestDist)
@@ -714,10 +714,10 @@ void WaypointAdd (int wpt_type)
          if (TempInd[k] > -1)
          {
          // now calculate angles related to the angle created by the added WP and the closest connected one
-            vec_dir_ang = UTIL_VecToAngles(paths[TempInd[k]]->origin - vecNewWaypoint) 
+            vec_dir_ang = UTIL_VecToAngles(paths[TempInd[k]]->origin - vecNewWaypoint)
                - UTIL_VecToAngles(paths[TempInd[0]]->origin - vecNewWaypoint);
-            if (vec_dir_ang.y < 0.0)
-               vec_dir_ang.y += 360.0;
+            if (vec_dir_ang.y < 0.0f)
+               vec_dir_ang.y += 360.0f;
             TempAngleY[k] = vec_dir_ang.y;
          }
       }
@@ -754,7 +754,7 @@ void WaypointAdd (int wpt_type)
 
       Temp_ind = -1;
       Temp_dist = 0;
-      Temp_ang = 0.0;
+      Temp_ang = 0.0f;
 
       for(k = 2; k < MAX_PATH_INDEX; k++)
       {
@@ -764,9 +764,9 @@ testagain:
          Temp_ind = TempInd[k]; // store the highest index which should be tested later...
          Temp_dist = TempDistance[k];
          Temp_ang = TempAngleY[k];
-         if (TempAngleY[k] - TempAngleY[k - 2] < 80.0)
+         if (TempAngleY[k] - TempAngleY[k - 2] < 80.0f)
          {
-            if ((1.1 * (TempDistance[k] + TempDistance[k - 2])/2.0 < (float)TempDistance[k - 1])
+            if ((1.1 * (TempDistance[k] + TempDistance[k - 2])/2.0f < (float)TempDistance[k - 1])
                && !(paths[TempInd[k - 1]]->flags & W_FL_LADDER))
             {
                if (g_b_DebugWpEdit)
@@ -786,9 +786,9 @@ testagain:
       }
       if ((Temp_ind > -1) && (TempInd[0] > -1) && (TempInd[1] > -1))
       {
-         if ((TempAngleY[1] - Temp_ang < 80.0) || (360.0 - (TempAngleY[1] - Temp_ang) < 80.0))
+         if ((TempAngleY[1] - Temp_ang < 80.0f) || (360.0f - (TempAngleY[1] - Temp_ang) < 80.0f))
          {
-            if ((1.1 * (TempDistance[1] + Temp_dist)/2.0 < (float)TempDistance[0])
+            if ((1.1 * (TempDistance[1] + Temp_dist)/2.0f < (float)TempDistance[0])
                && !(paths[TempInd[0]]->flags & W_FL_LADDER))
             {
                if (g_b_DebugWpEdit)
@@ -831,7 +831,6 @@ void WaypointDelete (void)
 {
    PATH *pPrev = NULL;  // KWo - 06.01.2008 changed name
    PATH *pPath;         // KWo - 06.01.2008 changed name
-   int count;
    int wpt_index;
    int i, ix;
 
@@ -849,7 +848,6 @@ void WaypointDelete (void)
    if ((paths[wpt_index] != NULL) && (wpt_index > 0))
       pPrev = paths[wpt_index - 1];
 
-   count = 0;
 
    // delete all references to Node
    for (i = 0; i < g_iNumWaypoints; i++)
@@ -927,7 +925,7 @@ void WaypointMoveToPosition (void) // KWo - 09.11.2007
       UTIL_HostPrint ("Nothing to Move (no Waypoint nearby!)\n");
       return;
    }
-   if (fabs((paths[g_iCachedWaypoint]->origin - pHostEdict->v.origin).Length()) > 256.0)
+   if (fabs((paths[g_iCachedWaypoint]->origin - pHostEdict->v.origin).Length()) > 256.0f)
    {
       UTIL_HostPrint ("Waypoint #%d couldn't be moved to this postion (too far away!)\n");
       return;
@@ -993,7 +991,7 @@ int WaypointLookAt (void) // KWo - 04.10.2006
    Vector vToWaypoint;
    Vector vWaypointBound;
    float fCone1, fCone2, fCone3, fCone4, fCone5; // KWo - 11.02.2008
-   float fConeMax = 0.0; // KWo - 11.02.2008
+   float fConeMax = 0.0f; // KWo - 11.02.2008
 
    g_iPointedWpIndex = -1;
 
@@ -1002,7 +1000,7 @@ int WaypointLookAt (void) // KWo - 04.10.2006
       vToWaypoint = paths[j]->origin - pHostEdict->v.origin;
       distance = vToWaypoint.Length ();
 
-      if (distance > 500)
+      if (distance > 500.0f)
          continue;
 
       fCone1 = GetShootingConeDeviation (pHostEdict, &paths[j]->origin);
@@ -1035,8 +1033,8 @@ int WaypointLookAt (void) // KWo - 04.10.2006
 
       fCone5 = GetShootingConeDeviation (pHostEdict, &vWaypointBound); // KWo - 11.02.2008
 
-      if ((fCone1 < 0.9992) && (fCone2 < 0.9992) && (fCone3 < 0.9992)
-         && (fCone4 < 0.9992) && (fCone5 < 0.9992)) // KWo - 11.02.2008
+      if ((fCone1 < 0.9992f) && (fCone2 < 0.9992f) && (fCone3 < 0.9992f)
+         && (fCone4 < 0.9992f) && (fCone5 < 0.9992f)) // KWo - 11.02.2008
          continue;
 
       if ((fCone1 > fConeMax) || (fCone2 > fConeMax) || (fCone3 > fConeMax)
@@ -1209,7 +1207,7 @@ void WaypointCleanUnnessPaths (int index) // KWo - added 10.11.2007, rewritten 0
 
    Temp_ind = -1;
    Temp_dist = 9999;
-   Temp_ang = 0.0;
+   Temp_ang = 0.0f;
    Temp_path_nr = -1;
 
    for (k = 0; k < MAX_PATH_INDEX; k++)
@@ -1270,15 +1268,15 @@ void WaypointCleanUnnessPaths (int index) // KWo - added 10.11.2007, rewritten 0
       if (TempInd[k] == -1)
       {
          TempDistance[k] = 9999;
-         TempAngleY[k] = 360.0;
+         TempAngleY[k] = 360.0f;
       }
       else if ((TempInd[k] > -1) && (TempInd[k] < g_iNumWaypoints))
       {
          // calculate angles related to the angle of the closeset connected WP
-         vec_dir_ang = UTIL_VecToAngles(paths[TempInd[k]]->origin - paths[index]->origin) 
+         vec_dir_ang = UTIL_VecToAngles(paths[TempInd[k]]->origin - paths[index]->origin)
             - UTIL_VecToAngles(paths[TempInd[0]]->origin - paths[index]->origin);
-         if (vec_dir_ang.y < 0.0)
-            vec_dir_ang.y += 360.0;
+         if (vec_dir_ang.y < 0.0f)
+            vec_dir_ang.y += 360.0f;
          TempAngleY[k] = vec_dir_ang.y;
          if (g_b_DebugWpEdit)
             ALERT(at_logged,"[DEBUG] WaypointCleanUnnessPaths - index %d connected to %d [%d] with angle = %.1f and distance = %d.\n",
@@ -1325,7 +1323,7 @@ void WaypointCleanUnnessPaths (int index) // KWo - added 10.11.2007, rewritten 0
    // now we should start testing connections from the closest WP if all calculation have been executed right until now...
    Temp_ind = -1;
    Temp_dist = 0;
-   Temp_ang = 0.0;
+   Temp_ang = 0.0f;
    Temp_path_nr = 0;
 
    for (k = 2; k < MAX_PATH_INDEX; k++)
@@ -1337,13 +1335,13 @@ testagain:
       Temp_ind = TempInd[k]; // store the highest index which should be tested later...
       Temp_dist = TempDistance[k];
       Temp_ang = TempAngleY[k];
-      if (TempAngleY[k] - TempAngleY[k - 2] < 80.0)
+      if (TempAngleY[k] - TempAngleY[k - 2] < 80.0f)
       {
          if (((paths[index]->flags & W_FL_LADDER) && (paths[TempInd[k - 1]]->flags & W_FL_LADDER)) // leave alone ladder connections...
             || (paths[index]->connectflag[TempPathNr[k - 1]] & C_FL_JUMP)) // and don't remove jump connections..
             continue;
 
-         if (1.1 * (TempDistance[k] + TempDistance[k - 2])/2.0 < (float)TempDistance[k - 1])
+         if (1.1 * (TempDistance[k] + TempDistance[k - 2])/2.0f < (float)TempDistance[k - 1])
          {
             if (paths[index]->index[TempPathNr[k - 1]] == TempInd[k - 1])
             {
@@ -1393,11 +1391,11 @@ testagain:
    }
    if ((Temp_ind > -1) && (TempInd[0] > -1) && (TempInd[1] > -1))
    {
-      if (((TempAngleY[1] - Temp_ang < 80.0) || (360.0 - (TempAngleY[1] - Temp_ang) < 80.0))
+      if (((TempAngleY[1] - Temp_ang < 80.0f) || (360.0f - (TempAngleY[1] - Temp_ang) < 80.0f))
          && (!(paths[TempInd[0]]->flags & W_FL_LADDER) || !(paths[index]->flags & W_FL_LADDER))
          && (!(paths[index]->connectflag[TempPathNr[0]] & C_FL_JUMP)))
       {
-         if (1.1 * (TempDistance[1] + Temp_dist)/2.0 < (float)TempDistance[0])
+         if (1.1 * (TempDistance[1] + Temp_dist)/2.0f < (float)TempDistance[0])
          {
             if (paths[index]->index[TempPathNr[0]] == TempInd[0])
             {
@@ -1447,7 +1445,7 @@ testagain:
 
    Temp_ind = -1;
    Temp_dist = 0;
-   Temp_ang = 0.0;
+   Temp_ang = 0.0f;
    Temp_path_nr = 0;
 
    for (k = 1; k < MAX_PATH_INDEX; k++)
@@ -1456,9 +1454,9 @@ testagain2:
       if ((TempInd[k] == -1) || (TempInd[k - 1] == -1))
          continue;
 
-      if (TempAngleY[k] - TempAngleY[k - 1] < 40.0)
+      if (TempAngleY[k] - TempAngleY[k - 1] < 40.0f)
       {
-         if ((float)TempDistance[k] > 1.1 * TempDistance[k - 1])
+         if ((float)TempDistance[k] > 1.1f * TempDistance[k - 1])
          {
             if (((paths[index]->flags & W_FL_LADDER) && (paths[TempInd[k]]->flags & W_FL_LADDER)) // leave alone ladder connections...
               || (paths[index]->connectflag[TempPathNr[k]] & C_FL_JUMP)) // and don't remove jump connections..
@@ -1508,7 +1506,7 @@ testagain2:
                return;
             }
          }
-         else if ((float)TempDistance[k - 1] > 1.1 * TempDistance[k])
+         else if ((float)TempDistance[k - 1] > 1.1f * TempDistance[k])
          {
             if (((paths[index]->flags & W_FL_LADDER) && (paths[TempInd[k - 1]]->flags & W_FL_LADDER)) // leave alone ladder connections...
                || (paths[index]->connectflag[TempPathNr[k - 1]] & C_FL_JUMP)) // and don't remove jump connections..
@@ -1582,7 +1580,7 @@ testagain2:
 
    if ((Temp_ind > -1) && (TempInd[0] > -1))
    {
-      if (((Temp_ang - TempAngleY[0] < 40.0) || (360.0 - (Temp_ang - TempAngleY[0]) < 40.0))
+      if (((Temp_ang - TempAngleY[0] < 40.0f) || (360.0f - (Temp_ang - TempAngleY[0]) < 40.0f))
             && (!(paths[TempInd[0]]->flags & W_FL_LADDER) || !(paths[index]->flags & W_FL_LADDER)))
       {
          if ((1.1 * Temp_dist < (float)TempDistance[0]) && (!(paths[index]->connectflag[TempPathNr[0]] & C_FL_JUMP)))
@@ -1632,7 +1630,7 @@ testagain2:
          }
          else if ((1.1 * TempDistance[0] < (float) Temp_dist) && (!(paths[index]->connectflag[Temp_path_nr] & C_FL_JUMP)))
          {
-            if (paths[index]->index[Temp_path_nr] == Temp_ind)  
+            if (paths[index]->index[Temp_path_nr] == Temp_ind)
             {
                if (g_b_DebugWpEdit)
                   ALERT(at_logged,"[DEBUG] WaypointCleanUnnessPaths - Removing (6) a stupid connection from index = %d to %d.\n",
@@ -1687,12 +1685,12 @@ void WaypointFixOldCampType (int index) // KWo - 21.05.2013
    if (!(paths[index]->flags & W_FL_CAMP))
       return;
 
-   vecViewOffset.x = 0.0;
-   vecViewOffset.y = 0.0;
-   vecViewOffset.z = 17.0;
+   vecViewOffset.x = 0.0f;
+   vecViewOffset.y = 0.0f;
+   vecViewOffset.z = 17.0f;
 
    if (paths[index]->flags & W_FL_CROUCH)
-      vecViewOffset.z = 15.0;
+      vecViewOffset.z = 15.0f;
 
    vecDirectionStart = Vector (paths[index]->fcampstartx, paths[index]->fcampstarty, paths[index]->origin.z) - (paths[index]->origin + vecViewOffset);
    vecDirectionEnd = Vector (paths[index]->fcampendx, paths[index]->fcampendy, paths[index]->origin.z) - (paths[index]->origin + vecViewOffset);
@@ -1747,11 +1745,11 @@ void SaveExperienceTab (void)
       return;
    }
 
-   strncpy (header.filetype, "PODEXP!", sizeof (header.filetype));
+   strncpy_s (header.filetype, sizeof(header.filetype), "PODEXP!", 7);
    header.experiencedata_file_version = EXPERIENCE_VERSION;
    header.number_of_waypoints = g_iNumWaypoints;
 
-   snprintf (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pxp", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+   _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pxp", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
 
    pExperienceSave = new experiencesave_t[g_iNumWaypoints * g_iNumWaypoints];
 
@@ -1802,6 +1800,7 @@ void InitExperienceTab (void)
    EXPERIENCE_HDR header;
    char filename[256];
    char wptfilename[256];
+   size_t ifr;  // KWo - 09.08.2018 - to make the compiler happy...
 
    if (pBotExperienceData != NULL)
       delete [](pBotExperienceData);
@@ -1809,9 +1808,9 @@ void InitExperienceTab (void)
 
    if (g_iNumWaypoints == 0)
       return;
-
-   snprintf (filename, sizeof (filename), "addons/podbot/%s/%s.pxp", g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
-   snprintf (wptfilename, sizeof (wptfilename), "addons/podbot/%s/%s.pwf", g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+   ifr = 0;
+   _snprintf_s (filename, sizeof (filename), "addons/podbot/%s/%s.pxp", g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+   _snprintf_s (wptfilename, sizeof (wptfilename), "addons/podbot/%s/%s.pwf", g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
 
    pBotExperienceData = new experience_t[g_iNumWaypoints * g_iNumWaypoints];
 
@@ -1831,13 +1830,13 @@ void InitExperienceTab (void)
    if (bExperienceExists)
    {
       // Now build the real filename
-      snprintf (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pxp", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
-      bfp = fopen (filename, "rb");
+      _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pxp", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+      fopen_s (&bfp, filename, "rb");
 
       // if file exists, read the experience Data from it
       if (bfp != NULL)
       {
-         fread (&header, sizeof (EXPERIENCE_HDR), 1, bfp);
+         ifr = fread (&header, sizeof (EXPERIENCE_HDR), 1, bfp);
          fclose (bfp);
 
          header.filetype[7] = 0;
@@ -1932,6 +1931,9 @@ void InitExperienceTab (void)
    else
       UTIL_ServerPrint ("Experience Data loaded from File...\n");
 
+   if (ifr != 0)  // just to make the compiler happy...
+      ifr = 0;
+
    return;
 }
 
@@ -1971,11 +1973,11 @@ void SaveVisTab (void)
       }
    }
 
-   strncpy (header.filetype, "PODVIS!", sizeof (header.filetype));
+   strncpy_s (header.filetype, sizeof(header.filetype), "PODVIS!", 7);
    header.vistable_file_version = VISTABLE_VERSION;
    header.number_of_waypoints = g_iNumWaypoints;
 
-   snprintf (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pvi", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+   _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pvi", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
 
    UTIL_ServerPrint ("Compressing & saving Visibility Table...this may take a while!\n");
 
@@ -2003,12 +2005,13 @@ void InitVisTab (void)
    VISTABLE_HDR header;
    char filename[256];
    char wptfilename[256];
+   size_t ifr;  // KWo - 09.08.2018 - to make the compiler happy...
 
    if (g_iNumWaypoints == 0)
       return;
-
-   snprintf (filename, sizeof (filename), "addons/podbot/%s/%s.pvi", g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
-   snprintf (wptfilename, sizeof (wptfilename), "addons/podbot/%s/%s.pwf", g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+   ifr = 0;
+   _snprintf_s (filename, sizeof (filename), "addons/podbot/%s/%s.pvi", g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+   _snprintf_s (wptfilename, sizeof (wptfilename), "addons/podbot/%s/%s.pwf", g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
 
    // Does the Visibility Table exist & is newer than waypoint file ?
    if (COMPARE_FILE_TIME (filename, wptfilename, &iCompare))
@@ -2023,13 +2026,13 @@ void InitVisTab (void)
    if (bVisTableExists)
    {
       // Now build the real filename
-      snprintf (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pvi", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
-      bfp = fopen (filename, "rb");
+      _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pvi", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+      fopen_s (&bfp, filename, "rb");
 
       // if file exists, read the experience Data from it
       if (bfp != NULL)
       {
-         fread (&header, sizeof (VISTABLE_HDR), 1, bfp);
+         ifr = fread (&header, sizeof (VISTABLE_HDR), 1, bfp);
          fclose (bfp);
 
          header.filetype[7] = 0;
@@ -2073,6 +2076,9 @@ void InitVisTab (void)
    }
    else
       ALERT (at_logged, "Podbot mm - Visibility Table loaded from File...\n");
+
+   if (ifr != 0)  // just to make the compiler happy...
+      ifr = 0;
 
    return;
 }
@@ -2248,32 +2254,33 @@ bool WaypointLoad (void)
    char filename[256];
    WAYPOINT_HDR header;
    int index;
-   bool bOldWaypointFormat = FALSE;
+//   bool bOldWaypointFormat = FALSE;
+   size_t ifr;  // KWo - 09.08.2018 - to make the compiler happy...
 
    g_bMapInitialised = FALSE;
    g_bRecalcVis = FALSE;
    g_fTimeDisplayVisTableMsg = 0;
    g_bWaypointsSaved = FALSE;
 
-   snprintf (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pwf", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+   _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pwf", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
 
-   bfp = fopen (filename, "rb");
+   fopen_s (&bfp, filename, "rb");
    if (bfp == NULL)
    {
       UTIL_ServerPrint ("Waypoint file %s does not exist!\n", filename);
-      snprintf (g_szWaypointMessage, sizeof (g_szWaypointMessage), "Waypoint file %s does not exist!\n(you can't add Bots!)\n", filename);
+      _snprintf_s (g_szWaypointMessage, sizeof (g_szWaypointMessage), "Waypoint file %s does not exist!\n(you can't add Bots!)\n", filename);
       return (FALSE);
    }
 
    // if file exists, read the waypoint structure from it
-   fread (&header, sizeof (header), 1, bfp);
+   ifr = fread (&header, sizeof (header), 1, bfp);
    header.filetype[7] = 0;
    header.mapname[31] = 0;
 
    if (strcmp (header.filetype, "PODWAY!") != 0)
    {
       UTIL_ServerPrint ("%s is not a POD Bot waypoint file!\n", filename);
-      snprintf (g_szWaypointMessage, sizeof (g_szWaypointMessage), "Waypoint file %s does not exist!\n", filename);
+      _snprintf_s (g_szWaypointMessage, sizeof (g_szWaypointMessage), "Waypoint file %s does not exist!\n", filename);
       fclose (bfp);
       return (FALSE);
    }
@@ -2284,12 +2291,12 @@ bool WaypointLoad (void)
           || (header.waypoint_file_version == WAYPOINT_VERSION5))
       {
          UTIL_ServerPrint ("Old POD Bot waypoint file version (V%d)!\nTrying to convert...\n", header.waypoint_file_version);
-         bOldWaypointFormat = TRUE;
+//         bOldWaypointFormat = TRUE;
       }
       else
       {
          UTIL_ServerPrint ("%s Incompatible POD Bot waypoint file version!\nWaypoints not loaded!\n",filename);
-         snprintf (g_szWaypointMessage, sizeof (g_szWaypointMessage), "%s Incompatible POD Bot waypoint file version!\nWaypoints not loaded!\n", filename);
+         _snprintf_s (g_szWaypointMessage, sizeof (g_szWaypointMessage), "%s Incompatible POD Bot waypoint file version!\nWaypoints not loaded!\n", filename);
          fclose (bfp);
          return (FALSE);
       }
@@ -2298,7 +2305,7 @@ bool WaypointLoad (void)
    if (strcmp (header.mapname, STRING (gpGlobals->mapname)) != 0)
    {
       UTIL_ServerPrint ("%s POD Bot waypoints are not for this map!\n", filename);
-      snprintf (g_szWaypointMessage, sizeof (g_szWaypointMessage), "%s POD Bot waypoints are not for this map!\n", filename);
+      _snprintf_s (g_szWaypointMessage, sizeof (g_szWaypointMessage), "%s POD Bot waypoints are not for this map!\n", filename);
       fclose (bfp);
       return (FALSE);
    }
@@ -2316,7 +2323,7 @@ bool WaypointLoad (void)
          paths[index] = new PATH;
 
          // read 1 oldpath
-         fread (&convpath, SIZEOF_PATH5, 1, bfp);
+         ifr = fread (&convpath, SIZEOF_PATH5, 1, bfp);
 
          // Convert old to new
          paths[index]->iPathNumber = convpath.iPathNumber;
@@ -2367,7 +2374,7 @@ bool WaypointLoad (void)
          paths[index] = new PATH;
 
          // read 1 oldpath
-         fread (&convpath, SIZEOF_PATH6, 1, bfp);
+         ifr = fread (&convpath, SIZEOF_PATH6, 1, bfp);
 
          // Convert old to new
          paths[index]->iPathNumber = convpath.iPathNumber;
@@ -2414,7 +2421,7 @@ bool WaypointLoad (void)
       else
       {
          paths[index] = new PATH;
-         fread (paths[index], SIZEOF_PATH, 1, bfp); // read the number of paths from this node...
+         ifr = fread (paths[index], SIZEOF_PATH, 1, bfp); // read the number of paths from this node...
       }
    }
 
@@ -2424,12 +2431,15 @@ bool WaypointLoad (void)
       paths[index]->next = paths[index + 1];
    paths[index - 1]->next = NULL;
 
-   snprintf (g_szWaypointMessage, sizeof (g_szWaypointMessage), "Waypoints created by %s\n", header.creatorname);
+   _snprintf_s (g_szWaypointMessage, sizeof (g_szWaypointMessage), "Waypoints created by %s\n", header.creatorname);
 
    InitWaypointTypes ();
    InitPathMatrix ();
 
    g_bWaypointsChanged = FALSE;
+
+   if (ifr != 0)  // just to make the compiler happy...
+      ifr = 0;
 
    return (TRUE);
 }
@@ -2445,19 +2455,19 @@ void WaypointSave (void)
 
    g_bWaypointsChanged = TRUE;
 
-   strncpy (header.filetype, "PODWAY!", sizeof (header.filetype));
+   strncpy_s (header.filetype, sizeof(header.filetype), "PODWAY!", sizeof (header.filetype) - 1);
    header.waypoint_file_version = WAYPOINT_VERSION7;
    header.number_of_waypoints = g_iNumWaypoints;
 
    memset (header.mapname, 0, sizeof (header.mapname));
    memset (header.creatorname, 0, sizeof (header.creatorname));
-   strncpy (header.mapname, STRING (gpGlobals->mapname), sizeof (header.mapname));
+   strncpy_s (header.mapname, sizeof(header.mapname), STRING (gpGlobals->mapname), sizeof (header.mapname) - 1);
    header.mapname[31] = 0;
-   strncpy (header.creatorname, STRING (pHostEdict->v.netname), sizeof (header.creatorname));
+   strncpy_s (header.creatorname, sizeof(header.creatorname), STRING (pHostEdict->v.netname), sizeof (header.creatorname) - 1);
 
-   snprintf (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pwf", g_szGameDirectory, g_sz_cv_WPT_Folder, header.mapname);
+   _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pwf", g_szGameDirectory, g_sz_cv_WPT_Folder, header.mapname);
 
-   bfp = fopen (filename, "wb");
+   fopen_s (&bfp, filename, "wb");
 
    if (bfp == NULL)
    {
@@ -2503,13 +2513,13 @@ void WaypointCalcVisibility (void)
 
    if (paths[g_iCurrVisIndex]->flags & W_FL_CROUCH)
    {
-      vecSourceDuck.z += 12.0;
-      vecSourceStand.z += 18.0 + 28.0;
+      vecSourceDuck.z += 12.0f;
+      vecSourceStand.z += 18.0f + 28.0f;
    }
    else
    {
-      vecSourceDuck.z += -18.0 + 12.0;
-      vecSourceStand.z += 28.0;
+      vecSourceDuck.z += -18.0f + 12.0f;
+      vecSourceStand.z += 28.0f;
    }
 
    j = g_iRowVisIndex + 200; // KWo - 10.09.2006
@@ -2526,7 +2536,7 @@ void WaypointCalcVisibility (void)
       TRACE_LINE (vecSourceDuck, vecDest, ignore_monsters, NULL, &tr);
 
       // check if line of sight to object is not blocked (i.e. visible)
-      if (tr.flFraction != 1.0)
+      if (tr.flFraction != 1.0f)
          byRes = 1;
       else
          byRes = 0;
@@ -2535,7 +2545,7 @@ void WaypointCalcVisibility (void)
       TRACE_LINE (vecSourceStand, vecDest, ignore_monsters, NULL, &tr);
 
       // check if line of sight to object is not blocked (i.e. visible)
-      if (tr.flFraction != 1.0)
+      if (tr.flFraction != 1.0f)
          byRes |= 1;
 
       if (byRes != 0)
@@ -2543,14 +2553,14 @@ void WaypointCalcVisibility (void)
          vecDest = paths[i]->origin;
          // First check ducked Visibility
          if (paths[i]->flags & W_FL_CROUCH)
-            vecDest.z += 18.0 + 28.0;
+            vecDest.z += 18.0f + 28.0f;
          else
-            vecDest.z += 28.0;
+            vecDest.z += 28.0f;
 
          TRACE_LINE (vecSourceDuck, vecDest, ignore_monsters, NULL, &tr);
 
          // check if line of sight to object is not blocked (i.e. visible)
-         if (tr.flFraction != 1.0)
+         if (tr.flFraction != 1.0f)
             byRes |= 2;
          else
             byRes &= 1;
@@ -2558,7 +2568,7 @@ void WaypointCalcVisibility (void)
          TRACE_LINE (vecSourceStand, vecDest, ignore_monsters, NULL, &tr);
 
          // check if line of sight to object is not blocked (i.e. visible)
-         if (tr.flFraction != 1.0)
+         if (tr.flFraction != 1.0f)
             byRes |= 1;
          else
             byRes &= 2;
@@ -2584,7 +2594,7 @@ void WaypointCalcVisibility (void)
    if ((g_fTimeDisplayVisTableMsg > 0) && (g_fTimeDisplayVisTableMsg < gpGlobals->time) && (j == g_iNumWaypoints))
    {
       UTIL_HostPrint ("Visibility Table out of Date. Rebuilding... (%d%%)\n", (g_iCurrVisIndex * 100) / g_iNumWaypoints);
-      g_fTimeDisplayVisTableMsg = gpGlobals->time + 0.5;
+      g_fTimeDisplayVisTableMsg = gpGlobals->time + 0.5f;
    }
 
    if ((g_iCurrVisIndex == g_iNumWaypoints) && (j == g_iNumWaypoints))
@@ -2654,9 +2664,9 @@ void WaypointThink (void)
       // find the distance from the last used waypoint
       distance = (g_vecLastWaypoint - pHostEdict->v.origin).Length ();
 
-      if (distance > 128)
+      if (distance > 128.0f)
       {
-         min_distance = 9999.0;
+         min_distance = 9999.0f;
 
          // check that no other reachable waypoints are nearby...
          for (i = 0; i < g_iNumWaypoints; i++)
@@ -2676,7 +2686,7 @@ void WaypointThink (void)
       }
    }
 
-   min_distance = 9999.0;
+   min_distance = 9999.0f;
 
    // START - Make waypoint bigger when pointed at code
    iNodeFrom = WaypointFindNearest ();
@@ -2693,7 +2703,7 @@ void WaypointThink (void)
    {
       distance = (paths[i]->origin - pHostEdict->v.origin).Length ();
 
-      if (distance < 500)
+      if (distance < 500.0f)
       {
          if (distance < min_distance)
          {
@@ -2843,7 +2853,7 @@ void WaypointThink (void)
 
       v_direction = g_vecZero;
 
-      for (fRadCircle = 0.0; fRadCircle <= 180.0; fRadCircle += 22.5)
+      for (fRadCircle = 0.0f; fRadCircle <= 180.0f; fRadCircle += 22.5f)
       {
          MAKE_VECTORS (v_direction);
          vRadiusStart = pPath->origin - (gpGlobals->v_forward * pPath->Radius);
@@ -2878,7 +2888,7 @@ void WaypointThink (void)
          if ((pPath->index[i] != -1) && (pPath->connectflag[i] & C_FL_JUMP))
             isJumpWaypoint = TRUE;
 
-      int iLength = sprintf (szMessage,
+      int iLength = sprintf_s (szMessage, sizeof(szMessage),
                     "\n"
                     "\n"
                     "\n"
@@ -2913,7 +2923,7 @@ void WaypointThink (void)
          int iDangerIndexCT = (pBotExperienceData + index * g_iNumWaypoints + index)->iTeam1_danger_index;
          int iDangerIndexT = (pBotExperienceData + index * g_iNumWaypoints + index)->iTeam0_danger_index;
 
-         iLength += sprintf (&szMessage[iLength],
+         iLength += sprintf_s (&szMessage[iLength], sizeof(szMessage),
             " Experience Info [(DWP for CWP/EXP),(HDWP/HD)] :\n"
             "  CT: (%d / %u) , (%d / %d)\n"
             "  T:  (%d / %u) , (%d / %d)\n",
@@ -2936,7 +2946,7 @@ void WaypointThink (void)
             if ((pCachedPath->index[i] != -1) && (pCachedPath->connectflag[i] & C_FL_JUMP))
                isJumpWaypoint = TRUE;
 
-         iLength += sprintf (&szMessage[iLength],
+         iLength += sprintf_s (&szMessage[iLength], sizeof(szMessage),
             "\n"
             "Cached Waypoint Information:\n"
             " Index Nr.: %d of %d, Radius: %d\n"
@@ -2972,7 +2982,7 @@ void WaypointThink (void)
             if ((pFacedPath->index[i] != -1) && (pFacedPath->connectflag[i] & C_FL_JUMP))
                isJumpWaypoint = TRUE;
 
-         iLength += sprintf (&szMessage[iLength],
+         iLength += sprintf_s (&szMessage[iLength], sizeof(szMessage),
             "\n"
             "Faced Waypoint Information:\n"
             " Index Nr.: %d of %d, Radius: %d\n"
@@ -3011,10 +3021,10 @@ void WaypointThink (void)
 //         return;
       }
 // KWo - 16.01.2010 -
-      g_hudset.x = 0.033;
-      g_hudset.y = 0.061;
+      g_hudset.x = 0.033f;
+      g_hudset.y = 0.061f;
 //      g_hudset.a1 = 1;
-      g_hudset.holdTime = 1.055;
+      g_hudset.holdTime = 1.055f;
       g_hudset.channel = 1;
 
       UTIL_HudMessage(pHostEdict, g_hudset, szMessage);
@@ -3122,7 +3132,7 @@ bool WaypointNodesValid (void)
 
       if (paths[i]->flags & W_FL_CAMP)
       {
-         if ((paths[i]->fcampstartx == 0.0) && (paths[i]->fcampstarty == 0.0))
+         if ((paths[i]->fcampstartx == 0.0f) && (paths[i]->fcampstarty == 0.0f))
          {
             UTIL_HostPrint ("Node %d Camp Start Position not set!\n", i);
             EMIT_SOUND_DYN2 (pHostEdict, CHAN_WEAPON, "debris/bustglass1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
@@ -3133,7 +3143,7 @@ bool WaypointNodesValid (void)
             return (FALSE);
          }
 
-         else if ((paths[i]->fcampendx == 0.0) && (paths[i]->fcampendy == 0.0))
+         else if ((paths[i]->fcampendx == 0.0f) && (paths[i]->fcampendy == 0.0f))
          {
             UTIL_HostPrint ("Node %d Camp End Position not set !\n", i);
             EMIT_SOUND_DYN2 (pHostEdict, CHAN_WEAPON, "debris/bustglass1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);

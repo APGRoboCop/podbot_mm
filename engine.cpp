@@ -72,7 +72,7 @@ void pfnClientCommand (edict_t *pEdict, char *szFmt, ...)
    static char string[1024];
 
    va_start (argptr, szFmt);
-   vsnprintf (string, sizeof (string), szFmt, argptr);
+   vsnprintf_s (string, sizeof (string), szFmt, argptr);
    va_end (argptr);
 
 /*   FILE *fpc = fopen ("ForcedClientCommand.txt", "a"); fprintf (fpc, "Forced Client Command on %s, \"%s\"\n", STRING (pEdict->v.netname), string); fclose (fpc);
@@ -106,7 +106,7 @@ static inline void CallbackLightStyle (const unsigned char style, char *const va
 
    const unsigned short maximumCopyAmount (sizeof (cl_lightstyle[style].map) - sizeof ('\0'));
 
-   strncpy (cl_lightstyle[style].map, value, maximumCopyAmount);
+   strncpy_s (cl_lightstyle[style].map, maximumCopyAmount + 1, value, maximumCopyAmount);
 
    cl_lightstyle[style].map[maximumCopyAmount] = '\0';
    cl_lightstyle[style].length = strlen (cl_lightstyle[style].map);
@@ -144,8 +144,8 @@ void pfnMessageBegin (int msg_dest, int msg_type, const float *pOrigin, edict_t 
    {
       index = ENTINDEX (ed) - 1;
 
-      if ((index >= 0) && (index < gpGlobals->maxClients)
-          && ((bots[index].pEdict == ed)) || (clients[index].pEdict == ed)) // KWo - 12.12.2006
+      if (((index >= 0) && (index < gpGlobals->maxClients)
+          && ((bots[index].pEdict == ed))) || (clients[index].pEdict == ed)) // KWo - 12.12.2006
       {
          if (msg_type == FAST_GET_USER_MSG_ID (PLID, CurWeapon, "CurWeapon", NULL)) // KWo - 20.02.2008
          {
@@ -231,7 +231,7 @@ void pfnMessageBegin (int msg_dest, int msg_type, const float *pOrigin, edict_t 
             if (bots[index].is_used)
             {
                BotCreateTab[tab_index].bNeedsCreation = TRUE;
-               strncpy (BotCreateTab[tab_index].bot_name, bots[index].name, sizeof (BotCreateTab[tab_index].bot_name));
+               strncpy_s (BotCreateTab[tab_index].bot_name, sizeof(BotCreateTab[tab_index].bot_name), bots[index].name, sizeof (BotCreateTab[tab_index].bot_name) - 1);
                BotCreateTab[tab_index].bot_skill = bots[index].bot_skill;
                BotCreateTab[tab_index].bot_personality = bots[index].bot_personality;
                BotCreateTab[tab_index].bot_team = bots[index].bot_team;
@@ -505,7 +505,7 @@ void pfnChangeLevel (char* s1, char* s2)
       if (bots[index].is_used)
       {
          BotCreateTab[tab_index].bNeedsCreation = TRUE;
-         strncpy (BotCreateTab[tab_index].bot_name, bots[index].name, sizeof (BotCreateTab[tab_index].bot_name));
+         strncpy_s (BotCreateTab[tab_index].bot_name, sizeof(BotCreateTab[tab_index].bot_name), bots[index].name, sizeof (BotCreateTab[tab_index].bot_name) - 1);
          BotCreateTab[tab_index].bot_skill = bots[index].bot_skill;
          BotCreateTab[tab_index].bot_personality = bots[index].bot_personality;
          BotCreateTab[tab_index].bot_team = bots[index].bot_team;

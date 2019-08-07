@@ -38,9 +38,9 @@ void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume)
       if ((iIndex < 0) || (iIndex >= gpGlobals->maxClients))
          iIndex = UTIL_GetNearestPlayerIndex (VecBModelOrigin (pEdict));
 
-      clients[iIndex].fHearingDistance = 768.0 * fVolume;
-      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2;
-      clients[iIndex].fMaxTimeSoundLasting = 1.2; // KWo - 01.08.2006
+      clients[iIndex].fHearingDistance = 768.0f * fVolume;
+      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2f;
+      clients[iIndex].fMaxTimeSoundLasting = 1.2f; // KWo - 01.08.2006
       clients[iIndex].vecSoundPosition = pEdict->v.origin;
    }
 
@@ -53,9 +53,9 @@ void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume)
       if ((iIndex < 0) || (iIndex >= gpGlobals->maxClients))
          iIndex = UTIL_GetNearestPlayerIndex (VecBModelOrigin (pEdict));
 
-      clients[iIndex].fHearingDistance = 768.0 * fVolume;
-      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2;
-      clients[iIndex].fMaxTimeSoundLasting = 1.2; // KWo - 01.08.2006
+      clients[iIndex].fHearingDistance = 768.0f * fVolume;
+      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2f;
+      clients[iIndex].fMaxTimeSoundLasting = 1.2f; // KWo - 01.08.2006
       clients[iIndex].vecSoundPosition = pEdict->v.origin;
    }
 
@@ -68,9 +68,9 @@ void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume)
       if ((iIndex < 0) || (iIndex >= gpGlobals->maxClients))
          iIndex = UTIL_GetNearestPlayerIndex (VecBModelOrigin (pEdict));
 
-      clients[iIndex].fHearingDistance = 512.0 * fVolume;
-      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2;
-      clients[iIndex].fMaxTimeSoundLasting = 1.2; // KWo - 01.08.2006
+      clients[iIndex].fHearingDistance = 512.0f * fVolume;
+      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2f;
+      clients[iIndex].fMaxTimeSoundLasting = 1.2f; // KWo - 01.08.2006
       clients[iIndex].vecSoundPosition = pEdict->v.origin;
    }
 
@@ -85,7 +85,7 @@ void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume)
       if ((iIndex < 0) || (iIndex >= gpGlobals->maxClients))
          iIndex = UTIL_GetNearestPlayerIndex (VecBModelOrigin (pEdict));
 
-      clients[iIndex].fReloadingTime = gpGlobals->time + 1.5;
+      clients[iIndex].fReloadingTime = gpGlobals->time + 1.5f;
 //      ALERT(at_logged,"[DEBUG] client %s is realoading the weapon...\n", STRING(clients[iIndex].pEdict->v.netname));
    }
 #endif
@@ -98,9 +98,9 @@ void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume)
    {
       vecPosition = pEdict->v.origin;
       iIndex = UTIL_GetNearestPlayerIndex (vecPosition);
-      clients[iIndex].fHearingDistance = 512.0 * fVolume;
-      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2;
-      clients[iIndex].fMaxTimeSoundLasting = 1.2; // KWo - 01.08.2006
+      clients[iIndex].fHearingDistance = 512.0f * fVolume;
+      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2f;
+      clients[iIndex].fMaxTimeSoundLasting = 1.2f; // KWo - 01.08.2006
       clients[iIndex].vecSoundPosition = pEdict->v.origin;
    }
 
@@ -109,9 +109,9 @@ void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume)
    {
       vecPosition = VecBModelOrigin (pEdict);
       iIndex = UTIL_GetNearestPlayerIndex (vecPosition);
-      clients[iIndex].fHearingDistance = 1024.0 * fVolume;
-      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2;
-      clients[iIndex].fMaxTimeSoundLasting = 1.2; // KWo - 01.08.2006
+      clients[iIndex].fHearingDistance = 1024.0f * fVolume;
+      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2f;
+      clients[iIndex].fMaxTimeSoundLasting = 1.2f; // KWo - 01.08.2006
       clients[iIndex].vecSoundPosition = vecPosition;
    }
 
@@ -121,9 +121,9 @@ void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume)
    {
       vecPosition = VecBModelOrigin (pEdict);
       iIndex = UTIL_GetNearestPlayerIndex (vecPosition);
-      clients[iIndex].fHearingDistance = 1024.0 * fVolume;
+      clients[iIndex].fHearingDistance = 1024.0f * fVolume;
       clients[iIndex].fTimeSoundLasting = gpGlobals->time + 1.2;
-      clients[iIndex].fMaxTimeSoundLasting = 1.2; // KWo - 01.08.2006
+      clients[iIndex].fMaxTimeSoundLasting = 1.2f; // KWo - 01.08.2006
       clients[iIndex].vecSoundPosition = vecPosition;
    }
 
@@ -132,9 +132,9 @@ void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume)
    {
       vecPosition = VecBModelOrigin (pEdict);
       iIndex = UTIL_GetNearestPlayerIndex (vecPosition);
-      clients[iIndex].fHearingDistance = 1024.0 * fVolume;
-      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 3.0;
-      clients[iIndex].fMaxTimeSoundLasting = 3.0; // KWo - 01.08.2006
+      clients[iIndex].fHearingDistance = 1024.0f * fVolume;
+      clients[iIndex].fTimeSoundLasting = gpGlobals->time + 3.0f;
+      clients[iIndex].fMaxTimeSoundLasting = 3.0f; // KWo - 01.08.2006
       clients[iIndex].vecSoundPosition = vecPosition;
    }
    return;
@@ -153,36 +153,36 @@ void SoundSimulateUpdate (int iPlayerIndex)
 
    edict_t *pPlayer = clients[iPlayerIndex].pEdict;
    float fVelocity = pPlayer->v.velocity.Length2D ();
-   float fHearDistance = 0.0;
-   float fTimeSound = 0.0;
-   float fMaxTimeSound = 0.5; // KWo - 01.08.2006
+   float fHearDistance = 0.0f;
+   float fTimeSound = 0.0f;
+   float fMaxTimeSound = 0.5f; // KWo - 01.08.2006
    float f_last_volume; // KWo - 01.08.2006
    float f_volume; // KWo - 01.08.2006
 
    // Pressed Attack Button ?
    if (pPlayer->v.oldbuttons & IN_ATTACK)
    {
-      fHearDistance = 3072; // 2048.0;  // KWo 28.10.2006
-      fTimeSound = gpGlobals->time + 1.2;
-      fMaxTimeSound = 1.2; // KWo - 01.08.2006
+      fHearDistance = 3072.0f; // 2048.0f;  // KWo 28.10.2006
+      fTimeSound = gpGlobals->time + 1.2f;
+      fMaxTimeSound = 1.2f; // KWo - 01.08.2006
    }
 
    // Pressed Use Button ?
    else if (pPlayer->v.oldbuttons & IN_USE)
    {
-      fHearDistance = 512.0;
-      fTimeSound = gpGlobals->time + 1.2;
-      fMaxTimeSound = 1.2; // KWo - 01.08.2006
+      fHearDistance = 512.0f;
+      fTimeSound = gpGlobals->time + 1.2f;
+      fMaxTimeSound = 1.2f; // KWo - 01.08.2006
    }
 
    // Uses Ladder ?
    else if (pPlayer->v.movetype == MOVETYPE_FLY)
    {
-   		if (fabs(pPlayer->v.velocity.z) > 50)
+   		if (fabs(pPlayer->v.velocity.z) > 50.0f)
       {
-         fHearDistance = 1024.0;
-         fTimeSound = gpGlobals->time + 1.2;
-         fMaxTimeSound = 1.2; // KWo - 01.08.2006
+         fHearDistance = 1024.0f;
+         fTimeSound = gpGlobals->time + 1.2f;
+         fMaxTimeSound = 1.2f; // KWo - 01.08.2006
       }
    }
 
@@ -191,21 +191,21 @@ void SoundSimulateUpdate (int iPlayerIndex)
    {
       if (g_b_cv_FootSteps)
       {	// KWo - 06.04.2006
-         fHearDistance = 1280.0 * (fVelocity / 240.0);	// KWo - 09.10.2006
-         fTimeSound = gpGlobals->time + 1.2;
-         fMaxTimeSound = 1.2; // KWo - 01.08.2006
+         fHearDistance = 1280.0f * (fVelocity / 240.0f);	// KWo - 09.10.2006
+         fTimeSound = gpGlobals->time + 1.2f;
+         fMaxTimeSound = 1.2f; // KWo - 01.08.2006
       }
    }
 
    // Did issue Sound ?
-   if (fHearDistance > 0.0)
+   if (fHearDistance > 0.0f)
    {
       // Some sound already associated ?
       if (clients[iPlayerIndex].fTimeSoundLasting > gpGlobals->time)
       {
          // New Sound louder (bigger range) than old sound ?
-         if (clients[iPlayerIndex].fMaxTimeSoundLasting <= 0.0) // KWo - 01.08.2006
-            clients[iPlayerIndex].fMaxTimeSoundLasting = 1.2;
+         if (clients[iPlayerIndex].fMaxTimeSoundLasting <= 0.0f) // KWo - 01.08.2006
+            clients[iPlayerIndex].fMaxTimeSoundLasting = 1.2f;
          // the volume is lowered down when the time of lasting sound is expiring... - KWo
          // f_last_volume = clients[iPlayerIndex].fHearingDistance * (clients[iPlayerIndex].fTimeSoundLasting - gpGlobals->time)/clients[iPlayerIndex].fMaxTimeSoundLasting; // KWo - 01.08.2006
          f_volume = fHearDistance; // KWo - 01.08.2006

@@ -34,12 +34,12 @@ Vector UTIL_VecToAngles (const Vector &vec)
    if ((vec.x == 0) && (vec.y == 0))
    {
       fYaw = 0;
-      fPitch = (vec.z > 0) ? 90.0 : 270.0;
+      fPitch = (vec.z > 0) ? 90.0f : 270.0f;
    }
    else
    {
-      fYaw = atan2f (vec.y, vec.x) * (180.0 / M_PI);
-      fPitch = atan2f (vec.z, vec.Length2D ()) * (180.0 / M_PI);
+      fYaw = atan2f (vec.y, vec.x) * (180.0f / M_PI);
+      fPitch = atan2f (vec.z, vec.Length2D ()) * (180.0f / M_PI);
    }
    return Vector (fPitch, fYaw, 0);
 }
@@ -134,9 +134,9 @@ bool FInViewCone (Vector *pOrigin, edict_t *pEdict)
    if (pEdict->v.fov > 0)
       fov = pEdict->v.fov;
    else
-      fov = 90;
+      fov = 90.0f;
 
-   if (flDot >= cos ((fov / 2) * M_PI / 180))
+   if (flDot >= cos ((fov / 2) * M_PI / 180.0f))
       return (TRUE);
 
    return (FALSE);
@@ -160,15 +160,15 @@ bool IsShootableBreakable (edict_t *pent)  // KWo - 08.02.2006
    if (pent == NULL)
       return (false);
 
-   return ( ( (FStrEq ("func_breakable", STRING (pent->v.classname))
-           && ( (pent->v.playerclass == 1) || (pent->v.health == 0)
-                || ( (pent->v.health > 1) && (pent->v.health < 1000))
-                || (pent->v.rendermode == 4) ) // KWo - 21.02.2006 - br. crates has rendermode 4
+   return ((((FStrEq ("func_breakable", STRING (pent->v.classname))
+           && ((pent->v.playerclass == 1) || (pent->v.health == 0)
+                || ((pent->v.health > 1) && (pent->v.health < 1000))
+                || (pent->v.rendermode == 4))) // KWo - 21.02.2006 - br. crates has rendermode 4
                 || (FStrEq ("func_pushable", STRING (pent->v.classname))
                   && (pent->v.health < 1000) && (pent->v.spawnflags & SF_PUSH_BREAKABLE))))  // KWo - 03.02.2007
                && (pent->v.impulse == 0)
                && (pent->v.takedamage > 0)
-               && !(pent->v.spawnflags & SF_BREAK_TRIGGER_ONLY) );
+               && (!(pent->v.spawnflags & SF_BREAK_TRIGGER_ONLY)));
 }
 
 /*
@@ -244,7 +244,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
    {
       if (RenderFx == kRenderFxGlowShell)
       {
-         if ((RenderAmount <= 20.0) && (RenderColor.x <= 20)
+         if ((RenderAmount <= 20.0f) && (RenderColor.x <= 20)
             && (RenderColor.y <= 20) && (RenderColor.z <= 20))
          {
             if (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !(WeaponIsGun))
@@ -256,7 +256,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
                SemiTransparent = true;
             }
          }
-         else if ((RenderAmount <= 60.0) && (RenderColor.x <= 60)
+         else if ((RenderAmount <= 60.0f) && (RenderColor.x <= 60)
             && (RenderColor.y <= 60) && (RenderColor.z <= 60))
          {
             SemiTransparent = true;
@@ -264,7 +264,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
       }
       else
       {
-         if (RenderAmount <= 20)
+         if (RenderAmount <= 20.0f)
          {
             if (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !(WeaponIsGun))
             {
@@ -275,7 +275,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
                SemiTransparent = true;
             }
          }
-         else if (RenderAmount <= 60)
+         else if (RenderAmount <= 60.0f)
          {
             SemiTransparent = true;
          }
@@ -289,12 +289,12 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
       ALERT(at_logged,"[DEBUG] FBoxVisible - Bot %s checks the illumination of %s. It's = %f.\n",
       STRING(pEdict->v.netname), STRING(pTargetEdict->v.netname), LightLevel);
 
-   if ((!pBot->bUsesNVG) && (((LightLevel < 3.0) && (g_f_cv_skycolor > 50.0)) || ((LightLevel < 25.0) && (g_f_cv_skycolor <= 50.0)))
+   if ((!pBot->bUsesNVG) && (((LightLevel < 3.0f) && (g_f_cv_skycolor > 50.0f)) || ((LightLevel < 25.0f) && (g_f_cv_skycolor <= 50.0f)))
       && (!(pTargetEdict->v.effects & EF_DIMLIGHT)) && (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !(WeaponIsGun))) // KWo - 17.01.2011
    {
       return (FALSE);
    }
-   else if (((((LightLevel < 10.0) && (g_f_cv_skycolor > 50.0)) || ((LightLevel < 30.0) && (g_f_cv_skycolor <= 50.0)))
+   else if (((((LightLevel < 10.0f) && (g_f_cv_skycolor > 50.0f)) || ((LightLevel < 30.0f) && (g_f_cv_skycolor <= 50.0f)))
       && (pTargetEdict->v.oldbuttons & IN_ATTACK) && (WeaponIsGun)) && (!(pTargetEdict->v.effects & EF_DIMLIGHT)) && (!pBot->bUsesNVG)) // KWo - 17.01.2011
    {
       SemiTransparent = true; // in this case we can notice the enemy, but not so good...
@@ -309,9 +309,9 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
    // Check direct Line to waist
    UTIL_TraceLine (vecLookerOrigin, vecTarget, ignore_monsters, ignore_glass, pEdict, &tr);
 
-   if ((tr.flFraction >= 1.0) || (tr.pHit == pTargetEdict))
+   if ((tr.flFraction >= 1.0f) || (tr.pHit == pTargetEdict))
    {
-      *pvHit = tr.vecEndPos  + Vector (0.0, 0.0, 3.0); // KWo - 13.07.2008
+      *pvHit = tr.vecEndPos  + Vector (0.0f, 0.0f, 3.0f); // KWo - 13.07.2008
       *ucBodyPart |= WAIST_VISIBLE;
    }
 
@@ -322,13 +322,13 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
    vecTarget = vecTarget + pTargetEdict->v.view_ofs + Vector(0.0, 0.0, 2.0); // KWo - 02.04.2010
    if (!(pTargetEdict->v.oldbuttons & IN_DUCK))       // KWo - 13.07.2008
    {
-      vecTarget = vecTarget + Vector(0.0, 0.0, 1.0);  // KWo - 02.04.2010
+      vecTarget = vecTarget + Vector(0.0f, 0.0f, 1.0f);  // KWo - 02.04.2010
    }
 
    UTIL_TraceLine (vecLookerOrigin, vecTarget, ignore_monsters, ignore_glass, pEdict, &tr);
 
    // if the player is rendered, his head cannot be good seen...
-   if (((tr.flFraction >= 1.0) || (tr.pHit == pTargetEdict)) && (!SemiTransparent))
+   if (((tr.flFraction >= 1.0f) || (tr.pHit == pTargetEdict)) && (!SemiTransparent))
    {
       *pvHit = tr.vecEndPos;
       *ucBodyPart |= HEAD_VISIBLE;
@@ -345,44 +345,44 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
       {
          case 0: // left arm
          {
-            vecTarget.x -= 10.0 * gpGlobals->v_right.x;
-            vecTarget.y -= 10.0 * gpGlobals->v_right.y;
-            vecTarget.z += 8.0;
+            vecTarget.x -= 10.0f * gpGlobals->v_right.x;
+            vecTarget.y -= 10.0f * gpGlobals->v_right.y;
+            vecTarget.z += 8.0f;
             break;
          }
          case 1: // right arm
          {
-            vecTarget.x += 10.0 * gpGlobals->v_right.x;
-            vecTarget.y += 10.0 * gpGlobals->v_right.y;
-            vecTarget.z += 8.0;
+            vecTarget.x += 10.0f * gpGlobals->v_right.x;
+            vecTarget.y += 10.0f * gpGlobals->v_right.y;
+            vecTarget.z += 8.0f;
             break;
          }
          case 2: // left leg
          {
-            vecTarget.x -= 10.0 * gpGlobals->v_right.x;
-            vecTarget.y -= 10.0 * gpGlobals->v_right.y;
-            vecTarget.z -= 12.0;
+            vecTarget.x -= 10.0f * gpGlobals->v_right.x;
+            vecTarget.y -= 10.0f * gpGlobals->v_right.y;
+            vecTarget.z -= 12.0f;
             break;
          }
          case 3: // right leg
          {
-            vecTarget.x += 10.0 * gpGlobals->v_right.x;
-            vecTarget.y += 10.0 * gpGlobals->v_right.y;
-            vecTarget.z -= 12.0;
+            vecTarget.x += 10.0f * gpGlobals->v_right.x;
+            vecTarget.y += 10.0f * gpGlobals->v_right.y;
+            vecTarget.z -= 12.0f;
             break;
          }
          case 4: // left foot
          {
-            vecTarget.x -= 10.0 * gpGlobals->v_right.x;
-            vecTarget.y -= 10.0 * gpGlobals->v_right.y;
-            vecTarget.z -= 24.0;
+            vecTarget.x -= 10.0f * gpGlobals->v_right.x;
+            vecTarget.y -= 10.0f * gpGlobals->v_right.y;
+            vecTarget.z -= 24.0f;
             break;
          }
          case 5: // right foot
          {
-            vecTarget.x += 10.0 * gpGlobals->v_right.x;
-            vecTarget.y += 10.0 * gpGlobals->v_right.y;
-            vecTarget.z -= 24.0;
+            vecTarget.x += 10.0f * gpGlobals->v_right.x;
+            vecTarget.y += 10.0f * gpGlobals->v_right.y;
+            vecTarget.z -= 24.0f;
             break;
          }
       }
@@ -394,7 +394,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
 
       UTIL_TraceLine (vecLookerOrigin, vecTarget, dont_ignore_monsters, ignore_glass, pEdict, &tr);
 
-      if ((tr.flFraction >= 1.0) && (tr.pHit == pTargetEdict))
+      if ((tr.flFraction >= 1.0f) && (tr.pHit == pTargetEdict))
       {
          // Return seen position
          *pvHit = tr.vecEndPos;
@@ -422,7 +422,7 @@ bool FVisible (const Vector &vecOrigin, edict_t *pEdict)
 
    UTIL_TraceLine (vecLookerOrigin, vecOrigin, ignore_monsters, ignore_glass, pEdict, &tr);
 
-   if (tr.flFraction != 1.0)
+   if (tr.flFraction != 1.0f)
       return (FALSE);  // Line of sight is not established
 
    return (TRUE);  // line of sight is valid.
@@ -438,7 +438,7 @@ Vector GetGunPosition (edict_t *pEdict)
 int UTIL_GetNearestPlayerIndex (Vector vecOrigin)
 {
    float fDistance;
-   float fMinDistance = 9999.0;
+   float fMinDistance = 9999.0f;
    int index = 0;
    int i;
 
@@ -560,7 +560,7 @@ void UTIL_DecalTrace (TraceResult *pTrace, char *pszDecalName)
    if (index < 0)
       index = 0;
 
-   if (pTrace->flFraction == 1.0)
+   if (pTrace->flFraction == 1.0f)
       return;
 
    // Only decal BSP models
@@ -615,7 +615,7 @@ void UTIL_HostPrint (const char *fmt, ...)
 
    // concatenate all the arguments in one string
    va_start (argptr, fmt);
-   vsnprintf (pszMessage, sizeof (pszMessage), fmt, argptr);
+   vsnprintf_s (pszMessage, sizeof (pszMessage), fmt, argptr);
    va_end (argptr);
 
    if (!FNullEnt (pHostEdict))
@@ -643,7 +643,7 @@ void UTIL_ServerPrint (const char *fmt, ...)
 
    // concatenate all the arguments in one string
    va_start (argptr, fmt);
-   vsnprintf (pszMessage, sizeof (pszMessage), fmt, argptr);
+   vsnprintf_s (pszMessage, sizeof (pszMessage), fmt, argptr);
    va_end (argptr);
 
    SERVER_PRINT (pszMessage);
@@ -654,13 +654,13 @@ void UTIL_ServerPrint (const char *fmt, ...)
 void UTIL_ClampAngle (float *fAngle)
 {
    // Whistler, TEST your bugfixes before submitting them!!! :D
-   if (*fAngle >= 180)
-      *fAngle -= 360 * ((int) (*fAngle / 360) + 1); // and not 0.5
-   if (*fAngle < -180)
-      *fAngle += 360 * ((int) (-*fAngle / 360) + 1); // and not 0.5
+   if (*fAngle >= 180.0f)
+      *fAngle -= 360.0f * ((int) (*fAngle / 360.0f) + 1); // and not 0.5
+   if (*fAngle < -180.0f)
+      *fAngle += 360.0f * ((int) (-*fAngle / 360.0f) + 1); // and not 0.5
 
-   if ((*fAngle >= 180) || (*fAngle < -180))
-      *fAngle = 0; // heck, if we're still above the limit then something's REALLY fuckedup!
+   if ((*fAngle >= 180.0f) || (*fAngle < -180.0f))
+      *fAngle = 0.0f; // heck, if we're still above the limit then something's REALLY fuckedup!
    return;
 }
 */
@@ -677,7 +677,7 @@ void UTIL_ClampVector (Vector *vecAngles)
       vecAngles->y -= 360 * ((int) (vecAngles->y / 360) + 1); // and not 0.5
    if (vecAngles->y < -180)
       vecAngles->y += 360 * ((int) (-vecAngles->y / 360) + 1); // and not 0.5
-   vecAngles->z = 0.0;
+   vecAngles->z = 0.0f;
 
    if (vecAngles->x > 89)
       vecAngles->x = 89;
@@ -708,7 +708,7 @@ void UTIL_RoundStart (void)
    g_bBombDefusing = false; // KWo - 13.07.2007
 
    g_bBombSayString = FALSE;
-   g_fTimeBombPlanted = 0.0;
+   g_fTimeBombPlanted = 0.0f;
    g_vecBomb = g_vecZero;
 
    // Clear Waypoint Indices of visited Bomb Spots
@@ -716,14 +716,14 @@ void UTIL_RoundStart (void)
       g_rgiBombSpotsVisited[i] = -1;
 
    g_iLastBombPoint = -1;
-   g_fTimeNextBombUpdate = 0.0;
+   g_fTimeNextBombUpdate = 0.0f;
 
    g_bLeaderChosenT = FALSE;
    g_bLeaderChosenCT = FALSE;
 
    g_bHostageRescued = FALSE;
-   g_rgfLastRadioTime[0] = 0.0;
-   g_rgfLastRadioTime[1] = 0.0;
+   g_rgfLastRadioTime[0] = 0.0f;
+   g_rgfLastRadioTime[1] = 0.0f;
    g_bBotsCanPause = FALSE;
 
    g_fAutoKillTime = 0.0; // KWo - 02.05.2006
@@ -731,14 +731,14 @@ void UTIL_RoundStart (void)
    for (i = 0; i < gpGlobals->maxClients; i++)
    {
       clients[i].vecSoundPosition = g_vecZero;
-      clients[i].fHearingDistance = 0.0;
-      clients[i].fTimeSoundLasting = 0.0;
-      clients[i].fMaxTimeSoundLasting = 0.5;    // KWo - 01.08.2006
+      clients[i].fHearingDistance = 0.0f;
+      clients[i].fTimeSoundLasting = 0.0f;
+      clients[i].fMaxTimeSoundLasting = 0.5f;    // KWo - 01.08.2006
 
-      if (clients[i].welcome_time == -1.0)      // KWo - 19.04.2010
-         clients[i].welcome_time = -2.0;
-      if (clients[i].wptmessage_time == -1.0)   // KWo - 19.04.2010
-         clients[i].wptmessage_time = -2.0;
+      if (clients[i].welcome_time == -1.0f)      // KWo - 19.04.2010
+         clients[i].welcome_time = -2.0f;
+      if (clients[i].wptmessage_time == -1.0f)   // KWo - 19.04.2010
+         clients[i].wptmessage_time = -2.0f;
    }
 
    // Update Experience Data on Round Start
@@ -834,9 +834,9 @@ void UTIL_SaveButtonsData (void)    // KWo - 10.02.2006
          {
             ButtonsData[g_iNumButtons].EntIndex = ENTINDEX(pButton);
             v_button_origin = VecBModelOrigin (pButton);
-            snprintf (ButtonsData[g_iNumButtons].classname, sizeof (ButtonsData[g_iNumButtons].classname), STRING (pButton->v.classname));
+            _snprintf_s (ButtonsData[g_iNumButtons].classname, sizeof (ButtonsData[g_iNumButtons].classname), "%s", STRING (pButton->v.classname));
             ButtonsData[g_iNumButtons].origin = v_button_origin;
-            snprintf (ButtonsData[g_iNumButtons].target, sizeof (ButtonsData[g_iNumButtons].target), STRING (pButton->v.target));
+            _snprintf_s (ButtonsData[g_iNumButtons].target, sizeof (ButtonsData[g_iNumButtons].target), "%s", STRING (pButton->v.target));
             g_iNumButtons++;
          }
          pButton = FIND_ENTITY_BY_CLASSNAME (pButton, button_name);
@@ -927,11 +927,11 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    char str1[27];
    if (g_rgcvarPointer[PBCVAR_RESTRWEAPONS])  // KWo - 13.10.2006
    {
-      strncpy (str1, g_rgcvarPointer[PBCVAR_RESTRWEAPONS]->string, 26);
+      strncpy_s (str1, 27, g_rgcvarPointer[PBCVAR_RESTRWEAPONS]->string, 26);
    }
    else
    {
-      strncpy (str1, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTRWEAPONS]), 26);
+      strncpy_s (str1, 27, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTRWEAPONS]), 26);
    }
    size_t len1 = strlen(str1);
    for (i = 0; i < len1; i++)
@@ -943,9 +943,9 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    }
    char str2[10];
    if (g_rgcvarPointer[PBCVAR_RESTREQUIPAMMO])  // KWo - 13.10.2006
-      strncpy (str2, g_rgcvarPointer[PBCVAR_RESTREQUIPAMMO]->string, 9);
+      strncpy_s (str2, 10, g_rgcvarPointer[PBCVAR_RESTREQUIPAMMO]->string, 9);
    else
-      strncpy (str2, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTREQUIPAMMO]),9);
+      strncpy_s (str2, 10, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTREQUIPAMMO]),9);
    size_t len2 = strlen(str2);
    for (i = 0; i < len2; i++)
    {
@@ -960,24 +960,24 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    g_b_cv_spray = false;
    if (g_rgcvarPointer[PBCVAR_SPRAY])  // KWo - 13.10.2006
    {
-      if (g_rgcvarPointer[PBCVAR_SPRAY]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_SPRAY]->value > 0.0f)
          g_b_cv_spray = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_SPRAY]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_SPRAY]) > 0.0f)
          g_b_cv_spray = true;
    }
 
    g_b_cv_chat = false;
    if (g_rgcvarPointer[PBCVAR_CHAT])  // KWo - 13.10.2006
    {
-      if (g_rgcvarPointer[PBCVAR_CHAT]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_CHAT]->value > 0.0f)
          g_b_cv_chat = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_CHAT]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_CHAT]) > 0.0f)
          g_b_cv_chat = true;
    }
 
@@ -1010,12 +1010,12 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    g_b_cv_shootthruwalls = false;
    if (g_rgcvarPointer[PBCVAR_SHOOTTHRUWALLS])  // KWo - 13.10.2006
    {
-      if (g_rgcvarPointer[PBCVAR_SHOOTTHRUWALLS]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_SHOOTTHRUWALLS]->value > 0.0f)
          g_b_cv_shootthruwalls = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_SHOOTTHRUWALLS]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_SHOOTTHRUWALLS]) > 0.0f)
          g_b_cv_shootthruwalls = true;
    }
 
@@ -1046,36 +1046,36 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    g_b_cv_UseSpeech = false; // KWo - 07.10.2006
    if (g_rgcvarPointer[PBCVAR_USESPEECH])  // KWo - 13.10.2006
    {
-      if (g_rgcvarPointer[PBCVAR_USESPEECH]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_USESPEECH]->value > 0.0f)
          g_b_cv_UseSpeech = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_USESPEECH]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_USESPEECH]) > 0.0f)
          g_b_cv_UseSpeech = true;
    }
 
    g_b_cv_firsthumanrestart = false;        // KWo - 04.10.2010
    if (g_rgcvarPointer[PBCVAR_FIRSTHUMANRESTART])
    {
-      if (g_rgcvarPointer[PBCVAR_FIRSTHUMANRESTART]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_FIRSTHUMANRESTART]->value > 0.0f)
          g_b_cv_firsthumanrestart = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_FIRSTHUMANRESTART]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_FIRSTHUMANRESTART]) > 0.0f)
          g_b_cv_firsthumanrestart = true;
    }
 
    g_b_cv_jasonmode = false;
    if (g_rgcvarPointer[PBCVAR_JASONMODE])  // KWo - 13.10.2006
    {
-      if (g_rgcvarPointer[PBCVAR_JASONMODE]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_JASONMODE]->value > 0.0f)
          g_b_cv_jasonmode = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_JASONMODE]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_JASONMODE]) > 0.0f)
          g_b_cv_jasonmode = true;
    }
 
@@ -1108,12 +1108,12 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    g_b_cv_autokill = false;  // KWo - 02.05.2006
    if (g_rgcvarPointer[PBCVAR_AUTOKILL])  // KWo - 13.10.2006
    {
-      if (g_rgcvarPointer[PBCVAR_AUTOKILL]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_AUTOKILL]->value > 0.0f)
          g_b_cv_autokill = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_AUTOKILL]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_AUTOKILL]) > 0.0f)
          g_b_cv_autokill = true;
    }
 
@@ -1121,62 +1121,62 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
       g_f_cv_autokilldelay = g_rgcvarPointer[PBCVAR_AUTOKILLDELAY]->value;
    else
       g_f_cv_autokilldelay = CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_AUTOKILLDELAY]);  // KWo - 02.05.2006
-   if (g_f_cv_autokilldelay < 0.0)
-      g_f_cv_autokilldelay = 0.0;
-   else if (g_f_cv_autokilldelay > 300.0)
-      g_f_cv_autokilldelay = 300.0;
+   if (g_f_cv_autokilldelay < 0.0f)
+      g_f_cv_autokilldelay = 0.0f;
+   else if (g_f_cv_autokilldelay > 300.0f)
+      g_f_cv_autokilldelay = 300.0f;
 
    if (g_rgcvarPointer[PBCVAR_MAPSTARTBOTJOINDELAY])  // KWo - 17.05.2008
       g_f_cv_MapStartBotJoinDelay = g_rgcvarPointer[PBCVAR_MAPSTARTBOTJOINDELAY]->value;
    else
       g_f_cv_MapStartBotJoinDelay = CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_MAPSTARTBOTJOINDELAY]);
-   if (g_f_cv_MapStartBotJoinDelay < 0.0)
-      g_f_cv_MapStartBotJoinDelay = 0.0;
-   else if (g_f_cv_MapStartBotJoinDelay > 3600.0)
-      g_f_cv_MapStartBotJoinDelay = 3600.0;
+   if (g_f_cv_MapStartBotJoinDelay < 0.0f)
+      g_f_cv_MapStartBotJoinDelay = 0.0f;
+   else if (g_f_cv_MapStartBotJoinDelay > 3600.0f)
+      g_f_cv_MapStartBotJoinDelay = 3600.0f;
 
    if (g_rgcvarPointer[PBCVAR_MAXCAMPTIME])  // KWo - 23.03.2008
       g_f_cv_maxcamptime = g_rgcvarPointer[PBCVAR_MAXCAMPTIME]->value;
    else
       g_f_cv_maxcamptime = CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_MAXCAMPTIME]);
-   if (g_f_cv_maxcamptime < 0.0)
-      g_f_cv_maxcamptime = 0.0;
-   else if (g_f_cv_maxcamptime > 120.0)
-      g_f_cv_maxcamptime = 120.0;
+   if (g_f_cv_maxcamptime < 0.0f)
+      g_f_cv_maxcamptime = 0.0f;
+   else if (g_f_cv_maxcamptime > 120.0f)
+      g_f_cv_maxcamptime = 120.0f;
 
    g_b_cv_ffa = false;  // KWo - 04.10.2006
    if (g_rgcvarPointer[PBCVAR_FFA])  // KWo - 13.10.2006
    {
-      if (g_rgcvarPointer[PBCVAR_FFA]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_FFA]->value > 0.0f)
          g_b_cv_ffa = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_FFA]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_FFA]) > 0.0f)
          g_b_cv_ffa = true;
    }
 
    g_b_cv_ffrev = false;  // The Storm - 01.07.2018
    if (g_rgcvarPointer[PBCVAR_FFREV])  // The Storm - 01.07.2018
    {
-	   if (g_rgcvarPointer[PBCVAR_FFREV]->value > 0.f)
-		   g_b_cv_ffrev = true;
+      if (g_rgcvarPointer[PBCVAR_FFREV]->value > 0.0f)
+         g_b_cv_ffrev = true;
    }
    else
    {
-	   if (CVAR_GET_FLOAT( g_rgpszPbCvars[PBCVAR_FFREV] ) > 0.f)
-		   g_b_cv_ffrev = true;
+      if (CVAR_GET_FLOAT( g_rgpszPbCvars[PBCVAR_FFREV] ) > 0.0f)
+         g_b_cv_ffrev = true;
    }
 
    g_b_cv_radio = false;  // KWo - 03.02.2007
    if (g_rgcvarPointer[PBCVAR_RADIO])
    {
-      if (g_rgcvarPointer[PBCVAR_RADIO]->value > 0.f)
+      if (g_rgcvarPointer[PBCVAR_RADIO]->value > 0.0f)
          g_b_cv_radio = true;
    }
    else
    {
-      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_RADIO]) > 0.f)
+      if (CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_RADIO]) > 0.0f)
          g_b_cv_radio = true;
    }
 
@@ -1268,10 +1268,10 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    else
       g_f_cv_dangerfactor = CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_DANGERFACTOR]);
 
-   if (g_f_cv_dangerfactor < 0)
-      g_f_cv_dangerfactor = 0;
-   if (g_f_cv_dangerfactor > 5000) // KWo - 25.01.2010
-      g_f_cv_dangerfactor = 5000; // KWo - 25.01.2010
+   if (g_f_cv_dangerfactor < 0.0f)
+      g_f_cv_dangerfactor = 0.0f;
+   if (g_f_cv_dangerfactor > 5000.0f) // KWo - 25.01.2010
+      g_f_cv_dangerfactor = 5000.0f; // KWo - 25.01.2010
 
    if (g_rgcvarPointer[PBCVAR_PASSWORDKEY])  // KWo - 13.10.2006
       g_sz_cv_PasswordField = g_rgcvarPointer[PBCVAR_PASSWORDKEY]->string;
@@ -1293,10 +1293,10 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
       g_p_cv_csdm_active = CVAR_GET_POINTER("csdm_active");
    if (g_p_cv_csdm_active)
    {
-      g_b_cv_csdm_active = (g_p_cv_csdm_active->value > 0.f);
+      g_b_cv_csdm_active = (g_p_cv_csdm_active->value > 0.0f);
  //     ALERT(at_logged,"PODBOT MM - csdm_active state set to %s read by the pointer.\n", g_b_cv_csdm_active ? "1" : "0");
    }
-   else if (CVAR_GET_FLOAT ("csdm_active") > 0.f)
+   else if (CVAR_GET_FLOAT ("csdm_active") > 0.0f)
       g_b_cv_csdm_active = true;
 
 //   ALERT(at_logged,"PODBOT MM - csdm_active set to %s.\n", g_b_cv_csdm_active ? "1" : "0");
@@ -1306,11 +1306,11 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    g_i_cv_FpsMax = (int)CVAR_GET_FLOAT ("fps_max");
 
    g_b_cv_FriendlyFire = false;
-   if (CVAR_GET_FLOAT ("mp_friendlyfire") > 0.f)
+   if (CVAR_GET_FLOAT ("mp_friendlyfire") > 0.0f)
       g_b_cv_FriendlyFire = true;
 
    g_b_cv_FootSteps = false;
-   if (CVAR_GET_FLOAT ("mp_footsteps") > 0.f)
+   if (CVAR_GET_FLOAT ("mp_footsteps") > 0.0f)
       g_b_cv_FootSteps = true;
 
    g_f_cv_c4timer = CVAR_GET_FLOAT ("mp_c4timer");  // KWo - 17.11.2006
@@ -1320,11 +1320,11 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    g_f_cv_skycolor = CVAR_GET_FLOAT("sv_skycolor_r") + CVAR_GET_FLOAT("sv_skycolor_g") + CVAR_GET_FLOAT("sv_skycolor_b");
 
    g_b_cv_flash_allowed = false;
-   if (CVAR_GET_FLOAT ("mp_flashlight") > 0.f)
+   if (CVAR_GET_FLOAT ("mp_flashlight") > 0.0f)
       g_b_cv_flash_allowed = true;
 
    g_b_cv_Parachute = false; // KWo - 07.03.2010
-   if (CVAR_GET_FLOAT ("sv_parachute") > 0.f)
+   if (CVAR_GET_FLOAT ("sv_parachute") > 0.0f)
       g_b_cv_Parachute = true;
 
 // KWo - 02.03.2010 - added ping for bots calculation
@@ -1441,7 +1441,7 @@ void UTIL_SaveHostagesData (void)    // KWo 16.05.2006
          HostagesData[g_iNumHostages].EntIndex = ENTINDEX(pEnt);
          HostagesData[g_iNumHostages].OldOrigin = pEnt->v.origin; // KWo - 16.06.2006
          HostagesData[g_iNumHostages].IsMoving = false;
-         if (pEnt->v.health > 0.0)
+         if (pEnt->v.health > 0.0f)
             HostagesData[g_iNumHostages].Alive = true;
          HostagesData[g_iNumHostages].UserEntIndex = 0;
          g_iNumHostages++;
@@ -1483,12 +1483,12 @@ void UTIL_CheckHostages (void)    // KWo 17.05.2006
       pHostage = INDEXENT(HostagesData[i].EntIndex);
       if (!FNullEnt(pHostage))
       {
-         if ((pHostage->v.health > 0.0) && (pHostage->v.deadflag == 0))
+         if ((pHostage->v.health > 0.0f) && (pHostage->v.deadflag == 0))
             HostagesData[i].Alive = true;
          else
             HostagesData[i].Alive = false;
 
-         if ((pHostage->v.origin - HostagesData[i].OldOrigin).Length() > 20.0)
+         if ((pHostage->v.origin - HostagesData[i].OldOrigin).Length() > 20.0f)
             HostagesData[i].IsMoving = true;
          else
             HostagesData[i].IsMoving = false;
@@ -1531,7 +1531,7 @@ void UTIL_CheckHostages (void)    // KWo 17.05.2006
                   ALERT(at_logged, "[DEBUG] UTIL_CheckHostages - Found hostage's %d usernr - %d.\n", i + 1, HostUser);
 
                if ((clients[HostUser-1].iFlags & CLIENT_ALIVE) && (clients[HostUser-1].iFlags & CLIENT_USED)
-                    && ((clients[HostUser-1].vOrigin - pHostage->v.origin).Length() <= 600.0))
+                    && ((clients[HostUser-1].vOrigin - pHostage->v.origin).Length() <= 600.0f))
                {
                   HostagesData[i].UserEntIndex = HostUser;
 
@@ -1556,7 +1556,7 @@ void UTIL_CheckHostages (void)    // KWo 17.05.2006
          {
             if ((bots[HostUser-1].is_used) && !FNullEnt(pHostage))  // KWo - 16.07.2006
             {
-               if (!HostagesData[i].Alive || ((pEntity->v.origin - pHostage->v.origin).Length() > 600.0))
+               if (!HostagesData[i].Alive || ((pEntity->v.origin - pHostage->v.origin).Length() > 600.0f))
                {
                   for (j = 0; j < MAX_HOSTAGES; j++)
                   {
@@ -1572,7 +1572,7 @@ void UTIL_CheckHostages (void)    // KWo 17.05.2006
             }
 
             if ((!(clients[HostUser-1].iFlags & CLIENT_USED) || !(clients[HostUser-1].iFlags & CLIENT_ALIVE)
-               || ((clients[HostUser-1].vOrigin - pHostage->v.origin).Length() > 600.0)) && (HostagesData[i].Alive))
+               || ((clients[HostUser-1].vOrigin - pHostage->v.origin).Length() > 600.0f)) && (HostagesData[i].Alive))
             {
 /*
 #if !defined __amd64__
@@ -1851,7 +1851,7 @@ void UTIL_CheckSmokeGrenades(void) // KWo - 29.01.2008
             // Check if visible to the Bot
             vecView = GetGunPosition (pEdict);
 
-            if (BotInFieldOfView (pBot, pent->v.origin - vecView) > (pEdict->v.fov * 0.5 - 5))
+            if (BotInFieldOfView (pBot, pent->v.origin - vecView) > (pEdict->v.fov * 0.5f - 5.0f))
                continue;
             if (!BotEntityIsVisible (pBot, pent->v.origin))
                continue;
@@ -1865,7 +1865,7 @@ void UTIL_CheckSmokeGrenades(void) // KWo - 29.01.2008
                   fDistanceMoved = ((pent->v.origin + pent->v.velocity * pBot->fTimeFrameInterval) - pEdict->v.origin).Length (); // KWo - 17.10.2006 - reverted back
 
                   // Is the Grenade approaching this Bot ?
-                  if ((fDistanceMoved < fDistance) && (fDistance < 512))
+                  if ((fDistanceMoved < fDistance) && (fDistance < 512.0f))
                   {
                      pBot->pAvoidGrenade = pent;
                   }
@@ -1896,11 +1896,11 @@ float UTIL_IlluminationOf (edict_t *pEdict) // KWo - 23.03.2012 - rewritten - th
    if (!FNullEnt(pEdict))
    {
       if ((entity_index >= 0) && (entity_index < 32) && (pEdict->v.flags & FL_FAKECLIENT))
-         return (100 * sqrt (min (75.0, (float) pEdict->v.light_level) / 75.0));
+         return (100 * sqrt (min (75.0f, (float) pEdict->v.light_level) / 75.0f));
       else
-         return (100 * sqrt (min (75.0, (float) GETENTITYILLUM (pEdict)) / 75.0));
+         return (100 * sqrt (min (75.0f, (float) GETENTITYILLUM (pEdict)) / 75.0f));
    }
-   return (0.0);
+   return (0.0f);
 }
 
 void SetBotNvg(bot_t *pBot, bool setnv)
@@ -1967,17 +1967,17 @@ void UTIL_HudMessage(edict_t *pEntity, const hudtextparms_t &textparms, char *pM
    WRITE_STRING(pMessage);
    MESSAGE_END();
 
-   g_hudset.x = -1.0;
-   g_hudset.y = -1.0;
+   g_hudset.x = -1.0f;
+   g_hudset.y = -1.0f;
    g_hudset.effect = 0;
    g_hudset.r1 = 255;
    g_hudset.g1 = 255;
    g_hudset.b1 = 255;
    g_hudset.a1 = 1;
-   g_hudset.fadeinTime = 0.0;
-   g_hudset.fadeoutTime = 0.0;
-   g_hudset.holdTime = 1.0;
-   g_hudset.fxTime = 0.0;
+   g_hudset.fadeinTime = 0.0f;
+   g_hudset.fadeoutTime = 0.0f;
+   g_hudset.holdTime = 1.0f;
+   g_hudset.fxTime = 0.0f;
    g_hudset.channel = 1;
 }
 

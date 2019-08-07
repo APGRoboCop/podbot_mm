@@ -57,27 +57,27 @@ int iNumNoKwChats = 0;
 int g_iPeoBotsKept = 0;
 int g_iMin_bots = 0;
 int g_iMax_bots = 0;
-float botcreation_time = 0.0;
-float g_fLastKickedBotTime = 0.0;
+float botcreation_time = 0.0f;
+float g_fLastKickedBotTime = 0.0f;
 bool g_bIgnoreEnemies = FALSE; // Stores if Bots are told to ignore Enemies (debug feature)
-float g_fLastChatTime = 0.0; // Stores Last Time chatted - prevents spamming
-float g_fTimeRoundStart = 0.0; // stores the Start of the round (in worldtime)
-float g_fTimeRoundEnd = 0.0; // Stores the End of the round (in worldtime) gpGlobals->time+roundtime
-float g_fTimeRoundMid = 0.0; // Stores the halftime of the round (in worldtime)
+float g_fLastChatTime = 0.0f; // Stores Last Time chatted - prevents spamming
+float g_fTimeRoundStart = 0.0f; // stores the Start of the round (in worldtime)
+float g_fTimeRoundEnd = 0.0f; // Stores the End of the round (in worldtime) gpGlobals->time+roundtime
+float g_fTimeRoundMid = 0.0f; // Stores the halftime of the round (in worldtime)
 bool g_bRoundEnded = FALSE;  // it says the round is finished (to let bots reload i.e.) // KWo - 30.09.2010
-float g_fTimeNextBombUpdate = 0.0; // Holds the time to allow the next Search Update
+float g_fTimeNextBombUpdate = 0.0f; // Holds the time to allow the next Search Update
 int g_iLastBombPoint; // Stores the last checked Bomb Waypoint
 bool g_bBombPlanted = FALSE; // Stores if the Bomb was planted
 bool g_bBombDefusing = FALSE; // Stores the bomb is defusing - KWo - 13.07.2007
 int g_iDefuser = -1; // Stores the bomb defuser - KWo - 13.07.2007
 bool g_bBombSayString;
-float g_fTimeBombPlanted = 0.0; // Holds the time when Bomb was planted
+float g_fTimeBombPlanted = 0.0f; // Holds the time when Bomb was planted
 int g_rgiBombSpotsVisited[MAXNUMBOMBSPOTS]; // Stores visited Bombspots for Counters when Bomb has been planted
 bool g_bBotsCanPause = FALSE; // Stores if Bots should pause
 bool g_bHostageRescued = FALSE; // Stores if Counter rescued a Hostage in a Round
 int iRadioSelect[32];
 int g_rgfLastRadio[2];
-float g_rgfLastRadioTime[2] = {0.0, 0.0}; // Stores Time of RadioMessage - prevents too fast responds
+float g_rgfLastRadioTime[2] = {0.0f, 0.0f}; // Stores Time of RadioMessage - prevents too fast responds
 char g_szWaypointMessage[512]; // String displayed to Host telling about Waypoints
 int g_iNumLogos = 5; // Number of available Spraypaints
 int state; // network message state machine state
@@ -127,8 +127,8 @@ FILE *fp;
 bool file_opened = FALSE;
 bot_t bots[32];
 int msecnum = 0; // TheFatal's method for calculating the msec value
-float msecdel = 0;
-float msecval = 0;
+float msecdel = 0.0f;
+float msecval = 0.0f;
 void (*botMsgFunction) (void *, int) = NULL;
 int botMsgIndex;
 PATH *paths[MAX_WAYPOINTS];
@@ -141,13 +141,13 @@ unsigned short g_iHighestDamageCT;              // KWo - 09.04.2006
 int g_iHighestDamageWpT;                        // KWo - 05.01.2008
 int g_iHighestDamageWpCT;                       // KWo - 05.01.2008
 bool g_bEndJumpPoint = FALSE;
-float g_fTimeJumpStarted = 0.0;
+float g_fTimeJumpStarted = 0.0f;
 Vector g_vecLearnVelocity = g_vecZero;
 Vector g_vecLearnPos = g_vecZero;
 Vector g_vecLastWaypoint;
 Vector g_vecHostOrigin =  g_vecZero;            // KWo - 20.04.2013
 int g_iLastJumpWaypoint = -1;
-float g_fTimeRestartServer = 0.0;
+float g_fTimeRestartServer = 0.0f;
 char g_szGameDirectory[128] = "cstrike";
 bool g_bBotSettings = TRUE;
 bool g_bWeaponStrip = FALSE;                    // KWo - 10.03.2013
@@ -166,11 +166,12 @@ saved_break_t BreakablesData[MAX_BREAKABLES];   // KWo - 10.02.2006
 saved_hostages_t HostagesData[MAX_HOSTAGES];    // KWo - 16.05.2006 - to compare if the hostages been moving
 hudtextparms_t g_hudset = {0.0, 0.0, 0, 255, 255, 255, 0, 255, 255, 255, 0, 0.0, 0.0, 0.0, 0.0, 0};    // KWo - 16.01.2010
 
-float g_f_cvars_upd_time = 0.0;                 // KWo - 02.05.2006
-float g_f_host_upd_time = 0.0;                  // KWo - 18.05.2006
-float g_fTimeAvoidGrenade = 0.0;                // KWo - 29.01.2008
+float g_f_cvars_upd_time = 0.0f;                // KWo - 02.05.2006
+float g_f_host_upd_time = 0.0f;                 // KWo - 18.05.2006
+float g_fTimeAvoidGrenade = 0.0f;               // KWo - 29.01.2008
+float g_fTimeBotThink = 0.0f;                   // KWo - 25.04.2016
 int g_i_botthink_index;                         // KWo - 02.05.2006
-float g_fAutoKillTime = 0.0;                    // KWo - 02.05.2006
+float g_fAutoKillTime = 0.0f;                   // KWo - 02.05.2006
 bool g_bAliveHumansPrevious = FALSE;            // KWo - 02.05.2006
 int g_iUpdGlExpState = 0;                       // KWo - 02.05.2006
 bool g_bRecalcKills = FALSE;                    // KWo - 02.05.2006
@@ -222,7 +223,7 @@ bool g_b_cv_autokill;                           // KWo - 02.05.2006
 float g_f_cv_autokilldelay;                     // KWo - 02.05.2006
 float g_f_cv_maxcamptime;                       // KWo - 23.03.2008
 bool g_b_cv_ffa;                                // KWo - 04.10.2006
-bool g_b_cv_ffrev;								// The Storm - 01.07.2018
+bool g_b_cv_ffrev;                              // The Storm - 01.07.2018
 bool g_b_cv_firsthumanrestart;                  // KWo - 04.10.2010
 bool g_b_cv_radio;                              // KWo - 03.02.2007
 int g_i_cv_aim_type;                            // KWo - 06.04.2006
@@ -423,42 +424,42 @@ bot_weapon_select_t cs_weapon_select[NUM_WEAPONS + 1] =
 // Last 2 values are Burstfire Bullet Count & Pause Times
 bot_fire_delay_t cs_fire_delay[NUM_WEAPONS + 1] =
 {
-   // Knife       primary_base_delay      primary_min_delay[6]             primary_max_delay[6]        secondary_base_delay     secondary_min_delay[5]     secondary_max_delay[5]  iMaxFireBullets   fMinBurstPauseFactor
-   {CS_WEAPON_KNIFE,     0.10,         {0.0, 0.2, 0.3, 0.4, 0.6, 0.8}, {0.1, 0.3, 0.5, 0.7, 1.0, 1.2},         0.0,           {0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0},     255,       MIN_BURST_DISTANCE / 1.0},
+   // Knife       primary_base_delay       primary_min_delay[6]                  primary_max_delay[6]                secondary_base_delay      secondary_min_delay[5]          secondary_max_delay[5]      iMaxFireBullets    fMinBurstPauseFactor
+   {CS_WEAPON_KNIFE,     0.10f,         {0.0f, 0.2f, 0.3f, 0.4f, 0.6f, 0.8f}, {0.1f, 0.3f, 0.5f, 0.7f, 1.0f, 1.2f},         0.0f,           {0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},     255,       MIN_BURST_DISTANCE / 1.00f},
    // Pistols
-   {CS_WEAPON_USP,       0.06,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       3,       MIN_BURST_DISTANCE / 0.30},
-   {CS_WEAPON_GLOCK18,   0.06,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       5,       MIN_BURST_DISTANCE / 0.30},
-   {CS_WEAPON_DEAGLE,    0.06,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       2,       MIN_BURST_DISTANCE / 0.40},
-   {CS_WEAPON_P228,      0.05,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 0.30},
-   {CS_WEAPON_ELITE,     0.05,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       3,       MIN_BURST_DISTANCE / 0.40},
-   {CS_WEAPON_FIVESEVEN, 0.05,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 0.35},
+   {CS_WEAPON_USP,       0.06f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       3,       MIN_BURST_DISTANCE / 0.30f},
+   {CS_WEAPON_GLOCK18,   0.06f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       5,       MIN_BURST_DISTANCE / 0.30f},
+   {CS_WEAPON_DEAGLE,    0.06f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       2,       MIN_BURST_DISTANCE / 0.40f},
+   {CS_WEAPON_P228,      0.05f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 0.30f},
+   {CS_WEAPON_ELITE,     0.05f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       3,       MIN_BURST_DISTANCE / 0.40f},
+   {CS_WEAPON_FIVESEVEN, 0.05f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 0.35f},
    // Shotguns
-   {CS_WEAPON_M3,        0.86,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       8,       MIN_BURST_DISTANCE / 0.70},
-   {CS_WEAPON_XM1014,    0.15,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       7,       MIN_BURST_DISTANCE / 0.50},
+   {CS_WEAPON_M3,        0.86f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       8,       MIN_BURST_DISTANCE / 0.70f},
+   {CS_WEAPON_XM1014,    0.15f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       7,       MIN_BURST_DISTANCE / 0.50f},
    // Sub Machine Guns
-   {CS_WEAPON_MP5NAVY,   0.10,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 0.35},
-   {CS_WEAPON_TMP,       0.05,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       3,       MIN_BURST_DISTANCE / 0.35},
-   {CS_WEAPON_P90,       0.10,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 0.35},
-   {CS_WEAPON_MAC10,     0.06,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       3,       MIN_BURST_DISTANCE / 0.35},
-   {CS_WEAPON_UMP45,     0.15,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 0.35},
+   {CS_WEAPON_MP5NAVY,   0.10f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 0.35f},
+   {CS_WEAPON_TMP,       0.05f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       3,       MIN_BURST_DISTANCE / 0.35f},
+   {CS_WEAPON_P90,       0.10f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 0.35f},
+   {CS_WEAPON_MAC10,     0.06f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       3,       MIN_BURST_DISTANCE / 0.35f},
+   {CS_WEAPON_UMP45,     0.15f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 0.35f},
    // Rifles
-   {CS_WEAPON_AK47,/*0.20*/ 0.10,      {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       2,       MIN_BURST_DISTANCE / 0.50},
-   {CS_WEAPON_SG552,/*0.40*/0.12,      {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       3,       MIN_BURST_DISTANCE / 0.50},
-   {CS_WEAPON_M4A1, /*0.12*/0.08,      {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       3,       MIN_BURST_DISTANCE / 0.50},
-   {CS_WEAPON_GALIL,/*0.20*/0.11,      {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 0.50},
-   {CS_WEAPON_FAMAS,/*0.20*/0.11,      {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 0.50},
-   {CS_WEAPON_AUG,  /*0.20*/0.11,      {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       3,       MIN_BURST_DISTANCE / 0.50},
+   {CS_WEAPON_AK47,/*0.20f*/ 0.10f,     {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       2,       MIN_BURST_DISTANCE / 0.50f},
+   {CS_WEAPON_SG552,/*0.40f*/0.12f,     {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       3,       MIN_BURST_DISTANCE / 0.50f},
+   {CS_WEAPON_M4A1, /*0.12f*/0.08f,     {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       3,       MIN_BURST_DISTANCE / 0.50f},
+   {CS_WEAPON_GALIL,/*0.20f*/0.11f,     {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 0.50f},
+   {CS_WEAPON_FAMAS,/*0.20f*/0.11f,     {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 0.50f},
+   {CS_WEAPON_AUG,  /*0.20f*/0.11f,     {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       3,       MIN_BURST_DISTANCE / 0.50f},
    // Sniper Rifles
-   {CS_WEAPON_SCOUT,     0.23,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},      10,       MIN_BURST_DISTANCE / 1.00},
-   {CS_WEAPON_AWP,       1.75,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},      10,       MIN_BURST_DISTANCE / 1.50},
-   {CS_WEAPON_G3SG1,/*0.30*/0.26,      {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 1.00},
-   {CS_WEAPON_SG550,/*0.30*/0.26,      {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       4,       MIN_BURST_DISTANCE / 1.00},
+   {CS_WEAPON_SCOUT,     0.23f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},      10,       MIN_BURST_DISTANCE / 1.00f},
+   {CS_WEAPON_AWP,       1.75f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},      10,       MIN_BURST_DISTANCE / 1.50f},
+   {CS_WEAPON_G3SG1,/*0.30f*/0.26f,     {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 1.00f},
+   {CS_WEAPON_SG550,/*0.30f*/0.26f,     {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       4,       MIN_BURST_DISTANCE / 1.00f},
    // Machine Guns
-   {CS_WEAPON_M249,       0.1,         {0.0, 0.1, 0.2, 0.3, 0.4, 0.6}, {0.1, 0.2, 0.3, 0.4, 0.5, 0.7},         0.2,           {0.0, 0.0, 0.1, 0.1, 0.2}, {0.1, 0.1, 0.2, 0.2, 0.4},       3,       MIN_BURST_DISTANCE / 0.40},
+   {CS_WEAPON_M249,       0.1f,         {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.6f}, {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f},         0.2f,           {0.0f, 0.0f, 0.1f, 0.1f, 0.2f}, {0.1f, 0.1f, 0.2f, 0.2f, 0.4f},       3,       MIN_BURST_DISTANCE / 0.40f},
    // Shield
-   {CS_WEAPON_SHIELDGUN,  0.0,         {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},         0.0,           {0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0},       0,       MIN_BURST_DISTANCE / 1.00},
+   {CS_WEAPON_SHIELDGUN,  0.0f,         {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},         0.0f,           {0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},       0,       MIN_BURST_DISTANCE / 1.00f},
    // terminator
-   {0,                    0.0,         {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},         0.0,           {0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0},       0,       MIN_BURST_DISTANCE / 1.00}
+   {0,                    0.0f,         {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},         0.0f,           {0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},       0,       MIN_BURST_DISTANCE / 1.00f}
 };
 
 
@@ -591,12 +592,12 @@ bot_weapon_t weapon_defs[MAX_WEAPONS] =
 // do Pause/Camp longer as well)
 skilldelay_t BotSkillDelays[6] =                // KWo - 23.10.2006
 {
-   {0.5, 1.0, 5, 40.0, 60.0},
-   {0.4, 0.8, 10, 35.0, 55.0},
-   {0.3, 0.6, 15, 30.0, 50.0},
-   {0.2, 0.4, 20, 25.0, 45.0},
-   {0.1, 0.2, 25, 20.0, 40.0},
-   {0.0, 0.1, 30, 15.0, 35.0}
+   {0.5f, 1.0f,  5, 40.0f, 60.0f},
+   {0.4f, 0.8f, 10, 35.0f, 55.0f},
+   {0.3f, 0.6f, 15, 30.0f, 50.0f},
+   {0.2f, 0.4f, 20, 25.0f, 45.0f},
+   {0.1f, 0.2f, 25, 20.0f, 40.0f},
+   {0.0f, 0.1f, 30, 15.0f, 35.0f}
 };
 
 
@@ -604,12 +605,12 @@ skilldelay_t BotSkillDelays[6] =                // KWo - 23.10.2006
 // Lower skilled bots turn slower
 turnspeed_t BotTurnSpeeds[6] =
 {
-   {2.0,  3.0},
-   {3.0,  4.0},
-   {4.0,  6.0},
-   {6.0,  8.0},
-   {8.0, 10.0},
-   {9.0, 12.0}
+   {2.0f,  3.0f},
+   {3.0f,  4.0f},
+   {4.0f,  6.0f},
+   {6.0f,  8.0f},
+   {8.0f, 10.0f},
+   {9.0f, 12.0f}
 };
 
 
@@ -618,25 +619,25 @@ turnspeed_t BotTurnSpeeds[6] =
 // Some of them have subactions included
 bottask_t taskFilters[] =
 {
-   {NULL, NULL, TASK_NORMAL,         0.0, -1, 0.0, TRUE},
-   {NULL, NULL, TASK_PAUSE,          0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_MOVETOPOSITION, 0.0, -1, 0.0, TRUE},
-   {NULL, NULL, TASK_FOLLOWUSER,     0.0, -1, 0.0, TRUE},
-   {NULL, NULL, TASK_WAITFORGO,      0.0, -1, 0.0, TRUE},
-   {NULL, NULL, TASK_PICKUPITEM,     0.0, -1, 0.0, TRUE},
-   {NULL, NULL, TASK_CAMP,           0.0, -1, 0.0, TRUE},
-   {NULL, NULL, TASK_PLANTBOMB,      0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_DEFUSEBOMB,     0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_ATTACK,         0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_ENEMYHUNT,      0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_SEEKCOVER,      0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_THROWHEGRENADE, 0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_THROWFLASHBANG, 0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_THROWSMOKEGRENADE, 0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_SHOOTBREAKABLE, 0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_HIDE,           0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_BLINDED,        0.0, -1, 0.0, FALSE},
-   {NULL, NULL, TASK_SPRAYLOGO,      0.0, -1, 0.0, FALSE}
+   {NULL, NULL, TASK_NORMAL,         0.0f, -1, 0.0f, TRUE},
+   {NULL, NULL, TASK_PAUSE,          0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_MOVETOPOSITION, 0.0f, -1, 0.0f, TRUE},
+   {NULL, NULL, TASK_FOLLOWUSER,     0.0f, -1, 0.0f, TRUE},
+   {NULL, NULL, TASK_WAITFORGO,      0.0f, -1, 0.0f, TRUE},
+   {NULL, NULL, TASK_PICKUPITEM,     0.0f, -1, 0.0f, TRUE},
+   {NULL, NULL, TASK_CAMP,           0.0f, -1, 0.0f, TRUE},
+   {NULL, NULL, TASK_PLANTBOMB,      0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_DEFUSEBOMB,     0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_ATTACK,         0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_ENEMYHUNT,      0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_SEEKCOVER,      0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_THROWHEGRENADE, 0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_THROWFLASHBANG, 0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_THROWSMOKEGRENADE, 0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_SHOOTBREAKABLE, 0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_HIDE,           0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_BLINDED,        0.0f, -1, 0.0f, FALSE},
+   {NULL, NULL, TASK_SPRAYLOGO,      0.0f, -1, 0.0f, FALSE}
 };
 
 

@@ -129,8 +129,8 @@ C_DLLEXPORT int Meta_Query (char *ifvers, plugin_info_t **pPlugInfo, mutil_funcs
       LOG_MESSAGE (PLID, "%s: meta-interface version mismatch (metamod: %s, %s: %s)", Plugin_info.name, ifvers, Plugin_info.name, Plugin_info.ifvers);
 
       // if plugin has later interface version, it's incompatible (update metamod)
-      sscanf (ifvers, "%d:%d", &mmajor, &mminor);
-      sscanf (META_INTERFACE_VERSION, "%d:%d", &pmajor, &pminor);
+      sscanf_s (ifvers, "%d:%d", &mmajor, &mminor);
+      sscanf_s (META_INTERFACE_VERSION, "%d:%d", &pmajor, &pminor);
 
       if ((pmajor > mmajor) || ((pmajor == mmajor) && (pminor > mminor)))
       {
@@ -230,6 +230,7 @@ BOOL WINAPI DllMain (HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 }
 #endif
 
+
 static inline void SetupLightStyles (void)
 {
    // Setup lighting information....
@@ -278,7 +279,7 @@ inline void ShowMagic (void)
       return;
 
    char message[192];
-   snprintf (message, sizeof (message), "ShowMagic(): \"%s\"->v.light_level=%i, R_LightPoint(hostOrg)=%i\n", STRING (hostPlayerEdict->v.netname), hostPlayerEdict->v.light_level, Light::R_LightPoint (hostPlayerEdict->v.origin));
+   _snprintf_s (message, sizeof (message), "ShowMagic(): \"%s\"->v.light_level=%i, R_LightPoint(hostOrg)=%i\n", STRING (hostPlayerEdict->v.netname), hostPlayerEdict->v.light_level, Light::R_LightPoint (hostPlayerEdict->v.origin));
 
 //   CLIENT_PRINTF (hostPlayerEdict, print_chat, message);
 
@@ -399,7 +400,7 @@ int Spawn (edict_t *pent)
    else if (strcmp (STRING (pent->v.classname), "player_weaponstrip") == 0)
    {
       char szTemp[64]; // KWo - 23.12.2006
-      snprintf (szTemp, sizeof (szTemp), STRING (pent->v.target));
+      _snprintf_s (szTemp, sizeof (szTemp), "%s", STRING (pent->v.target));
       g_bWeaponStrip = TRUE; // KWo - 10.03.2013
       if (g_bIsOldCS15) // KWo - 01.04.2013
       {
@@ -456,9 +457,9 @@ int Spawn_Post (edict_t *pent)
       }
 
       BreakablesData[g_iNumBreakables].EntIndex = ENTINDEX(pent);
-      snprintf (BreakablesData[g_iNumBreakables].classname, sizeof (BreakablesData[g_iNumBreakables].classname), STRING (pent->v.classname));
+      _snprintf_s (BreakablesData[g_iNumBreakables].classname, sizeof (BreakablesData[g_iNumBreakables].classname), "%s", STRING (pent->v.classname));
       BreakablesData[g_iNumBreakables].origin = VecBModelOrigin (pent);
-      snprintf (BreakablesData[g_iNumBreakables].target, sizeof (BreakablesData[g_iNumBreakables].target), STRING (pent->v.target));
+      _snprintf_s (BreakablesData[g_iNumBreakables].target, sizeof (BreakablesData[g_iNumBreakables].target), "%s", STRING (pent->v.target));
       if (pent->v.impulse > 0) // KWo - 18.05.2006
          BreakablesData[g_iNumBreakables].ignored = true;
       else
@@ -497,9 +498,9 @@ void ClientDisconnect (edict_t *pEntity)
    {
       pEntity->v.light_level = 0;
       // Find & remove this Client from our list of Clients connected
-      clients[i].welcome_time = 0.0;
-      clients[i].wptmessage_time = 0.0;
-      clients[i].fDeathTime = 0.0;  // KWo - 14.03.2010
+      clients[i].welcome_time = 0.0f;
+      clients[i].wptmessage_time = 0.0f;
+      clients[i].fDeathTime = 0.0f;  // KWo - 14.03.2010
       memset (&clients[i], 0, sizeof (client_t));
    }
 
@@ -532,11 +533,15 @@ void ClientPutInServer (edict_t *pEntity)
    i = ENTINDEX (pEntity) - 1;
 
    if (g_rgcvarPointer[PBCVAR_WELCOMEMSGS])
-      if (g_rgcvarPointer[PBCVAR_WELCOMEMSGS]->value > 0.f)
+   {
+      if (g_rgcvarPointer[PBCVAR_WELCOMEMSGS]->value > 0.0f)
          bWelcome = true;
+   }
    else
-      if (CVAR_GET_FLOAT (g_rgpszPbCvars[PBCVAR_WELCOMEMSGS]) > 0.f)
+   {
+      if (CVAR_GET_FLOAT (g_rgpszPbCvars[PBCVAR_WELCOMEMSGS]) > 0.0f)
          bWelcome = true;
+   }
 
    if ((i >= 0) && (i < 32))
    {
@@ -545,12 +550,12 @@ void ClientPutInServer (edict_t *pEntity)
 
       if (bWelcome)
       {
-         clients[i].welcome_time = -1.0;     // KWo - 17.04.2010
-         clients[i].wptmessage_time = -1.0;  // KWo - 17.04.2010
-         clients[i].fTimeSoundLasting = 0.0;    // KWo - 15.08.2007
-         clients[i].fMaxTimeSoundLasting = 0.5; // KWo - 15.08.2007
-         clients[i].fReloadingTime = 0.0;       // KWo - 15.08.2007
-         clients[i].fDeathTime = 0.0;           // KWo - 14.03.2010
+         clients[i].welcome_time = -1.0f;     // KWo - 17.04.2010
+         clients[i].wptmessage_time = -1.0f;  // KWo - 17.04.2010
+         clients[i].fTimeSoundLasting = 0.0f;    // KWo - 15.08.2007
+         clients[i].fMaxTimeSoundLasting = 0.5f; // KWo - 15.08.2007
+         clients[i].fReloadingTime = 0.0f;       // KWo - 15.08.2007
+         clients[i].fDeathTime = 0.0f;           // KWo - 14.03.2010
       }
    }
    RETURN_META (MRES_IGNORED);
@@ -697,23 +702,23 @@ void ClientCommand (edict_t *pEntity)
                UTIL_ShowMenu (pEntity, NULL); // reset menu display
 
                if (FStrEq (arg1, "1"))
-                  WaypointChangeRadius (0);
+                  WaypointChangeRadius (0.0f);
                else if (FStrEq (arg1, "2"))
-                  WaypointChangeRadius (8);
+                  WaypointChangeRadius (8.0f);
                else if (FStrEq (arg1, "3"))
-                  WaypointChangeRadius (16);
+                  WaypointChangeRadius (16.0f);
                else if (FStrEq (arg1, "4"))
-                  WaypointChangeRadius (32);
+                  WaypointChangeRadius (32.0f);
                else if (FStrEq (arg1, "5"))
-                  WaypointChangeRadius (48);
+                  WaypointChangeRadius (48.0f);
                else if (FStrEq (arg1, "6"))
-                  WaypointChangeRadius (64);
+                  WaypointChangeRadius (64.0f);
                else if (FStrEq (arg1, "7"))
-                  WaypointChangeRadius (80);
+                  WaypointChangeRadius (80.0f);
                else if (FStrEq (arg1, "8"))
-                  WaypointChangeRadius (96);
+                  WaypointChangeRadius (96.0f);
                else if (FStrEq (arg1, "9"))
-                  WaypointChangeRadius (112);
+                  WaypointChangeRadius (112.0f);
 
                RETURN_META (MRES_SUPERCEDE);
             }
@@ -902,7 +907,7 @@ void ClientCommand (edict_t *pEntity)
                   i = WaypointLookAt();
                   if (i >= 0)
                   {
-                     snprintf (szTemp, sizeof (szTemp), "%d", i);
+                     _snprintf_s (szTemp, sizeof (szTemp), "%d", i);
                      PbCmdParser (pEntity, g_rgpszPbCmds[PBCMD_DEBUGGOAL], szTemp, NULL, NULL, NULL, NULL);
                   }
                }
@@ -910,7 +915,7 @@ void ClientCommand (edict_t *pEntity)
                {
                   if (g_iDebugGoalIndex != -1)
                   {
-                     snprintf (szTemp, sizeof (szTemp), "%d", -1);
+                     _snprintf_s (szTemp, sizeof (szTemp), "%d", -1);
                      PbCmdParser (pEntity, g_rgpszPbCmds[PBCMD_DEBUGGOAL], szTemp, NULL, NULL, NULL, NULL);
                   }
                }
@@ -927,21 +932,21 @@ void ClientCommand (edict_t *pEntity)
                UTIL_ShowMenu (pEntity, NULL); // reset menu display
 
                if (FStrEq (arg1, "1"))
-                  g_fAutoPathMaxDistance = 0;
+                  g_fAutoPathMaxDistance = 0.0f;
                else if (FStrEq (arg1, "2"))
-                  g_fAutoPathMaxDistance = 100;
+                  g_fAutoPathMaxDistance = 100.0f;
                else if (FStrEq (arg1, "3"))
-                  g_fAutoPathMaxDistance = 130;
+                  g_fAutoPathMaxDistance = 130.0f;
                else if (FStrEq (arg1, "4"))
-                  g_fAutoPathMaxDistance = 160;
+                  g_fAutoPathMaxDistance = 160.0f;
                else if (FStrEq (arg1, "5"))
-                  g_fAutoPathMaxDistance = 190;
+                  g_fAutoPathMaxDistance = 190.0f;
                else if (FStrEq (arg1, "6"))
-                  g_fAutoPathMaxDistance = 220;
+                  g_fAutoPathMaxDistance = 220.0f;
                else if (FStrEq (arg1, "7"))
-                  g_fAutoPathMaxDistance = 250;
+                  g_fAutoPathMaxDistance = 250.0f;
 
-               if (g_fAutoPathMaxDistance == 0)
+               if (g_fAutoPathMaxDistance == 0.0f)
                   UTIL_HostPrint ("Auto-path disabled\n");
                else
                   UTIL_HostPrint ("Auto-path Max Distance set to %f\n", g_fAutoPathMaxDistance);
@@ -987,27 +992,27 @@ void ClientCommand (edict_t *pEntity)
 
                if (FStrEq (arg1, "1"))
                {
-                  snprintf (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (1, 19));
+                  _snprintf_s (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (1, 19));
                   UTIL_ShowMenu (pEntity, &menuPODBotAddBotPersonality);
                }
                else if (FStrEq (arg1, "2"))
                {
-                  snprintf (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (20, 39));
+                  _snprintf_s (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (20, 39));
                   UTIL_ShowMenu (pEntity, &menuPODBotAddBotPersonality);
                }
                else if (FStrEq (arg1, "3"))
                {
-                  snprintf (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (40, 59));
+                  _snprintf_s (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (40, 59));
                   UTIL_ShowMenu (pEntity, &menuPODBotAddBotPersonality);
                }
                else if (FStrEq (arg1, "4"))
                {
-                  snprintf (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (60, 79));
+                  _snprintf_s (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (60, 79));
                   UTIL_ShowMenu (pEntity, &menuPODBotAddBotPersonality);
                }
                else if (FStrEq (arg1, "5"))
                {
-                  snprintf (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (80, 99));
+                  _snprintf_s (g_cStoreAddbotSkill, sizeof (g_cStoreAddbotSkill), "%d", RANDOM_LONG (80, 99));
                   UTIL_ShowMenu (pEntity, &menuPODBotAddBotPersonality);
                }
                else if (FStrEq (arg1, "6"))
@@ -1096,27 +1101,27 @@ void ClientCommand (edict_t *pEntity)
 
                if (FStrEq (arg1, "1"))
                {
-                  snprintf (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (1, 19));
+                  _snprintf_s (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (1, 19));
                   UTIL_ShowMenu (pEntity, &menuPODBotFillServerPersonality);
                }
                else if (FStrEq (arg1, "2"))
                {
-                  snprintf (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (20, 39));
+                  _snprintf_s (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (20, 39));
                   UTIL_ShowMenu (pEntity, &menuPODBotFillServerPersonality);
                }
                else if (FStrEq (arg1, "3"))
                {
-                  snprintf (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (40, 59));
+                  _snprintf_s (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (40, 59));
                   UTIL_ShowMenu (pEntity, &menuPODBotFillServerPersonality);
                }
                else if (FStrEq (arg1, "4"))
                {
-                  snprintf (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (60, 79));
+                  _snprintf_s (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (60, 79));
                   UTIL_ShowMenu (pEntity, &menuPODBotFillServerPersonality);
                }
                else if (FStrEq (arg1, "5"))
                {
-                  snprintf (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (80, 99));
+                  _snprintf_s (g_cStoreFillServerSkill, sizeof (g_cStoreFillServerSkill), "%d", RANDOM_LONG (80, 99));
                   UTIL_ShowMenu (pEntity, &menuPODBotFillServerPersonality);
                }
                else if (FStrEq (arg1, "6"))
@@ -1206,7 +1211,7 @@ void ClientCommand (edict_t *pEntity)
                {
                   memset (szTemp, 0, sizeof (szTemp));
                   i = atoi (arg1) - 1;
-                  snprintf (szTemp, sizeof (szTemp), "%s", STRING (bots[i].pEdict->v.netname));
+                  _snprintf_s (szTemp, sizeof (szTemp), "%s", STRING (bots[i].pEdict->v.netname));
                   PbCmdParser (pEntity, g_rgpszPbCmds[PBCMD_REMOVE], szTemp, NULL, NULL, NULL, NULL);
                   ShowPBKickBotMenu (pEntity, 1);  // KWo 11.02.2006 (here is a need to add some delay and a task to show it...)
                }
@@ -1230,7 +1235,7 @@ void ClientCommand (edict_t *pEntity)
                {
                   memset (szTemp, 0, sizeof (szTemp));
                   i = atoi (arg1) + 8 - 1;
-                  snprintf (szTemp, sizeof (szTemp), "%s", STRING (bots[i].pEdict->v.netname));
+                  _snprintf_s (szTemp, sizeof (szTemp), "%s", STRING (bots[i].pEdict->v.netname));
                   PbCmdParser (pEntity, g_rgpszPbCmds[PBCMD_REMOVE], szTemp, NULL, NULL, NULL, NULL);
                   ShowPBKickBotMenu (pEntity, 2);  // KWo 11.02.2006 (here is a need to add some delay and a task to show it...)
                }
@@ -1254,7 +1259,7 @@ void ClientCommand (edict_t *pEntity)
                {
                   memset (szTemp, 0, sizeof (szTemp));
                   i = atoi (arg1) + 16 - 1;
-                  snprintf (szTemp, sizeof (szTemp), "%s", STRING (bots[i].pEdict->v.netname));
+                  _snprintf_s (szTemp, sizeof (szTemp), "%s", STRING (bots[i].pEdict->v.netname));
                   PbCmdParser (pEntity, g_rgpszPbCmds[PBCMD_REMOVE], szTemp, NULL, NULL, NULL, NULL);
                   ShowPBKickBotMenu (pEntity, 3);  // KWo 11.02.2006 (here is a need to add some delay and a task to show it...)
                }
@@ -1278,7 +1283,7 @@ void ClientCommand (edict_t *pEntity)
                {
                   memset (szTemp, 0, sizeof (szTemp));
                   i = atoi (arg1) + 24 - 1;
-                  snprintf (szTemp, sizeof (szTemp), "%s", STRING (bots[i].pEdict->v.netname));
+                  _snprintf_s (szTemp, sizeof (szTemp), "%s", STRING (bots[i].pEdict->v.netname));
                   PbCmdParser (pEntity, g_rgpszPbCmds[PBCMD_REMOVE], szTemp, NULL, NULL, NULL, NULL);
                   ShowPBKickBotMenu (pEntity, 4);  // KWo 11.02.2006 (here is a need to add some delay and a task to show it...)
                }
@@ -1356,8 +1361,8 @@ void ClientUserInfoChanged_Post (edict_t *pEntity, char *infobuffer)
    int EntInd = ENTINDEX(pEntity) - 1; // KWo - 20.10.2006
    if ((bots[EntInd].is_used) && (bots[EntInd].pEdict == pEntity)) // KWo - 20.10.2006
    {
-      strncpy (szBotModelName, (INFOKEY_VALUE (infobuffer, "model")), sizeof (szBotModelName));
-      strncpy (bots[EntInd].sz_BotModelName, szBotModelName, sizeof (szBotModelName));
+      strncpy_s (szBotModelName, sizeof(szBotModelName), (INFOKEY_VALUE (infobuffer, "model")), sizeof (szBotModelName) - 1);
+      strncpy_s (bots[EntInd].sz_BotModelName, sizeof(szBotModelName), szBotModelName, sizeof (szBotModelName) - 1);
 //      UTIL_ServerPrint("[DEBUG] Bot %s changed the model to %s.\n", STRING(pEntity->v.netname), szBotModelName);
       RETURN_META (MRES_IGNORED);
    }
@@ -1365,21 +1370,21 @@ void ClientUserInfoChanged_Post (edict_t *pEntity, char *infobuffer)
    char szPasswordField[64];
    if (g_rgcvarPointer[PBCVAR_PASSWORDKEY])  // KWo - 20.10.2006
    {
-      strncpy (szPasswordField, g_rgcvarPointer[PBCVAR_PASSWORDKEY]->string, 63);
+      strncpy_s (szPasswordField, 64, g_rgcvarPointer[PBCVAR_PASSWORDKEY]->string, 63);
    }
    else
    {
-      strncpy (szPasswordField, CVAR_GET_STRING (g_rgpszPbCvars[PBCVAR_PASSWORDKEY]), 63);
+      strncpy_s (szPasswordField, 64, CVAR_GET_STRING (g_rgpszPbCvars[PBCVAR_PASSWORDKEY]), 63);
    }
 
    char szPassword[64];
    if (g_rgcvarPointer[PBCVAR_PASSWORD])  // KWo - 20.10.2006
    {
-      strncpy (szPassword, g_rgcvarPointer[PBCVAR_PASSWORD]->string, 63);
+      strncpy_s (szPassword, 64, g_rgcvarPointer[PBCVAR_PASSWORD]->string, 63);
    }
    else
    {
-      strncpy (szPassword, CVAR_GET_STRING (g_rgpszPbCvars[PBCVAR_PASSWORD]), 63);
+      strncpy_s (szPassword, 64, CVAR_GET_STRING (g_rgpszPbCvars[PBCVAR_PASSWORD]), 63);
    }
 
    if ((*szPasswordField == 0) && (*szPassword == 0))
@@ -1398,7 +1403,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 {
    char line_buffer[256];
    int iBufferSize = sizeof (line_buffer);
-   int i, c;
+   int i, c, iLen;
    int iChatType;
    replynode_t *pTempReply = NULL;
    replynode_t **pReply = NULL;
@@ -1421,8 +1426,8 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    BotFreeAllMemory ();
 
    // Load & Initialise Botnames from 'Botnames.txt'
-   snprintf (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botnames.txt", g_szGameDirectory);
-   fp = fopen (szDirectory, "r");
+   _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botnames.txt", g_szGameDirectory);
+   fopen_s (&fp, szDirectory, "r");
    if (fp == NULL)
       UTIL_ServerPrint ("POD-Bot couldn't find botnames.txt!\n");
    else
@@ -1440,7 +1445,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
       g_pszBotNames = new botname_t[iNumBotNames];
       for (i = 0; i < iNumBotNames; ++i)
-         memset (g_pszBotNames + i, 0, sizeof (g_pszBotNames));
+         memset (g_pszBotNames + i, 0, sizeof (botname_t));
       fseek (fp, 0, SEEK_SET);
       c = 0;
 
@@ -1455,7 +1460,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
             || line_buffer[i - 1] == '\r' || line_buffer[i - 1] == '\t') && (i > 0))
             line_buffer[--i] = 0;
 
-         strncpy ((g_pszBotNames + c)->name, line_buffer, sizeof (g_pszBotNames->name));
+         strncpy_s ((g_pszBotNames + c)->name, sizeof(g_pszBotNames->name), line_buffer, (unsigned int)strlen(line_buffer));
          (g_pszBotNames + c++)->name[sizeof (g_pszBotNames->name) - 1] = 0;
       }
 
@@ -1464,8 +1469,8 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    // End Botnames
 
    // Load & Initialise Botchats from 'Botchat.txt'
-   snprintf (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botchat.txt", g_szGameDirectory);
-   fp = fopen (szDirectory, "r");
+   _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botchat.txt", g_szGameDirectory);
+   fopen_s (&fp, szDirectory, "r");
    if (fp == NULL)
       UTIL_ServerPrint ("POD-Bot couldn't find botchat.txt!\n");
    else
@@ -1486,7 +1491,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
          if ((line_buffer[0] == '#') || (line_buffer[0] == 0) || (line_buffer[0] == '\r') || (line_buffer[0] == '\n'))
             continue; // ignore comments or blank lines
 
-         strncpy (arg0, GetField (line_buffer, 0), sizeof (arg0));
+         strncpy_s (arg0, sizeof(arg0), GetField (line_buffer, 0), sizeof(arg0) - 1);
          arg0[sizeof (arg0) - 1] = 0;
 
          // Killed Chat Section ?
@@ -1527,29 +1532,57 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
          if (iChatType == 0)
          {
-            strncat (line_buffer, "\n", iBufferSize);
-            line_buffer[79] = 0;
+//            strncat_s(line_buffer, iBufferSize, "\n", iBufferSize - 1);
+//            line_buffer[79] = 0;
 
-            strncpy (szKillChat[iNumKillChats], line_buffer, sizeof (szKillChat[iNumKillChats]));
-            iNumKillChats++;
+            iLen = (int)strlen(line_buffer);
+            if (iLen < 79)
+            {
+//               line_buffer[iLen] = '\n';
+//               line_buffer[iLen + 1] = '\0';
+               strncat_s(line_buffer, iBufferSize, "\n", 1);
+               strncpy_s(szKillChat[iNumKillChats], sizeof(szKillChat[0]), line_buffer, (unsigned int)strlen(line_buffer));
+               iNumKillChats++;
+            }
+            else
+               ALERT(at_logged, "The line in the section [KILLED] in botchat.txt file is too long.\n"
+                                "%s.\n", line_buffer);
          }
 
          else if (iChatType == 1)
          {
-            strncat (line_buffer, "\n", iBufferSize);
-            line_buffer[79] = 0;
-
-            strncpy (szBombChat[iNumBombChats], line_buffer, sizeof (szBombChat[iNumBombChats]));
-            iNumBombChats++;
+//            strncat_s(line_buffer, iBufferSize, "\n", iBufferSize - 1);
+//            line_buffer[79] = 0;
+            iLen = (int)strlen(line_buffer);
+            if (iLen < 79)
+            {
+//               line_buffer[iLen] = '\n';
+//               line_buffer[iLen + 1] = '\0';
+               strncat_s(line_buffer, iBufferSize, "\n", 1);
+               strncpy_s(szBombChat[iNumBombChats], sizeof(szBombChat[0]), line_buffer, (unsigned int)strlen(line_buffer));
+               iNumBombChats++;
+            }
+            else
+               ALERT(at_logged, "The line in the section [BOMBPLANT] in botchat.txt file is too long.\n"
+                                "%s.\n", line_buffer);
          }
 
          else if (iChatType == 2)
          {
-            strncat (line_buffer, "\n", iBufferSize);
-            line_buffer[79] = 0;
-
-            strncpy (szDeadChat[iNumDeadChats], line_buffer, sizeof (szDeadChat[iNumDeadChats]));
-            iNumDeadChats++;
+//            strncat_s(line_buffer, iBufferSize, "\n", iBufferSize - 1);
+//            line_buffer[79] = 0;
+            iLen = (int)strlen(line_buffer);
+            if (iLen < 79)
+            {
+//               line_buffer[iLen] = '\n';
+//               line_buffer[iLen + 1] = '\0';
+               strncat_s(line_buffer, iBufferSize, "\n", 1);
+               strncpy_s(szDeadChat[iNumDeadChats], sizeof(szDeadChat[0]), line_buffer, (unsigned int)strlen(line_buffer));
+               iNumDeadChats++;
+            }
+            else
+               ALERT(at_logged, "The line in the section [DEADCHAT] in botchat.txt file is too long.\n"
+                                "%s.\n", line_buffer);
          }
 
          else if (iChatType == 3)
@@ -1587,31 +1620,50 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
             }
             else if (pTempReply)
             {
-               strncat (line_buffer, "\n", iBufferSize);
-               line_buffer[255] = 0;
-
-               pTempNode = new (STRINGNODE);
-               if (pTempNode == NULL)
-                  UTIL_ServerPrint ("POD-Bot out of Memory!\n");
-               else
+//               strncat_s(line_buffer, iBufferSize, "\n", iBufferSize - 1);
+//               line_buffer[255] = 0;
+               iLen = (int)strlen(line_buffer);
+               if (iLen < 79)
                {
-                  *pNode = pTempNode;
-                  pTempNode->Next = NULL;
-                  strncpy (pTempNode->szString, line_buffer, sizeof (pTempNode->szString));
+//                  line_buffer[iLen] = '\n';
+//                  line_buffer[iLen + 1] = '\0';
+                  strncat_s(line_buffer, iBufferSize, "\n", 1);
+                  pTempNode = new (STRINGNODE);
+                  if (pTempNode == NULL)
+                     ALERT(at_logged, "Loading botchat.txt - POD-Bot out of Memory!\n");
+                  else
+                  {
+                     *pNode = pTempNode;
+                     pTempNode->Next = NULL;
+                     strncpy_s(pTempNode->szString, sizeof(pTempNode->szString), line_buffer, (unsigned int)strlen(line_buffer));
 
-                  pTempReply->cNumReplies++;
-                  pNode = &pTempNode->Next;
+                     pTempReply->cNumReplies++;
+                     pNode = &pTempNode->Next;
+                  }
                }
+               else
+                  ALERT(at_logged, "The line in the section [REPLIES] in botchat.txt file is too long.\n"
+                                   "%s.\n", line_buffer);
             }
          }
 
          else if (iChatType == 4)
          {
-            strncat (line_buffer, "\n", iBufferSize);
-            line_buffer[79] = 0;
-
-            strncpy (szNoKwChat[iNumNoKwChats], line_buffer, sizeof (szNoKwChat[iNumNoKwChats]));
-            iNumNoKwChats++;
+//            strncat_s(line_buffer, iBufferSize, "\n", iBufferSize - 1);
+//            line_buffer[79] = 0;
+            iLen = (int)strlen(line_buffer);
+            if (iLen < 79)
+            {
+               strncat_s(line_buffer, iBufferSize, "\n", 1);
+//               line_buffer[iLen] = '\n';
+//               line_buffer[iLen + 1] = '\0';
+//               strncpy_s(szNoKwChat[iNumNoKwChats], sizeof(szNoKwChat[0]), line_buffer, sizeof(szNoKwChat[iNumNoKwChats]) - 1);
+               strncpy_s(szNoKwChat[iNumNoKwChats], sizeof(szNoKwChat[0]), line_buffer, (unsigned int)strlen(line_buffer));
+               iNumNoKwChats++;
+            }
+            else
+               ALERT(at_logged, "The line in the section [UNKNOWN] in botchat.txt file is too long.\n"
+                                "%s.\n", line_buffer);
          }
       }
 
@@ -1627,8 +1679,8 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    // End Botchats
 
    // Load & Initialise Botskill.cfg
-   snprintf (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botskill.cfg", g_szGameDirectory);
-   fp = fopen (szDirectory, "r");
+   _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botskill.cfg", g_szGameDirectory);
+   fopen_s (&fp, szDirectory, "r");
    if (fp == NULL)
       UTIL_ServerPrint ("No Botskill.cfg ! Using defaults...\n");
    else
@@ -1640,8 +1692,8 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
          if ((line_buffer[0] == '#') || (line_buffer[0] == 0) || (line_buffer[0] == '\r') || (line_buffer[0] == '\n'))
             continue; // ignore comments or blank lines
 
-         strncpy (arg0, GetField (line_buffer, 0), sizeof (arg0));
-         strncpy (arg1, GetField (line_buffer, 1), sizeof (arg1));
+         strncpy_s (arg0, sizeof(arg0), GetField (line_buffer, 0), sizeof (arg0) - 1);
+         strncpy_s (arg1, sizeof(arg1), GetField (line_buffer, 1), sizeof (arg1) - 1);
 
          if (FStrEq (arg0, "MIN_DELAY"))
             BotSkillDelays[i].fMinSurpriseDelay = (float) atof (arg1);
@@ -1675,8 +1727,8 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    // End Botskill.cfg
 
    // Load & Initialise BotLogos from BotLogos.cfg
-   snprintf (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botlogos.cfg", g_szGameDirectory);
-   fp = fopen (szDirectory, "r");
+   _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botlogos.cfg", g_szGameDirectory);
+   fopen_s (&fp, szDirectory, "r");
    if (fp == NULL)
       UTIL_ServerPrint ("No BotLogos.cfg ! Using Defaults...\n");
    else
@@ -1688,7 +1740,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
          if ((line_buffer[0] == '#') || (line_buffer[0] == 0) || (line_buffer[0] == '\r') || (line_buffer[0] == '\n'))
             continue; // ignore comments or blank lines
 
-         strncpy (szSprayNames[g_iNumLogos], GetField (line_buffer, 0), sizeof (szSprayNames[g_iNumLogos]));
+         strncpy_s (szSprayNames[g_iNumLogos], sizeof(szSprayNames[0]), GetField (line_buffer, 0), sizeof (szSprayNames[g_iNumLogos]) - 1);
          g_iNumLogos++;
       }
 
@@ -1697,8 +1749,8 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    // End BotLogos
 
    // Load & initialise Weapon Stuff from 'BotWeapons.cfg'
-   snprintf (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botweapons.cfg", g_szGameDirectory);
-   fp = fopen (szDirectory, "r");
+   _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botweapons.cfg", g_szGameDirectory);
+   fopen_s (&fp, szDirectory, "r");
    if (fp == NULL)
       UTIL_ServerPrint ("No BotWeapons.cfg ! Using Defaults...\n");
    else
@@ -1711,7 +1763,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
          if ((line_buffer[0] == '#') || (line_buffer[0] == 0) || (line_buffer[0] == '\r') || (line_buffer[0] == '\n'))
             continue; // ignore comments or blank lines
 
-         strncpy (arg0, GetField (line_buffer, 0), sizeof (arg0));
+         strncpy_s (arg0, sizeof(arg0), GetField (line_buffer, 0), sizeof (arg0) - 1);
 
          if (iParseWeapons < 2)
          {
@@ -1776,8 +1828,8 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    {
       UTIL_ServerPrint ("Taking settings from podbot.cfg\n");
 
-      snprintf (szDirectory, sizeof (szDirectory), "%s/addons/podbot/podbot.cfg", g_szGameDirectory);
-      bot_cfg_fp = fopen (szDirectory, "r");
+      _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/podbot.cfg", g_szGameDirectory);
+      fopen_s (&bot_cfg_fp, szDirectory, "r");
       if (bot_cfg_fp == NULL)
          UTIL_ServerPrint ("podbot.cfg File not found\n");
 
@@ -1789,8 +1841,8 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
             if ((line_buffer[0] == '#') || (line_buffer[0] == '\r') || (line_buffer[0] == '\n') || (line_buffer[0] == 0))
                continue; // ignore comments or blank lines
 
-            snprintf (cmd, sizeof (cmd), GetField (line_buffer, 0));
-            snprintf (arg1, sizeof (arg1), GetField (line_buffer, 1));
+            _snprintf_s (cmd, sizeof (cmd), "%s", GetField (line_buffer, 0));
+            _snprintf_s (arg1, sizeof (arg1), "%s", GetField (line_buffer, 1));
 
             if ((FStrEq (cmd, "bind"))
                || (FStrEq (cmd, g_rgpszPbCmds[PBCMD])
@@ -1817,10 +1869,10 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
                if (FStrEq (cmd, g_rgpszPbCvars[PBCVAR_MAPSTARTBOTJOINDELAY]) && (arg1 != NULL) && (*arg1 != 0))
                {
                   g_f_cv_MapStartBotJoinDelay = atof(arg1);
-                  if (g_f_cv_MapStartBotJoinDelay < 0.0)
-                     g_f_cv_MapStartBotJoinDelay = 0.0;
-                  else if (g_f_cv_MapStartBotJoinDelay > 3600.0)
-                     g_f_cv_MapStartBotJoinDelay = 3600.0;
+                  if (g_f_cv_MapStartBotJoinDelay < 0.0f)
+                     g_f_cv_MapStartBotJoinDelay = 0.0f;
+                  else if (g_f_cv_MapStartBotJoinDelay > 3600.0f)
+                     g_f_cv_MapStartBotJoinDelay = 3600.0f;
                   CVAR_SET_FLOAT(g_rgpszPbCvars[PBCVAR_MAPSTARTBOTJOINDELAY], g_f_cv_MapStartBotJoinDelay);
                }
                else if (FStrEq (cmd, g_rgpszPbCvars[PBCVAR_WPTFOLDER]) && (arg1 != NULL) && (*arg1 != 0))
@@ -1860,10 +1912,10 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
    // a new map has started...
    g_f_cv_MapStartBotJoinDelay = CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_MAPSTARTBOTJOINDELAY]);
-   if (g_f_cv_MapStartBotJoinDelay < 0.0)
-      g_f_cv_MapStartBotJoinDelay = 0.0;
-   else if (g_f_cv_MapStartBotJoinDelay > 3600.0)
-      g_f_cv_MapStartBotJoinDelay = 3600.0;
+   if (g_f_cv_MapStartBotJoinDelay < 0.0f)
+      g_f_cv_MapStartBotJoinDelay = 0.0f;
+   else if (g_f_cv_MapStartBotJoinDelay > 3600.0f)
+      g_f_cv_MapStartBotJoinDelay = 3600.0f;
 
    botcreation_time = gpGlobals->time + g_f_cv_MapStartBotJoinDelay; // KWo - 17.05.2008
 
@@ -1872,22 +1924,23 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
    // clear the frame counter
    g_iFrameCounter = 0;
-   g_fLastChatTime = 0.0;                    // KWo - 30.07.2006
-   g_f_cvars_upd_time = 0.0;                 // KWo - 02.05.2006
-   g_f_host_upd_time = 0.0;                  // KWo - 16.06.2006
-   g_fTimeAvoidGrenade = 0.0;                // KWo - 29.01.2008
-   g_fAutoKillTime = 0.0;                    // KWo - 02.05.2006
+   g_fLastChatTime = 0.0f;                    // KWo - 30.07.2006
+   g_f_cvars_upd_time = 0.0f;                 // KWo - 02.05.2006
+   g_f_host_upd_time = 0.0f;                  // KWo - 16.06.2006
+   g_fTimeAvoidGrenade = 0.0f;                // KWo - 29.01.2008
+   g_fTimeBotThink = 0.0f;                    // KWo - 25.04.2016
+   g_fAutoKillTime = 0.0f;                    // KWo - 02.05.2006
    g_bAliveHumansPrevious = false;           // KWo - 02.05.2006
    g_iUpdGlExpState = 0;                     // KWo - 02.05.2006
    g_bBombPlanted = false;                   // KWo - 13.07.2007
    g_bBombDefusing = false;                  // KWo - 13.07.2007
    g_iDefuser = -1;                          // KWo - 13.07.2007
-   g_fTimeBombPlanted = 0.0;                 // KWo - 12.07.2007
+   g_fTimeBombPlanted = 0.0f;                 // KWo - 12.07.2007
    g_iCachedWaypoint = -1;                   // KWo - 11.02.2008
    g_bRoundEnded = FALSE;                    // KWo - 30.09.2010
 
    // Assume Map type for aim or awp type
-   strcpy(filename, STRING(gpGlobals->mapname)); // KWo - 18.03.2006 - Thanks to THE_STORM
+   strcpy_s (filename, sizeof(filename), STRING(gpGlobals->mapname)); // KWo - 18.03.2006 - Thanks to THE_STORM
    if (filename[0] == 'a')
    {
       if (filename[1] == 'w')
@@ -1910,7 +1963,7 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
       bots[i].i_PathDeep = 0;
       bots[i].i_ChatDeep = 0;
       bots[i].i_msecval = 0;  // KWo - 17.03.2007
-      bots[i].f_msecvalrest = 0.0;  // KWo - 17.03.2007
+      bots[i].f_msecvalrest = 0.0f;  // KWo - 17.03.2007
    }
 
    RETURN_META (MRES_IGNORED);
@@ -1928,7 +1981,7 @@ void ServerDeactivate (void)
       if (bots[index].is_used)
       {
          BotCreateTab[tab_index].bNeedsCreation = TRUE;
-         strncpy (BotCreateTab[tab_index].bot_name, bots[index].name, sizeof (BotCreateTab[tab_index].bot_name));
+         strncpy_s (BotCreateTab[tab_index].bot_name, sizeof(BotCreateTab[tab_index].bot_name), bots[index].name, sizeof (BotCreateTab[tab_index].bot_name) - 1);
          BotCreateTab[tab_index].bot_skill = bots[index].bot_skill;
          BotCreateTab[tab_index].bot_personality = bots[index].bot_personality;
          BotCreateTab[tab_index].bot_team = bots[index].bot_team;
@@ -2074,15 +2127,15 @@ void StartFrame (void)
             if ((pPlayer->v.button & IN_RELOAD) && (clients[player_index].fReloadingTime < gpGlobals->time)
                && (clients[player_index].iCurrentClip < weapon_maxClip[clients[player_index].iCurrentWeaponId])) // KWo - 15.08.2007
             {
-               clients[player_index].fReloadingTime = gpGlobals->time + 1.5;
+               clients[player_index].fReloadingTime = gpGlobals->time + 1.5f;
 //               ALERT(at_logged, "[DEBUG] SF - Player %s is reloading his weapon...\n", STRING(pPlayer->v.netname));
             }
          }
 
          // Does Client need to be shocked by the ugly red welcome message ?
-         if (clients[player_index].welcome_time == -2.0) // KWo - 19.04.2010
-            clients[player_index].welcome_time = gpGlobals->time + 15.0;
-         else if ((clients[player_index].welcome_time > 0)
+         if (clients[player_index].welcome_time == -2.0f) // KWo - 19.04.2010
+            clients[player_index].welcome_time = gpGlobals->time + 15.0f;
+         else if ((clients[player_index].welcome_time > 0.0f)
             && (clients[player_index].welcome_time < gpGlobals->time))
          {
             // Real Clients only
@@ -2166,8 +2219,8 @@ void StartFrame (void)
       memset(arg3, 0, sizeof (arg3));
       memset(arg4, 0, sizeof (arg4));
       memset(arg5, 0, sizeof (arg5));
-      snprintf (szDirectory, sizeof (szDirectory), "%s/addons/podbot/podbot.cfg", g_szGameDirectory);
-      bot_cfg_fp = fopen (szDirectory, "r");
+      _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/podbot.cfg", g_szGameDirectory);
+      fopen_s (&bot_cfg_fp, szDirectory, "r");
       if (bot_cfg_fp == NULL)
          UTIL_ServerPrint ("podbot.cfg File not found\n");
 
@@ -2179,13 +2232,13 @@ void StartFrame (void)
             if ((cmd_line[0] == '#') || (cmd_line[0] == '\r') || (cmd_line[0] == '\n') || (cmd_line[0] == 0))
                continue; // ignore comments or blank lines
 
-            snprintf (cmd1, sizeof (cmd1), GetField (cmd_line, 0));
-            snprintf (cmd2, sizeof (cmd2), GetField (cmd_line, 1));
-            snprintf (arg1, sizeof (arg1), GetField (cmd_line, 2));
-            snprintf (arg2, sizeof (arg2), GetField (cmd_line, 3));
-            snprintf (arg3, sizeof (arg3), GetField (cmd_line, 4));
-            snprintf (arg4, sizeof (arg4), GetField (cmd_line, 5));
-            snprintf (arg5, sizeof (arg5), GetField (cmd_line, 6));
+            _snprintf_s (cmd1, sizeof (cmd1), "%s", GetField (cmd_line, 0));
+            _snprintf_s (cmd2, sizeof (cmd2), "%s", GetField (cmd_line, 1));
+            _snprintf_s (arg1, sizeof (arg1), "%s", GetField (cmd_line, 2));
+            _snprintf_s (arg2, sizeof (arg2), "%s", GetField (cmd_line, 3));
+            _snprintf_s (arg3, sizeof (arg3), "%s", GetField (cmd_line, 4));
+            _snprintf_s (arg4, sizeof (arg4), "%s", GetField (cmd_line, 5));
+            _snprintf_s (arg5, sizeof (arg5), "%s", GetField (cmd_line, 6));
 
             if ((FStrEq (cmd1, g_rgpszPbCmds[PBCMD])
                      && (FStrEq (cmd2, g_rgpszPbCmds[PBCMD_ADD])
@@ -2227,22 +2280,17 @@ void StartFrame (void)
       }
    }
 
-   g_iFrameCounter++;   // KWo - 10.03.2006
-   if (g_iFrameCounter >= gpGlobals->maxClients) // KWo - 23.03.2007
-   {
-      g_iFrameCounter = 0;
-   }
 
    if (g_f_cvars_upd_time <= gpGlobals->time) // KWo - 02.05.2006
    {
       UTIL_CheckCvars();  // check restrictions and other cvars every 1 second - don't need more often
-      g_f_cvars_upd_time = gpGlobals->time + 1.0;
+      g_f_cvars_upd_time = gpGlobals->time + 1.0f;
    }
 
    if ((g_f_host_upd_time <= gpGlobals->time) &&  (g_iNumHostages > 0)) // KWo - 18.05.2006
    {
       UTIL_CheckHostages();  // check hostages - if they moved or got killed etc
-      g_f_host_upd_time = gpGlobals->time + 1.0;
+      g_f_host_upd_time = gpGlobals->time + 1.0f;
    }
 
 
@@ -2253,27 +2301,186 @@ void StartFrame (void)
    // Check HE and smoke grenades
    if (g_fTimeAvoidGrenade < gpGlobals->time) // KWo - 29.01.2008
    {
-      g_fTimeAvoidGrenade = gpGlobals->time + 0.1;
+      g_fTimeAvoidGrenade = gpGlobals->time + 0.1f;
       UTIL_CheckSmokeGrenades();
    }
 
    if ((g_iMapType & MAP_DE) && g_bBombPlanted
-      && (g_fTimeBombPlanted + 1.0 < gpGlobals->time) && (g_fTimeBombPlanted + 1.2 > gpGlobals->time)) // KWo - 05.09.2008
+      && (g_fTimeBombPlanted + 1.0 < gpGlobals->time) && (g_fTimeBombPlanted + 1.2f > gpGlobals->time)) // KWo - 05.09.2008
       g_vecBomb = GetBombPosition();
 
-   // Go through all active Bots, calling their Think function
-   g_iNum_bots = 0;
 
-   for (bot_index = 0; bot_index < gpGlobals->maxClients; bot_index++)
+   // Check BotThink timer and update bots
+   if (g_fTimeBotThink < gpGlobals->time) // KWo - 25.04.2016
    {
-      if (bots[bot_index].is_used
-          && !FNullEnt (bots[bot_index].pEdict))
+      g_fTimeBotThink = gpGlobals->time + 0.02f;
+
+      g_iFrameCounter++;   // KWo - 10.03.2006
+      if (g_iFrameCounter >= gpGlobals->maxClients) // KWo - 23.03.2007
       {
-         g_i_botthink_index = bot_index; // KWo - 02.05.2006
-         BotThink (&bots[bot_index]);
-         g_iNum_bots++;
+         g_iFrameCounter = 0;
       }
+
+      // Go through all active Bots, calling their Think function
+      g_iNum_bots = 0;
+
+      for (bot_index = 0; bot_index < gpGlobals->maxClients; bot_index++)
+      {
+         if (bots[bot_index].is_used
+             && !FNullEnt (bots[bot_index].pEdict))
+         {
+            g_i_botthink_index = bot_index; // KWo - 02.05.2006
+            BotThink (&bots[bot_index]);
+            g_iNum_bots++;
+         }
+      }
+
+      // Keep it within the limits
+      for (i = 0; i < gpGlobals->maxClients; i++)
+         if (BotCreateTab[i].bNeedsCreation)
+            break;
+      if ((i >= gpGlobals->maxClients) && (botcreation_time == 0.0))
+      {
+         if (g_i_cv_BotsQuotaMatch == 0) // 16.09.2006
+         {
+            if ((g_iPeoBotsKept > g_iMax_bots) && (g_iMax_bots > 0))
+               g_iPeoBotsKept = g_iMax_bots;
+            if (g_iPeoBotsKept < g_iMin_bots)
+               g_iPeoBotsKept = g_iMin_bots;
+            if (g_iMax_bots == 0)
+               g_iPeoBotsKept = g_iNum_players;
+         }
+         else
+         {
+            g_iPeoBotsKept = g_i_cv_BotsQuotaMatch * g_iNum_humans;
+            if (g_iPeoBotsKept > g_iMax_bots)
+               g_iPeoBotsKept = g_iMax_bots;
+            if (g_iPeoBotsKept < g_iMin_bots)
+               g_iPeoBotsKept = g_iMin_bots;
+            if (g_iPeoBotsKept + g_iNum_humans > gpGlobals->maxClients)
+               g_iPeoBotsKept = gpGlobals->maxClients - g_iNum_humans;
+         }
+      }
+
+      // Kick a bot if there is more than the maximum allowed
+      if ((((g_i_cv_BotsQuotaMatch == 0) && (g_iNum_players > g_iPeoBotsKept))  // 16.09.2006
+         || ((g_i_cv_BotsQuotaMatch > 0) && (g_iNum_bots > g_iPeoBotsKept)))
+         && (g_iMax_bots > 0) && (g_iNum_bots > g_iMin_bots)
+         && (g_fLastKickedBotTime + 0.5f < gpGlobals->time))
+         for (i = 0; i < gpGlobals->maxClients; i++)
+            if (bots[i].is_used && !FNullEnt (bots[i].pEdict))
+            {
+               _snprintf_s (cmd_line, sizeof (cmd_line), "kick \"%s\"\n", STRING (bots[i].pEdict->v.netname));
+               SERVER_COMMAND (cmd_line);
+               break;
+            }
+
+      // make sure it is allowed to create bots
+      if (botcreation_time > 0.0f)
+      {
+         // Don't allow creating Bots when max_bots is reached
+         if ((((g_i_cv_BotsQuotaMatch == 0) && (g_iNum_players >= g_iMax_bots)) // KWo - 08.03.2007
+           || ((g_i_cv_BotsQuotaMatch > 0) && ((g_iNum_bots >= g_iMax_bots) || (g_iNum_players == gpGlobals->maxClients))))
+            && (g_iMax_bots > 0) && (g_iNum_bots >= g_iMin_bots))
+         {
+            UTIL_ServerPrint ("Max Bots reached, can't create Bot !\n");
+            memset (BotCreateTab, 0, sizeof (BotCreateTab));
+            botcreation_time = 0.0f;
+         }
+
+         // Don't allow creating Bots when no waypoints are loaded
+         else if (g_iNumWaypoints < 1)
+         {
+            UTIL_ServerPrint ("No Waypoints for this Map, can't create Bot !\n");
+            memset (BotCreateTab, 0, sizeof (BotCreateTab));
+            botcreation_time = 0.0f;
+         }
+
+         // if Waypoints have changed don't allow it because Distance Tables are messed up
+         else if (g_bWaypointsChanged)
+         {
+            UTIL_ServerPrint ("Waypoints changed/not initialised, can't create Bot !\n");
+            memset (BotCreateTab, 0, sizeof (BotCreateTab));
+            botcreation_time = 0.0f;
+         }
+      }
+      else if ((gpGlobals->maxClients > g_iNum_players) && ((g_iNum_bots < g_iMin_bots)
+           || ((g_iNum_players < g_iPeoBotsKept) && (g_i_cv_BotsQuotaMatch == 0))
+              || ((g_iNum_bots < g_iPeoBotsKept) && (g_i_cv_BotsQuotaMatch > 0)))
+              && (g_iNumWaypoints > 0) && !(g_bWaypointsChanged) && (iNumBotNames > g_iNum_bots)
+              && (g_iMax_bots > 0)) // KWo - 16.09.2006
+      {
+         for (i = 0; i < gpGlobals->maxClients; i++)
+            if (!BotCreateTab[i].bNeedsCreation)
+               break;
+         if (i < gpGlobals->maxClients)
+         {
+            memset (&BotCreateTab[i], 0, sizeof (createbot_t));
+            BotCreateTab[i].bot_skill = 101;
+            BotCreateTab[i].bot_personality = 5;
+            BotCreateTab[i].bot_team = 5;
+            BotCreateTab[i].bot_class = 5;
+            BotCreateTab[i].bNeedsCreation = TRUE;
+            if (botcreation_time == 0.0f)
+               botcreation_time = gpGlobals->time;
+         }
+      }
+
+      // are we currently spawning bots and is it time to spawn one yet?
+      if ((botcreation_time > 0.0f) && (botcreation_time < gpGlobals->time))
+      {
+         // find bot needing to be spawned...
+         for (bot_index = 0; bot_index < gpGlobals->maxClients; bot_index++)
+            if (BotCreateTab[bot_index].bNeedsCreation)
+               break;
+
+         if (bot_index < gpGlobals->maxClients)
+         {
+            botcreation_time = gpGlobals->time + 0.5f; // set next spawn time
+            BotCreate (BotCreateTab[bot_index].bot_skill, BotCreateTab[bot_index].bot_personality,
+               BotCreateTab[bot_index].bot_team, BotCreateTab[bot_index].bot_class, BotCreateTab[bot_index].bot_name);
+            memset (&BotCreateTab[bot_index], 0, sizeof (createbot_t));
+         }
+         else
+            botcreation_time = 0.0f;
+      }
+
+   // autokill function here - KWo 02.05.2006
+
+      if (!bAliveHumans && g_bAliveHumansPrevious && g_b_cv_autokill && (g_fAutoKillTime == 0.0f))   //
+      {
+         g_fAutoKillTime = gpGlobals->time + g_f_cv_autokilldelay;
+   //      UTIL_ServerPrint("[DEBUG] Autokill time started .\n");
+      }
+      g_bAliveHumansPrevious = bAliveHumans;
+
+      if (g_b_cv_autokill && (g_fAutoKillTime < gpGlobals->time) && (g_fAutoKillTime > 0.0f) && !g_bBombPlanted) // KWo - 25.07.2006
+      {
+         for (i = 0; i < gpGlobals->maxClients; i++)
+         {
+            if (bots[i].is_used && !bots[i].bDead)
+            {
+               // If a Bot gets killed it decreases his frags, so add 1 here to not give human
+               // players an advantage using this command
+               bots[i].pEdict->v.frags++;
+               MDLL_ClientKill (bots[i].pEdict);
+            }
+         }
+
+         g_fAutoKillTime = 0.0f;
+         UTIL_HostPrint ("All Bots autokilled!\n");
+      }
+
+      if ((!g_bResetHud) && (g_iNum_bots > 0) && (g_iNum_hum_tm_prev == 0)
+         && (g_iNum_hum_tm == 1) && (g_iAliveCTs > 0) && (g_iAliveTs > 0)
+         && g_bIsDedicatedServer && g_b_cv_firsthumanrestart) // KWo - 04.10.2010
+         SERVER_COMMAND ("sv_restartround 1\n");
+
+      g_iNum_hum_tm_prev = g_iNum_hum_tm; // KWo - 08.03.2010
+      g_bResetHud = FALSE;                // KWo - 04.03.2010
+
    }
+
 
    // Show Waypoints to host if turned on and no dedicated Server
    if (!g_bIsDedicatedServer && g_bWaypointOn && !FNullEnt (pHostEdict))
@@ -2282,149 +2489,6 @@ void StartFrame (void)
    if (g_bMapInitialised && g_bRecalcVis)
       WaypointCalcVisibility ();
 
-   // Keep it within the limits
-   for (i = 0; i < gpGlobals->maxClients; i++)
-      if (BotCreateTab[i].bNeedsCreation)
-         break;
-   if ((i >= gpGlobals->maxClients) && (botcreation_time == 0.0))
-   {
-      if (g_i_cv_BotsQuotaMatch == 0) // 16.09.2006
-      {
-         if ((g_iPeoBotsKept > g_iMax_bots) && (g_iMax_bots > 0))
-            g_iPeoBotsKept = g_iMax_bots;
-         if (g_iPeoBotsKept < g_iMin_bots)
-            g_iPeoBotsKept = g_iMin_bots;
-         if (g_iMax_bots == 0)
-            g_iPeoBotsKept = g_iNum_players;
-      }
-      else
-      {
-         g_iPeoBotsKept = g_i_cv_BotsQuotaMatch * g_iNum_humans;
-         if (g_iPeoBotsKept > g_iMax_bots)
-            g_iPeoBotsKept = g_iMax_bots;
-         if (g_iPeoBotsKept < g_iMin_bots)
-            g_iPeoBotsKept = g_iMin_bots;
-         if (g_iPeoBotsKept + g_iNum_humans > gpGlobals->maxClients)
-            g_iPeoBotsKept = gpGlobals->maxClients - g_iNum_humans;
-      }
-   }
-
-   // Kick a bot if there is more than the maximum allowed
-   if ((((g_i_cv_BotsQuotaMatch == 0) && (g_iNum_players > g_iPeoBotsKept))  // 16.09.2006
-         || ((g_i_cv_BotsQuotaMatch > 0) && (g_iNum_bots > g_iPeoBotsKept)))
-      && (g_iMax_bots > 0) && (g_iNum_bots > g_iMin_bots)
-      && (g_fLastKickedBotTime + 0.5 < gpGlobals->time))
-      for (i = 0; i < gpGlobals->maxClients; i++)
-         if (bots[i].is_used && !FNullEnt (bots[i].pEdict))
-         {
-            snprintf (cmd_line, sizeof (cmd_line), "kick \"%s\"\n", STRING (bots[i].pEdict->v.netname));
-            SERVER_COMMAND (cmd_line);
-            break;
-         }
-
-   // make sure it is allowed to create bots
-   if (botcreation_time > 0.0)
-   {
-      // Don't allow creating Bots when max_bots is reached
-      if ((((g_i_cv_BotsQuotaMatch == 0) && (g_iNum_players >= g_iMax_bots)) // KWo - 08.03.2007
-           || ((g_i_cv_BotsQuotaMatch > 0) && ((g_iNum_bots >= g_iMax_bots) || (g_iNum_players == gpGlobals->maxClients))))
-          && (g_iMax_bots > 0) && (g_iNum_bots >= g_iMin_bots))
-      {
-         UTIL_ServerPrint ("Max Bots reached, can't create Bot !\n");
-         memset (BotCreateTab, 0, sizeof (BotCreateTab));
-         botcreation_time = 0.0;
-      }
-
-      // Don't allow creating Bots when no waypoints are loaded
-      else if (g_iNumWaypoints < 1)
-      {
-         UTIL_ServerPrint ("No Waypoints for this Map, can't create Bot !\n");
-         memset (BotCreateTab, 0, sizeof (BotCreateTab));
-         botcreation_time = 0.0;
-      }
-
-      // if Waypoints have changed don't allow it because Distance Tables are messed up
-      else if (g_bWaypointsChanged)
-      {
-         UTIL_ServerPrint ("Waypoints changed/not initialised, can't create Bot !\n");
-         memset (BotCreateTab, 0, sizeof (BotCreateTab));
-         botcreation_time = 0.0;
-      }
-   }
-   else if ((gpGlobals->maxClients > g_iNum_players) && ((g_iNum_bots < g_iMin_bots)
-           || ((g_iNum_players < g_iPeoBotsKept) && (g_i_cv_BotsQuotaMatch == 0))
-              || ((g_iNum_bots < g_iPeoBotsKept) && (g_i_cv_BotsQuotaMatch > 0)))
-              && (g_iNumWaypoints > 0) && !(g_bWaypointsChanged) && (iNumBotNames > g_iNum_bots)
-              && (g_iMax_bots > 0)) // KWo - 16.09.2006
-   {
-      for (i = 0; i < gpGlobals->maxClients; i++)
-         if (!BotCreateTab[i].bNeedsCreation)
-            break;
-      if (i < gpGlobals->maxClients)
-      {
-         memset (&BotCreateTab[i], 0, sizeof (createbot_t));
-         BotCreateTab[i].bot_skill = 101;
-         BotCreateTab[i].bot_personality = 5;
-         BotCreateTab[i].bot_team = 5;
-         BotCreateTab[i].bot_class = 5;
-         BotCreateTab[i].bNeedsCreation = TRUE;
-         if (botcreation_time == 0.0)
-            botcreation_time = gpGlobals->time;
-      }
-   }
-
-   // are we currently spawning bots and is it time to spawn one yet?
-   if ((botcreation_time > 0.0) && (botcreation_time < gpGlobals->time))
-   {
-      // find bot needing to be spawned...
-      for (bot_index = 0; bot_index < gpGlobals->maxClients; bot_index++)
-         if (BotCreateTab[bot_index].bNeedsCreation)
-            break;
-
-      if (bot_index < gpGlobals->maxClients)
-      {
-         botcreation_time = gpGlobals->time + 0.5; // set next spawn time
-         BotCreate (BotCreateTab[bot_index].bot_skill, BotCreateTab[bot_index].bot_personality,
-            BotCreateTab[bot_index].bot_team, BotCreateTab[bot_index].bot_class, BotCreateTab[bot_index].bot_name);
-         memset (&BotCreateTab[bot_index], 0, sizeof (createbot_t));
-      }
-      else
-         botcreation_time = 0.0;
-   }
-
-// autokill function here - KWo 02.05.2006
-
-   if (!bAliveHumans && g_bAliveHumansPrevious && g_b_cv_autokill && (g_fAutoKillTime == 0.0))   //
-   {
-      g_fAutoKillTime = gpGlobals->time + g_f_cv_autokilldelay;
-//      UTIL_ServerPrint("[DEBUG] Autokill time started .\n");
-   }
-   g_bAliveHumansPrevious = bAliveHumans;
-
-   if (g_b_cv_autokill && (g_fAutoKillTime < gpGlobals->time) && (g_fAutoKillTime > 0.0) && !g_bBombPlanted) // KWo - 25.07.2006
-   {
-      for (i = 0; i < gpGlobals->maxClients; i++)
-      {
-         if (bots[i].is_used && !bots[i].bDead)
-         {
-            // If a Bot gets killed it decreases his frags, so add 1 here to not give human
-            // players an advantage using this command
-            bots[i].pEdict->v.frags++;
-            MDLL_ClientKill (bots[i].pEdict);
-         }
-      }
-
-      g_fAutoKillTime = 0.0;
-      UTIL_HostPrint ("All Bots autokilled!\n");
-   }
-
-   if ((!g_bResetHud) && (g_iNum_bots > 0) && (g_iNum_hum_tm_prev == 0)
-         && (g_iNum_hum_tm == 1) && (g_iAliveCTs > 0) && (g_iAliveTs > 0)
-         && g_bIsDedicatedServer && g_b_cv_firsthumanrestart) // KWo - 04.10.2010
-      SERVER_COMMAND ("sv_restartround 1\n");
-
-   g_iNum_hum_tm_prev = g_iNum_hum_tm; // KWo - 08.03.2010
-   g_bResetHud = FALSE;                // KWo - 04.03.2010
 
    RETURN_META (MRES_IGNORED);
 }
@@ -2553,7 +2617,7 @@ void FakeClientCommand (edict_t *pFakeClient, const char *fmt, ...)
 
    // concatenate all the arguments in one string
    va_start (argptr, fmt);
-   vsnprintf (command, sizeof (command), fmt, argptr);
+   vsnprintf_s (command, sizeof (command), fmt, argptr);
    va_end (argptr);
 
    if ((command == NULL) || (*command == 0))
@@ -2770,13 +2834,13 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
       {
          memset (&BotCreateTab[index], 0, sizeof (createbot_t));
          if ((arg5 != NULL) && (*arg4 != 0))
-            strncpy (BotCreateTab[index].bot_name, arg5, sizeof (BotCreateTab[index].bot_name));
+            strncpy_s (BotCreateTab[index].bot_name, sizeof(BotCreateTab[index].bot_name), arg5, sizeof (BotCreateTab[index].bot_name) - 1);
          BotCreateTab[index].bot_skill = iSkill;
          BotCreateTab[index].bot_personality = iPersonality;
          BotCreateTab[index].bot_team = iTeam;
          BotCreateTab[index].bot_class = iClass;
          BotCreateTab[index].bNeedsCreation = TRUE;
-         if (botcreation_time == 0.0)
+         if (botcreation_time == 0.0f)
             botcreation_time = gpGlobals->time;
          if (g_i_cv_BotsQuotaMatch == 0)
          {
@@ -2799,7 +2863,7 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
       if ((g_iDebugGoalIndex >= 0) && (g_iDebugGoalIndex < g_iNumWaypoints))
       {
          g_bIgnoreEnemies = TRUE;
-         bottask_t TempTask = {NULL, NULL, TASK_NORMAL, TASKPRI_NORMAL, g_iDebugGoalIndex, 0.0, TRUE};
+         bottask_t TempTask = {NULL, NULL, TASK_NORMAL, TASKPRI_NORMAL, g_iDebugGoalIndex, 0.0f, TRUE};
 
          for (index = 0; index < gpGlobals->maxClients; index++)
          {
@@ -2845,7 +2909,7 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
       }
       if (FStrEq (arg1, "test_a_T"))
       {
-         int iTeam = 1;
+         iTeam = 1;
          int iWithHostage = 0;
          int iSourceIndex = atoi (arg2);
          int iDestIndex = atoi (arg3);
@@ -2858,7 +2922,7 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
       }
       if (FStrEq (arg1, "test_a_CT"))
       {
-         int iTeam = 2;
+         iTeam = 2;
          int iWithHostage = 0;
          int iSourceIndex = atoi (arg2);
          int iDestIndex = atoi (arg3);
@@ -2871,7 +2935,7 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
       }
       if (FStrEq (arg1, "test_a_CTH"))
       {
-         int iTeam = 2;
+         iTeam = 2;
          int iWithHostage = 1;
          int iSourceIndex = atoi (arg2);
          int iDestIndex = atoi (arg3);
@@ -2932,7 +2996,7 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
       }
       g_iPeoBotsKept = (g_iMax_bots == 0) ? gpGlobals->maxClients : g_iMax_bots;
 
-      if (botcreation_time == 0.0)
+      if (botcreation_time == 0.0f)
          botcreation_time = gpGlobals->time;
    }
 
@@ -2967,7 +3031,7 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
             if (bots[index].is_used && !FNullEnt (bots[index].pEdict)
                && (GETPLAYERUSERID (bots[index].pEdict) == atoi (&arg1[1])))
             {
-               snprintf (kickcmd, sizeof (kickcmd), "kick \"%s\"\n", STRING (bots[index].pEdict->v.netname));
+               _snprintf_s (kickcmd, sizeof (kickcmd), "kick \"%s\"\n", STRING (bots[index].pEdict->v.netname));
                SERVER_COMMAND (kickcmd); // kick the bot using (kick "name")
                --g_iPeoBotsKept;
                g_fLastKickedBotTime = gpGlobals->time;
@@ -2979,7 +3043,7 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
             if (bots[index].is_used && !FNullEnt (bots[index].pEdict)
                && !strcmp (arg1, STRING (bots[index].pEdict->v.netname)))
             {
-               snprintf (kickcmd, sizeof (kickcmd), "kick \"%s\"\n", STRING (bots[index].pEdict->v.netname));
+               _snprintf_s (kickcmd, sizeof (kickcmd), "kick \"%s\"\n", STRING (bots[index].pEdict->v.netname));
                SERVER_COMMAND (kickcmd); // kick the bot using (kick "name")
                --g_iPeoBotsKept;
                bots[index].is_used = FALSE; // KWo - 11.02.2006
@@ -3004,12 +3068,12 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
       {
          // Reset our Creation Tab if there are still Bots waiting to be spawned
          memset (&BotCreateTab[index], 0, sizeof (createbot_t));
-         botcreation_time = 0.0;
+         botcreation_time = 0.0f;
 
          // is this slot used?
          if (bots[index].is_used && !FNullEnt (bots[index].pEdict))
          {
-            snprintf (kickcmd, sizeof (kickcmd), "kick \"%s\"\n", STRING (bots[index].pEdict->v.netname));
+            _snprintf_s (kickcmd, sizeof (kickcmd), "kick \"%s\"\n", STRING (bots[index].pEdict->v.netname));
             SERVER_COMMAND (kickcmd); // kick the bot using (kick "name")
             bots[index].is_used = FALSE; // KWo - 11.02.2006
          }
@@ -3685,19 +3749,19 @@ void ShowPBKickBotMenu (edict_t *pEntity, int iMenuNum)
                teamname="SP";
                break;
          }
-//         snprintf (szTemp2, sizeof (szTemp2), "%s %1.1d. %s (%s)\n", szTemp1, i - ((iMenuNum - 1) * 8) + 1, STRING (bots[i].pEdict->v.netname), (UTIL_GetTeam (bots[i].pEdict) == TEAM_CS_COUNTER ? "CT" : "T"));
-         snprintf (szTemp2, sizeof (szTemp2), "%s %1.1d. %s (%s)\n", szTemp1, i - ((iMenuNum - 1) * 8) + 1, STRING (bots[i].pEdict->v.netname), teamname);
+//         _snprintf_s (szTemp2, sizeof (szTemp2), "%s %1.1d. %s (%s)\n", szTemp1, i - ((iMenuNum - 1) * 8) + 1, STRING (bots[i].pEdict->v.netname), (UTIL_GetTeam (bots[i].pEdict) == TEAM_CS_COUNTER ? "CT" : "T"));
+         _snprintf_s (szTemp2, sizeof (szTemp2), "%s %1.1d. %s (%s)\n", szTemp1, i - ((iMenuNum - 1) * 8) + 1, STRING (bots[i].pEdict->v.netname), teamname);
          memset (szTemp1, 0, sizeof (szTemp1));
       }
       else
       {
          memmove (szTemp1, szTemp2, strlen (szTemp2));
-         snprintf (szTemp2, sizeof (szTemp2), "%s\\d %1.1d. Not a PodbotMM\\w\n", szTemp1, i - ((iMenuNum - 1) * 8) + 1);
+         _snprintf_s (szTemp2, sizeof (szTemp2), "%s\\d %1.1d. Not a PodbotMM\\w\n", szTemp1, i - ((iMenuNum - 1) * 8) + 1);
          memset (szTemp1, 0, sizeof (szTemp1));
       }
    }
    memset (szTemp1, 0, sizeof (szTemp1));
-   snprintf (szTemp1, sizeof (szTemp1),
+   _snprintf_s (szTemp1, sizeof (szTemp1),
       " \\yKick Bot Menu#%d:\\w\n"
       "\n"
       "\n"

@@ -55,7 +55,7 @@
 #define NUM_WEAPONS 26  // it's the number of PB weapons - used for buying and restriction - see the list below
 #define NUM_EQUIPMENTS 9
 
-#define MIN_BURST_DISTANCE 300.0 // KWo - 09.04.2010
+#define MIN_BURST_DISTANCE 300.0f // KWo - 09.04.2010
 
 /*
 # 0 - KNIFE

@@ -104,7 +104,7 @@ void BotClient_CS_WeaponList (void *p, int bot_index)
 
    if (state == 0)
    {
-      strncpy (bot_weapon.szClassname, (char *) p, sizeof (bot_weapon.szClassname));
+      strncpy_s (bot_weapon.szClassname, sizeof(bot_weapon.szClassname), (char *) p, sizeof (bot_weapon.szClassname) - 1);
       bot_weapon.szClassname[sizeof (bot_weapon.szClassname) - 1] = 0;
    }
    else if (state == 1)
@@ -163,7 +163,7 @@ void BotClient_CS_CurrentWeapon (void *p, int bot_index)
             if ((iId == pBot->current_weapon.iId) && (pBot->current_weapon.iClip > iClip))
             {
                // Time fired with in burst firing time ?
-               if (pBot->fTimeLastFired + 1.0 > gpGlobals->time)
+               if (pBot->fTimeLastFired + 1.0f > gpGlobals->time)
                   pBot->iBurstShotsFired++;
 
                pBot->fTimeLastFired = gpGlobals->time; // Remember the last bullet time
@@ -178,7 +178,7 @@ void BotClient_CS_CurrentWeapon (void *p, int bot_index)
                {
                   if (WeaponIsPistol(iId) || WeaponIsPrimaryGun(iId))
                   {
-                     clients[bot_index].fReloadingTime = gpGlobals->time + 1.5;
+                     clients[bot_index].fReloadingTime = gpGlobals->time + 1.5f;
 
                      if (g_b_DebugCombat)
                         ALERT(at_logged, "[DEBUG] BotClient_CS_CurrentWeapon - Player %s is reloading his weapon...\n", STRING(clients[bot_index].pEdict->v.netname));
@@ -187,7 +187,7 @@ void BotClient_CS_CurrentWeapon (void *p, int bot_index)
             }
             pBot->current_weapon.iId = iId;
             pBot->bIsReloading = FALSE;
-            pBot->f_reloadingtime = 0.0;
+            pBot->f_reloadingtime = 0.0f;
 
             clients[bot_index].iCurrentWeaponId = iId; // KWo - 12.12.2006
             // update the ammo counts for this weapon...
@@ -221,7 +221,7 @@ void BotClient_CS_CurrentWeapon (void *p, int bot_index)
                {
                   if (WeaponIsPistol(iId) || WeaponIsPrimaryGun(iId))
                   {
-                     clients[bot_index].fReloadingTime = gpGlobals->time + 1.5;
+                     clients[bot_index].fReloadingTime = gpGlobals->time + 1.5f;
 
                      if (g_b_DebugCombat)
                      ALERT(at_logged, "[DEBUG] BotClient_CS_CurrentWeapon - Player %s is reloading his weapon...\n",                        
@@ -372,6 +372,8 @@ void BotClient_CS_Damage (void *p, int bot_index)
    static bot_t *pBot;
    static edict_t *pEdict;
    static edict_t *pEnt;
+   static bool team_attack;   // KWo - 28.07.2018
+   static bool enemy_attack;  // KWo - 28.07.2018
 
    pBot = &bots[bot_index];
    pEdict = pBot->pEdict;
@@ -392,85 +394,101 @@ void BotClient_CS_Damage (void *p, int bot_index)
 
       if ((damage_armor > 0) || (damage_taken > 0))
       {
-		  if (!g_b_cv_ffrev && !g_b_cv_ffa && (UTIL_GetTeam (pEdict->v.dmg_inflictor) == pBot->bot_team)) // The Storm - 01.07.2018
-			  return;
          pBot->iLastDamageType = damage_bits;
-         BotCollectGoalExperience (pBot, damage_taken);
          pEnt = pEdict->v.dmg_inflictor;
          pEdict->v.dmgtime = gpGlobals->time; // KWo - 10.04.2010
+         team_attack = false;    // KWo - 28.07.2018
+         enemy_attack = true;    // KWo - 28.07.2018
          if (!FNullEnt(pEnt))
          {
-            if (pEnt->v.flags & FL_CLIENT)
+            if ((pEnt->v.flags & FL_CLIENT) && (pEnt != pEdict)) // KWo - 28.08.2018
+            {   
+               if ((UTIL_GetTeam (pEnt) == pBot->bot_team) && (!g_b_cv_ffa)) // KWo - 28.08.2018
+                  team_attack = true;
+               else
+                  enemy_attack = true; // KWo - if ffa is enabled, then threat the teamnate as an enemy, too...
+            }
+
+            if ((team_attack) && (g_b_cv_ffrev)) // KWo/THE_STORM - 28.07.2018
             {
-               if ((UTIL_GetTeam (pEnt) == pBot->bot_team) && (!g_b_cv_ffa)) // KWo - 05.10.2006
+               // FIXFIXFIXFIXFIXME: THIS IS BLATANTLY CHEATING!!!!
+               // KWo - No - it's when Your teamnate is attacking You, then the bot may consider You as an enemy
+               // but BotHurtsFriends function doesn't let him yet to shoot at You...
+//               ALERT(at_logged, "Bot %s is checking the TK revenge.\n", pBot->name); // TEST!!!
+               if (RANDOM_LONG (1, 100) < 10)
                {
-                  // FIXFIXFIXFIXFIXME: THIS IS BLATANTLY CHEATING!!!!
-                  // KWo - No - it's when Your teamnate is attacking You, then the bot may consider You as an enemy
-                  // but BotHurtsFriends function doesn't let him to shoot at You...
-                  if (RANDOM_LONG (1, 100) < 10)
+                  if (FNullEnt (pBot->pLastEnemy) && FNullEnt (pBot->pBotEnemy)
+                     && (pBot->f_bot_see_enemy_time + 3.0f < gpGlobals->time)
+                     && (pBot->f_blind_time < gpGlobals->time)) // KWo - 23.03.2008
                   {
-                     if (FNullEnt (pBot->pLastEnemy) && FNullEnt (pBot->pBotEnemy)
-                        && (pBot->f_bot_see_enemy_time + 3.0 < gpGlobals->time)
-                        && (pBot->f_blind_time < gpGlobals->time)) // KWo - 23.03.2008
-                     {
-//                        pBot->iAimFlags |= AIM_ENEMY; // KWo - 27.08.2006
-//                        pBot->iAimFlags |= AIM_LASTENEMY; // KWo - 27.08.2006
-                        pBot->f_heard_sound_time = gpGlobals->time;
-//                      pBot->pBotEnemy = pEnt;
-                        pBot->pLastEnemy = pEnt;
-                        pBot->vecLastEnemyOrigin = pEnt->v.origin;
-                        pBot->vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0,200.0);  // KWo - 12.08.2007
-                        pBot->vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0,200.0);  // KWo - 12.08.2007
-                        pBot->fLastHeardEnOrgUpdateTime = gpGlobals->time + 1.0;
-                     }
+//                     pBot->iAimFlags |= AIM_ENEMY; // KWo - 27.08.2006
+//                     pBot->iAimFlags |= AIM_LASTENEMY; // KWo - 27.08.2006
+                     pBot->f_heard_sound_time = gpGlobals->time;
+//                   pBot->pBotEnemy = pEnt;
+                     pBot->pLastEnemy = pEnt;
+                     pBot->vecLastEnemyOrigin = pEnt->v.origin;
+                     pBot->vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0f,200.0f);  // KWo - 12.08.2007
+                     pBot->vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0f,200.0f);  // KWo - 12.08.2007
+                     pBot->fLastHeardEnOrgUpdateTime = gpGlobals->time + 1.0f;
+
+                     pBot->fAgressionLevel += 0.1f;   // KWo - 14.06.2018
+                     if (pBot->fAgressionLevel > 1.0f)
+                        pBot->fAgressionLevel = 1.0f;
+
                   }
+               }
+            }
+
+            if (enemy_attack)  // KWo- 28.07.2018
+            {
+               if (pBot->pEdict->v.health > 70)
+               {
+                  pBot->fAgressionLevel += 0.1f;
+                  if (pBot->fAgressionLevel > 1.0f)
+                     pBot->fAgressionLevel = 1.0f;
                }
                else
                {
-                  if (pBot->pEdict->v.health > 70)
-                  {
-                     pBot->fAgressionLevel += 0.1;
-                     if (pBot->fAgressionLevel > 1.0)
-                        pBot->fAgressionLevel = 1.0;
-                  }
-                  else
-                  {
-                     pBot->fFearLevel += 0.05;
-                     if (pBot->fFearLevel > 1.0)
-                        pBot->fFearLevel = 1.0;
-                  }
+                  pBot->fFearLevel += 0.05f;
+                  if (pBot->fFearLevel > 1.0f)
+                     pBot->fFearLevel = 1.0f;
+               }
 
                // Stop Bot from Hiding
-                  BotRemoveCertainTask (pBot, TASK_HIDE);
+               BotRemoveCertainTask (pBot, TASK_HIDE);
 
-                  // FIXFIXFIXFIXFIXME: THIS IS BLATANTLY CHEATING!!!!
-                  if ((FNullEnt (pBot->pBotEnemy)) && (pBot->f_bot_see_enemy_time + 1.0 < gpGlobals->time)
-                     && (pBot->f_blind_time < gpGlobals->time) /* && (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)
-                      && (pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time) */) // KWo - 08.04.2010
-                  {
-                     pBot->pLastEnemy = pEnt;
-                     pBot->vecLastEnemyOrigin = pEnt->v.origin;
-                     pBot->vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0,200.0);  // KWo - 12.08.2007
-                     pBot->vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0,200.0);  // KWo - 12.08.2007
-//                     pBot->iAimFlags |= AIM_LASTENEMY; // KWo - 12.08.2007
-                     pBot->f_heard_sound_time = gpGlobals->time;
-                     pBot->fLastHeardEnOrgUpdateTime = gpGlobals->time + 1.0;
-                     pBot->iStates |= STATE_SUSPECTENEMY; // KWo - 08.04.2010
-                     pBot->iStates |= STATE_HEARINGENEMY; // KWo - 08.04.2010
-                  }
-
-                  BotCollectExperienceData (pEdict, pEnt, damage_armor + damage_taken);
+               // FIXFIXFIXFIXFIXME: THIS IS BLATANTLY CHEATING!!!!
+               if ((FNullEnt (pBot->pBotEnemy)) && (pBot->f_bot_see_enemy_time + 1.0f < gpGlobals->time)
+                  && (pBot->f_blind_time < gpGlobals->time) /* && (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)
+                   && (pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time) */) // KWo - 08.04.2010
+               {
+                  pBot->pLastEnemy = pEnt;
+                  pBot->vecLastEnemyOrigin = pEnt->v.origin;
+                  pBot->vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0f,200.0f);  // KWo - 12.08.2007
+                  pBot->vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0f,200.0f);  // KWo - 12.08.2007
+//                  pBot->iAimFlags |= AIM_LASTENEMY; // KWo - 12.08.2007
+                  pBot->f_heard_sound_time = gpGlobals->time;
+                  pBot->fLastHeardEnOrgUpdateTime = gpGlobals->time + 1.0f;
+                  pBot->iStates |= STATE_SUSPECTENEMY; // KWo - 08.04.2010
+                  pBot->iStates |= STATE_HEARINGENEMY; // KWo - 08.04.2010
                }
             }
          }
          // Check old waypoint
          else
          {
+            BotCollectGoalExperience (pBot, damage_taken);
             if (!WaypointReachableByEnt (pEdict->v.origin, pBot->dest_origin, pBot->pEdict)) // KWo - 30.07.2006
             {
                DeleteSearchNodes (pBot);
                BotFindWaypoint (pBot);
             }
+         }
+
+         if ((!team_attack) && (pEnt != pEdict))  // KWo - 28.07.2018
+         {
+            BotCollectGoalExperience (pBot, damage_taken + damage_taken); // KWo - 28.07.2018 - moved now here...
+            BotCollectExperienceData (pEdict, pEnt, damage_armor + damage_taken);
          }
       }
    }
@@ -555,8 +573,8 @@ void BotClient_CS_DeathMsg (void *p, int bot_index)
 
          if ((victim_index > 0) && (victim_index <= gpGlobals->maxClients)) // KWo - 15.03.2010
          {
-            clients[victim_index - 1].fDeathTime = gpGlobals->time + RANDOM_FLOAT (0.3, 1.0);
-            clients[victim_index - 1].fTimeSoundLasting = gpGlobals->time - 2.0; // KWo - 16.04.2010
+            clients[victim_index - 1].fDeathTime = gpGlobals->time + RANDOM_FLOAT (0.3f, 1.0f);
+            clients[victim_index - 1].fTimeSoundLasting = gpGlobals->time - 2.0f; // KWo - 16.04.2010
          }
 
          killed_defuser = FALSE;
@@ -610,20 +628,20 @@ void BotClient_CS_DeathMsg (void *p, int bot_index)
                    && (killer_index != victim_index)) // 20.05.2010
                {
                   teamnate_distance = (bots[index].pEdict->v.origin - victim_edict->v.origin).Length();
-                  if (teamnate_distance < 500.0)
+                  if (teamnate_distance < 500.0f)
                   {
                      if (bots[index].pLastEnemy == NULL)
                      {
                         bots[index].pLastEnemy = killer_edict;
                         bots[index].vecLastEnemyOrigin = killer_edict->v.origin;
-                        bots[index].vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0,200.0);
-                        bots[index].vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0,200.0);
+                        bots[index].vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0f,200.0f);
+                        bots[index].vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0f,200.0f);
                      }
-                     bots[index].fFearLevel += 0.2;
-                     if (bots[index].fFearLevel > 1.0)
-                        bots[index].fFearLevel = 1.0;
+                     bots[index].fFearLevel += 0.2f;
+                     if (bots[index].fFearLevel > 1.0f)
+                        bots[index].fFearLevel = 1.0f;
 /*
-                     else if (bots[index].f_bot_see_new_enemy_time + 1.0 < gpGlobals->time)
+                     else if (bots[index].f_bot_see_new_enemy_time + 1.0f < gpGlobals->time)
                      {
                         killer_distance = (killer_edict->v.origin - bots[index].pEdict->v.origin).Length();
                         lastenemy_distance = (bots[index].pEdict->v.origin - bots[index].vecLastEnemyOrigin).Length();
@@ -631,8 +649,8 @@ void BotClient_CS_DeathMsg (void *p, int bot_index)
                         {
                            bots[index].pLastEnemy = killer_edict;
                            bots[index].vecLastEnemyOrigin = killer_edict->v.origin;
-                           bots[index].vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0,200.0);
-                           bots[index].vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0,200.0);
+                           bots[index].vecLastEnemyOrigin.x += RANDOM_FLOAT(-200.0f,200.0f);
+                           bots[index].vecLastEnemyOrigin.y += RANDOM_FLOAT(-200.0f,200.0f);
                         }
                      }
 */
@@ -712,21 +730,21 @@ void BotClient_CS_ScreenFade (void *p, int bot_index)
 			}
          else
          {
-            pBot->f_blind_time = gpGlobals->time + ((float) alpha - 180.0) / 10;  // KWo - 23.03.2008
+            pBot->f_blind_time = gpGlobals->time + ((float) alpha - 180.0f) / 10;  // KWo - 23.03.2008
             pBot->fChangeAimDirectionTime = pBot->f_blind_time;
          }
 
          if (pBot->bot_skill < 50)
          {
-            pBot->f_blindmovespeed_forward = 0.0;
-            pBot->f_blindmovespeed_side = 0.0;
+            pBot->f_blindmovespeed_forward = 0.0f;
+            pBot->f_blindmovespeed_side = 0.0f;
          }
          else if (pBot->bot_skill < 80)
          {
             pBot->f_blindmovespeed_forward = -pBot->pEdict->v.maxspeed;
-            pBot->f_blindmovespeed_side = 0.0;
+            pBot->f_blindmovespeed_side = 0.0f;
          }
-         else if (pBot->f_blindmove_time + 2.0 < gpGlobals->time)  // KWo - 13.08.2008
+         else if (pBot->f_blindmove_time + 2.0f < gpGlobals->time)  // KWo - 13.08.2008
          {
             pBot->f_blindmove_time = gpGlobals->time;
             if (RANDOM_LONG (1, 100) < 50)
@@ -770,7 +788,7 @@ void BotClient_CS_SayText (void *p, int bot_index)
          if (ENTINDEX (pBot->pEdict) != ucEntIndex)
          {
             pBot->SaytextBuffer.iEntityIndex = (int) ucEntIndex;
-            strncpy (pBot->SaytextBuffer.szSayText, (char *) p, sizeof (pBot->SaytextBuffer.szSayText));
+            strncpy_s (pBot->SaytextBuffer.szSayText, sizeof(pBot->SaytextBuffer.szSayText), (char *) p, sizeof (pBot->SaytextBuffer.szSayText) - 1);
             pBot->SaytextBuffer.szSayText[sizeof (pBot->SaytextBuffer.szSayText) - 1] = 0;
             pBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pBot->SaytextBuffer.fChatDelay;
          }
@@ -791,7 +809,7 @@ void BotClient_CS_SayText (void *p, int bot_index)
          if (ENTINDEX (pBot->pEdict) != ucEntIndex)
          {
             pBot->SaytextBuffer.iEntityIndex = (int) ucEntIndex;
-            strncpy (pBot->SaytextBuffer.szSayText, (char *) p, sizeof (pBot->SaytextBuffer.szSayText));
+            strncpy_s (pBot->SaytextBuffer.szSayText, sizeof(pBot->SaytextBuffer.szSayText), (char *) p, sizeof (pBot->SaytextBuffer.szSayText) - 1);
             pBot->SaytextBuffer.szSayText[sizeof (pBot->SaytextBuffer.szSayText) - 1] = 0;
             pBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pBot->SaytextBuffer.fChatDelay;
          }
@@ -833,7 +851,7 @@ void BotClient_CS_BombDrop (void *p, int bot_index)
       BotRemoveCertainTask (pBot, TASK_CAMP);
       DeleteSearchNodes (pBot); // make all Ts reevaluate their paths immediately
       pBot->iCampButtons = 0; // KWo - 17.02.2008
-      pBot->f_ducktime = 0.0; // KWo - 24.01.2012
+      pBot->f_ducktime = 0.0f; // KWo - 24.01.2012
       // find the bomb
 //      while (!FNullEnt (pent = FIND_ENTITY_BY_CLASSNAME (pent, "weaponbox")))
       while (!FNullEnt (pent = FIND_ENTITY_BY_CLASSNAME (pent, "weapon_c4"))) // KWo - 26.08.2006
@@ -864,7 +882,7 @@ void BotClient_CS_BombPickup (void *p, int bot_index)
       DeleteSearchNodes (pBot); // make all Ts reevaluate their paths immediately
       BotResetTasks (pBot); // barbarian, but fits the job perfectly.
       pBot->iCampButtons = 0; // KWo - 17.02.2008
-      pBot->f_ducktime = 0.0; // KWo - 24.01.2012
+      pBot->f_ducktime = 0.0f; // KWo - 24.01.2012
    }
    return;
 }
@@ -890,7 +908,7 @@ void BotClient_CS_TextMsgAll (void *p, int bot_index)
             DeleteSearchNodes (pBot); // make all CTs reevaluate their paths immediately
             BotResetTasks (pBot); // barbarian, but fits the job perfectly.
             pBot->iCampButtons = 0; // KWo - 17.02.2008
-            pBot->f_ducktime = 0.0; // KWo - 24.01.2012
+            pBot->f_ducktime = 0.0f; // KWo - 24.01.2012
          }
       }
    }

@@ -112,7 +112,7 @@ void BotPrepareChatMessage (bot_t *pBot, char *pszText)
    while (pszPattern)
    {
       // all replacement placeholders start with a %
-      pszPattern = strstr (pszTextStart, "%");
+      pszPattern = strchr (pszTextStart, '%');
 
       if (pszPattern)
       {
@@ -288,7 +288,7 @@ bool BotCheckKeywords(bot_t *pBot, char *pszMessage, char *pszReply)
 
       while (pszCurrKeyword)
       {
-         pszKeywordEnd = strstr (pszCurrKeyword, "@");
+         pszKeywordEnd = strchr (pszCurrKeyword, '@');
 
          if (pszKeywordEnd)
          {

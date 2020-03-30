@@ -1774,7 +1774,7 @@ void SaveExperienceTab (void)
 
    iResult = Encode (filename, (unsigned char *) &header, sizeof (EXPERIENCE_HDR), (unsigned char *) pExperienceSave, g_iNumWaypoints * g_iNumWaypoints * sizeof (experiencesave_t));
 
-   if (pExperienceSave != NULL)
+//   if (pExperienceSave != NULL)
       delete [](pExperienceSave);
    pExperienceSave = NULL;
 
@@ -1802,7 +1802,7 @@ void InitExperienceTab (void)
    char wptfilename[256];
    size_t ifr;  // KWo - 09.08.2018 - to make the compiler happy...
 
-   if (pBotExperienceData != NULL)
+//   if (pBotExperienceData != NULL)
       delete [](pBotExperienceData);
    pBotExperienceData = NULL;
 
@@ -1895,7 +1895,7 @@ void InitExperienceTab (void)
                   }
                }
 
-               if (pExperienceLoad != NULL)
+//               if (pExperienceLoad != NULL)
                   delete [](pExperienceLoad);
                pExperienceLoad = NULL;
 
@@ -2237,7 +2237,7 @@ void InitPathMatrix (void)
    }
 
    // Free up the hostage distance matrix
-   if (g_pWithHostageDistMatrix != NULL)
+//   if (g_pWithHostageDistMatrix != NULL)
       delete [](g_pWithHostageDistMatrix);
    g_pWithHostageDistMatrix = NULL;
 

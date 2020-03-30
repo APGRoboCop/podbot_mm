@@ -483,7 +483,7 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
             }
             else // KWo - 07.07.2008
             {
-               if ((strstr (bot_name, "(") != NULL) && (strstr (bot_name, ")") != NULL)) // the bot already had a sufix
+               if ((strchr (bot_name, '(') != NULL) && (strchr (bot_name, ')') != NULL)) // the bot already had a sufix
                {
                   if ((g_i_cv_detailnames == 1) || (g_i_cv_detailnames == 2)) // use prefix and eventually existing sufix
                   {
@@ -520,7 +520,7 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
          }
          else // use sufix only
          {
-            if ((strstr (bot_name, "(") == NULL) || (strstr (bot_name, ")") == NULL)) // KWo - 07.07.2008 the bot didn't have yet a sufix
+            if ((strchr (bot_name, '(') == NULL) || (strchr (bot_name, ')') == NULL)) // KWo - 07.07.2008 the bot didn't have yet a sufix
                snprintf (c_name, sizeof (c_name), "%s (%d)", bot_name, skill);
             else
                snprintf (c_name, sizeof (c_name), "%s", bot_name);
@@ -772,7 +772,7 @@ int BotInFieldOfView (bot_t *pBot, Vector dest)
 }
 
 
-bool BotItemIsVisible (bot_t *pBot, Vector vecDest, char *pszItemName, bool bBomb)
+bool BotItemIsVisible (bot_t *pBot, Vector &vecDest, char *pszItemName, bool bBomb)
 {
    TraceResult tr;
 
@@ -9478,23 +9478,23 @@ void BotFreeAllMemory (void)
    }
 
    if (pBotExperienceData != NULL)
-      delete [](pBotExperienceData);
+//      delete [](pBotExperienceData);
    pBotExperienceData = NULL;
 
    if (g_pFloydDistanceMatrix != NULL)
-      delete [](g_pFloydDistanceMatrix);
+//      delete [](g_pFloydDistanceMatrix);
    g_pFloydDistanceMatrix = NULL;
 
    if (g_pFloydPathMatrix != NULL)
-      delete [](g_pFloydPathMatrix);
+//      delete [](g_pFloydPathMatrix);
    g_pFloydPathMatrix = NULL;
 
    if (g_pWithHostageDistMatrix != NULL)
-      delete [](g_pWithHostageDistMatrix);
+//      delete [](g_pWithHostageDistMatrix);
    g_pWithHostageDistMatrix = NULL;
 
    if (g_pWithHostagePathMatrix != NULL)
-      delete [](g_pWithHostagePathMatrix);
+//      delete [](g_pWithHostagePathMatrix);
    g_pWithHostagePathMatrix = NULL;
 
    // Delete all Textnodes/strings
@@ -9517,7 +9517,7 @@ void BotFreeAllMemory (void)
 
    // Delete all Bot Names
    if (g_pszBotNames != NULL)
-      delete [] g_pszBotNames;
+//      delete [] g_pszBotNames;
    g_pszBotNames = NULL;
 
    return; // KABLAM! everything is nuked, wiped, cleaned, memory stick is shining like a coin =)

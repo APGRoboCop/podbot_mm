@@ -20,7 +20,7 @@
 
 #include <assert.h>
 
-#define PBMM_VERSION_STRING		"V3B23"    // KWo - 18.04.2016
+#define PBMM_VERSION_STRING		"V3B24"    // KWo - 18.04.2016
 
 
 typedef struct bottask_s

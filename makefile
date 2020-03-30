@@ -17,7 +17,7 @@ EXTRA_LIBDIRS_WIN32 = -Lextra/lib_win32
 
 SDKTOP=../hlsdk-2.3-p4
 SDKSRC=$(SDKTOP)/multiplayer
-METADIR=../metamod-p-37/metamod
+METADIR=../metamod-p/metamod
 SRCDIR=.
 
 OBJDIR_LINUX=obj.linux

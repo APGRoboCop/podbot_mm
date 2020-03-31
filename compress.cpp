@@ -195,7 +195,11 @@ int Encode (char *filename, unsigned char* header, int headersize, unsigned char
    int bufptr = 0;
    FILE *pOut;
 
+#ifdef _WIN32
    fopen_s (&pOut, filename, "wb");
+#else
+   pOut = fopen(filename, "wb");
+#endif
    if (pOut == NULL)
       return (-1); // bail
 
@@ -318,7 +322,11 @@ int Decode (char *filename, int headersize, unsigned char *buffer, int bufsize)
    int bufptr = 0;
    FILE *pIn;
 
+#ifdef _WIN32
    fopen_s (&pIn, filename, "rb");
+#else
+   pIn = fopen(filename, "rb");
+#endif
    if (pIn == NULL)
       return (-1); // bail
 

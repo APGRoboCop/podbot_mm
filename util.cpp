@@ -17,6 +17,28 @@
 #include "bot_globals.h"
 #include "bot_weapons.h"  // KWo - 10.03.2006
 
+#ifdef __linux__
+#define _snprintf_s snprintf
+#define vsnprintf_s vsnprintf
+
+//Fix for G++ 6 - [APG]RoboCop[CL]
+#include <algorithm>
+
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#undef max
+#undef min
+
+#endif
+
+using namespace std;
+
 Vector UTIL_VecToAngles (const Vector &vec)
 {
 /*
@@ -927,11 +949,19 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    char str1[27];
    if (g_rgcvarPointer[PBCVAR_RESTRWEAPONS])  // KWo - 13.10.2006
    {
+#ifdef _WIN32
       strncpy_s (str1, 27, g_rgcvarPointer[PBCVAR_RESTRWEAPONS]->string, 26);
+#else
+      strncpy(str1, g_rgcvarPointer[PBCVAR_RESTRWEAPONS]->string, 26);
+#endif
    }
    else
    {
+#ifdef _WIN32
       strncpy_s (str1, 27, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTRWEAPONS]), 26);
+#else
+      strncpy(str1, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTRWEAPONS]), 26);
+#endif
    }
    size_t len1 = strlen(str1);
    for (i = 0; i < len1; i++)
@@ -943,9 +973,17 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    }
    char str2[10];
    if (g_rgcvarPointer[PBCVAR_RESTREQUIPAMMO])  // KWo - 13.10.2006
+#ifdef _WIN32
       strncpy_s (str2, 10, g_rgcvarPointer[PBCVAR_RESTREQUIPAMMO]->string, 9);
+#else
+      strncpy(str2, g_rgcvarPointer[PBCVAR_RESTREQUIPAMMO]->string, 9);
+#endif
    else
+#ifdef _WIN32
       strncpy_s (str2, 10, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTREQUIPAMMO]),9);
+#else
+      strncpy(str2, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTREQUIPAMMO]), 9);
+#endif
    size_t len2 = strlen(str2);
    for (i = 0; i < len2; i++)
    {

@@ -16,6 +16,9 @@
 
 #include "bot_globals.h"
 
+#ifdef __linux__
+#define strncpy_s strncpy
+#endif
 
 void BotClient_CS_VGUI (void *p, int bot_index)
 {
@@ -104,7 +107,11 @@ void BotClient_CS_WeaponList (void *p, int bot_index)
 
    if (state == 0)
    {
+#ifdef _WIN32
       strncpy_s (bot_weapon.szClassname, sizeof(bot_weapon.szClassname), (char *) p, sizeof (bot_weapon.szClassname) - 1);
+#else
+      strncpy(bot_weapon.szClassname, (char*)p, sizeof(bot_weapon.szClassname));
+#endif
       bot_weapon.szClassname[sizeof (bot_weapon.szClassname) - 1] = 0;
    }
    else if (state == 1)
@@ -788,7 +795,11 @@ void BotClient_CS_SayText (void *p, int bot_index)
          if (ENTINDEX (pBot->pEdict) != ucEntIndex)
          {
             pBot->SaytextBuffer.iEntityIndex = (int) ucEntIndex;
+#ifdef _WIN32
             strncpy_s (pBot->SaytextBuffer.szSayText, sizeof(pBot->SaytextBuffer.szSayText), (char *) p, sizeof (pBot->SaytextBuffer.szSayText) - 1);
+#else
+            strncpy(pBot->SaytextBuffer.szSayText, (char*)p, sizeof(pBot->SaytextBuffer.szSayText));
+#endif
             pBot->SaytextBuffer.szSayText[sizeof (pBot->SaytextBuffer.szSayText) - 1] = 0;
             pBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pBot->SaytextBuffer.fChatDelay;
          }
@@ -809,7 +820,11 @@ void BotClient_CS_SayText (void *p, int bot_index)
          if (ENTINDEX (pBot->pEdict) != ucEntIndex)
          {
             pBot->SaytextBuffer.iEntityIndex = (int) ucEntIndex;
-            strncpy_s (pBot->SaytextBuffer.szSayText, sizeof(pBot->SaytextBuffer.szSayText), (char *) p, sizeof (pBot->SaytextBuffer.szSayText) - 1);
+#ifdef _WIN32
+            strncpy_s(pBot->SaytextBuffer.szSayText, sizeof(pBot->SaytextBuffer.szSayText), (char*)p, sizeof(pBot->SaytextBuffer.szSayText) - 1);
+#else
+            strncpy(pBot->SaytextBuffer.szSayText, (char*)p, sizeof(pBot->SaytextBuffer.szSayText));
+#endif
             pBot->SaytextBuffer.szSayText[sizeof (pBot->SaytextBuffer.szSayText) - 1] = 0;
             pBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pBot->SaytextBuffer.fChatDelay;
          }

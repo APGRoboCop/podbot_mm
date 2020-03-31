@@ -15,6 +15,11 @@
 // Does the major work of calling the original Engine Functions
 
 #include "bot_globals.h"
+
+#ifdef __linux__
+#define vsnprintf_s vsnprintf
+#endif
+
 // KWo - 05.09.2009 - (moved) the idea taken from jk-botti (ghost_of_evilspy)
 static int WeaponList = 0;
 static int CurWeapon = 0;
@@ -105,9 +110,11 @@ static inline void CallbackLightStyle (const unsigned char style, char *const va
    }
 
    const unsigned short maximumCopyAmount (sizeof (cl_lightstyle[style].map) - sizeof ('\0'));
-
+#ifdef _WIN32
    strncpy_s (cl_lightstyle[style].map, maximumCopyAmount + 1, value, maximumCopyAmount);
-
+#else
+   strncpy(cl_lightstyle[style].map, value, maximumCopyAmount);
+#endif
    cl_lightstyle[style].map[maximumCopyAmount] = '\0';
    cl_lightstyle[style].length = strlen (cl_lightstyle[style].map);
    return;
@@ -231,7 +238,11 @@ void pfnMessageBegin (int msg_dest, int msg_type, const float *pOrigin, edict_t 
             if (bots[index].is_used)
             {
                BotCreateTab[tab_index].bNeedsCreation = TRUE;
+#ifdef _WIN32
                strncpy_s (BotCreateTab[tab_index].bot_name, sizeof(BotCreateTab[tab_index].bot_name), bots[index].name, sizeof (BotCreateTab[tab_index].bot_name) - 1);
+#else
+               strncpy(BotCreateTab[tab_index].bot_name, bots[index].name, sizeof(BotCreateTab[tab_index].bot_name));
+#endif
                BotCreateTab[tab_index].bot_skill = bots[index].bot_skill;
                BotCreateTab[tab_index].bot_personality = bots[index].bot_personality;
                BotCreateTab[tab_index].bot_team = bots[index].bot_team;
@@ -505,7 +516,11 @@ void pfnChangeLevel (char* s1, char* s2)
       if (bots[index].is_used)
       {
          BotCreateTab[tab_index].bNeedsCreation = TRUE;
+#ifdef _WIN32
          strncpy_s (BotCreateTab[tab_index].bot_name, sizeof(BotCreateTab[tab_index].bot_name), bots[index].name, sizeof (BotCreateTab[tab_index].bot_name) - 1);
+#else
+         strncpy(BotCreateTab[tab_index].bot_name, bots[index].name, sizeof(BotCreateTab[tab_index].bot_name));
+#endif
          BotCreateTab[tab_index].bot_skill = bots[index].bot_skill;
          BotCreateTab[tab_index].bot_personality = bots[index].bot_personality;
          BotCreateTab[tab_index].bot_team = bots[index].bot_team;

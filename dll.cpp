@@ -16,6 +16,13 @@
 
 #include "bot_globals.h"
 
+#ifdef __linux__
+#define sscanf_s sscanf
+#define _snprintf_s snprintf
+#define strncat_s strncat
+#define vsnprintf_s vsnprintf
+#endif
+
 // server command handler
 void PODBot_ServerCommand (void);
 void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const char *arg2, const char *arg3, const char *arg4, const char *arg5);
@@ -1361,8 +1368,13 @@ void ClientUserInfoChanged_Post (edict_t *pEntity, char *infobuffer)
    int EntInd = ENTINDEX(pEntity) - 1; // KWo - 20.10.2006
    if ((bots[EntInd].is_used) && (bots[EntInd].pEdict == pEntity)) // KWo - 20.10.2006
    {
+#ifdef _WIN32
       strncpy_s (szBotModelName, sizeof(szBotModelName), (INFOKEY_VALUE (infobuffer, "model")), sizeof (szBotModelName) - 1);
       strncpy_s (bots[EntInd].sz_BotModelName, sizeof(szBotModelName), szBotModelName, sizeof (szBotModelName) - 1);
+#else
+      strncpy(szBotModelName, (INFOKEY_VALUE(infobuffer, "model")), sizeof(szBotModelName));
+      strncpy(bots[EntInd].sz_BotModelName, szBotModelName, sizeof(szBotModelName));
+#endif
 //      UTIL_ServerPrint("[DEBUG] Bot %s changed the model to %s.\n", STRING(pEntity->v.netname), szBotModelName);
       RETURN_META (MRES_IGNORED);
    }
@@ -1370,21 +1382,37 @@ void ClientUserInfoChanged_Post (edict_t *pEntity, char *infobuffer)
    char szPasswordField[64];
    if (g_rgcvarPointer[PBCVAR_PASSWORDKEY])  // KWo - 20.10.2006
    {
+#ifdef _WIN32
       strncpy_s (szPasswordField, 64, g_rgcvarPointer[PBCVAR_PASSWORDKEY]->string, 63);
+#else
+      strncpy(szPasswordField, g_rgcvarPointer[PBCVAR_PASSWORDKEY]->string, 63);
+#endif
    }
    else
    {
+#ifdef _WIN32
       strncpy_s (szPasswordField, 64, CVAR_GET_STRING (g_rgpszPbCvars[PBCVAR_PASSWORDKEY]), 63);
+#else
+      strncpy(szPasswordField, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_PASSWORDKEY]), 63);
+#endif
    }
 
    char szPassword[64];
    if (g_rgcvarPointer[PBCVAR_PASSWORD])  // KWo - 20.10.2006
    {
+#ifdef _WIN32
       strncpy_s (szPassword, 64, g_rgcvarPointer[PBCVAR_PASSWORD]->string, 63);
+#else
+      strncpy(szPassword, g_rgcvarPointer[PBCVAR_PASSWORD]->string, 63);
+#endif
    }
    else
    {
+#ifdef _WIN32
       strncpy_s (szPassword, 64, CVAR_GET_STRING (g_rgpszPbCvars[PBCVAR_PASSWORD]), 63);
+#else
+      strncpy(szPasswordField, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_PASSWORDKEY]), 63);
+#endif
    }
 
    if ((*szPasswordField == 0) && (*szPassword == 0))
@@ -1427,7 +1455,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
    // Load & Initialise Botnames from 'Botnames.txt'
    _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botnames.txt", g_szGameDirectory);
+#ifdef _WIN32
    fopen_s (&fp, szDirectory, "r");
+#else
+   fp = fopen(szDirectory, "r");
+#endif
    if (fp == NULL)
       UTIL_ServerPrint ("POD-Bot couldn't find botnames.txt!\n");
    else
@@ -1459,8 +1491,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
          while ((line_buffer[i - 1] == '\n' || line_buffer[i - 1] == ' '
             || line_buffer[i - 1] == '\r' || line_buffer[i - 1] == '\t') && (i > 0))
             line_buffer[--i] = 0;
-
+#ifdef _WIN32
          strncpy_s ((g_pszBotNames + c)->name, sizeof(g_pszBotNames->name), line_buffer, (unsigned int)strlen(line_buffer));
+#else
+         strncpy((g_pszBotNames + c)->name, line_buffer, sizeof(g_pszBotNames->name));
+#endif
          (g_pszBotNames + c++)->name[sizeof (g_pszBotNames->name) - 1] = 0;
       }
 
@@ -1470,7 +1505,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
    // Load & Initialise Botchats from 'Botchat.txt'
    _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botchat.txt", g_szGameDirectory);
+#ifdef _WIN32
    fopen_s (&fp, szDirectory, "r");
+#else
+   fp = fopen(szDirectory, "r");
+#endif
    if (fp == NULL)
       UTIL_ServerPrint ("POD-Bot couldn't find botchat.txt!\n");
    else
@@ -1490,8 +1529,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
       {
          if ((line_buffer[0] == '#') || (line_buffer[0] == 0) || (line_buffer[0] == '\r') || (line_buffer[0] == '\n'))
             continue; // ignore comments or blank lines
-
+#ifdef _WIN32
          strncpy_s (arg0, sizeof(arg0), GetField (line_buffer, 0), sizeof(arg0) - 1);
+#else
+         strncpy(arg0, GetField(line_buffer, 0), sizeof(arg0));
+#endif
          arg0[sizeof (arg0) - 1] = 0;
 
          // Killed Chat Section ?
@@ -1540,8 +1582,14 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
             {
 //               line_buffer[iLen] = '\n';
 //               line_buffer[iLen + 1] = '\0';
+#ifdef _WIN32
                strncat_s(line_buffer, iBufferSize, "\n", 1);
                strncpy_s(szKillChat[iNumKillChats], sizeof(szKillChat[0]), line_buffer, (unsigned int)strlen(line_buffer));
+#else
+               strncpy(szKillChat[iNumKillChats], line_buffer, sizeof(szKillChat[iNumKillChats]));
+               strncat(line_buffer, "\n", iBufferSize);
+               line_buffer[79] = 0;
+#endif
                iNumKillChats++;
             }
             else
@@ -1558,8 +1606,14 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
             {
 //               line_buffer[iLen] = '\n';
 //               line_buffer[iLen + 1] = '\0';
+#ifdef _WIN32
                strncat_s(line_buffer, iBufferSize, "\n", 1);
                strncpy_s(szBombChat[iNumBombChats], sizeof(szBombChat[0]), line_buffer, (unsigned int)strlen(line_buffer));
+#else               
+               strncat(line_buffer, "\n", iBufferSize);
+               line_buffer[79] = 0;
+               strncpy(szBombChat[iNumBombChats], line_buffer, sizeof(szBombChat[iNumBombChats]));
+#endif
                iNumBombChats++;
             }
             else
@@ -1576,8 +1630,14 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
             {
 //               line_buffer[iLen] = '\n';
 //               line_buffer[iLen + 1] = '\0';
+#ifdef _WIN32
                strncat_s(line_buffer, iBufferSize, "\n", 1);
                strncpy_s(szDeadChat[iNumDeadChats], sizeof(szDeadChat[0]), line_buffer, (unsigned int)strlen(line_buffer));
+#else
+               strncat(line_buffer, "\n", iBufferSize);
+               line_buffer[79] = 0;
+               strncpy(szDeadChat[iNumDeadChats], line_buffer, sizeof(szDeadChat[iNumDeadChats]));
+#endif
                iNumDeadChats++;
             }
             else
@@ -1627,7 +1687,12 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
                {
 //                  line_buffer[iLen] = '\n';
 //                  line_buffer[iLen + 1] = '\0';
+#ifdef _WIN32
                   strncat_s(line_buffer, iBufferSize, "\n", 1);
+#else
+                  strncat(line_buffer, "\n", iBufferSize);
+                  line_buffer[255] = 0;
+#endif
                   pTempNode = new (STRINGNODE);
                   if (pTempNode == NULL)
                      ALERT(at_logged, "Loading botchat.txt - POD-Bot out of Memory!\n");
@@ -1635,8 +1700,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
                   {
                      *pNode = pTempNode;
                      pTempNode->Next = NULL;
+#ifdef _WIN32
                      strncpy_s(pTempNode->szString, sizeof(pTempNode->szString), line_buffer, (unsigned int)strlen(line_buffer));
-
+#else
+                     strncpy(pTempNode->szString, line_buffer, sizeof(pTempNode->szString));
+#endif
                      pTempReply->cNumReplies++;
                      pNode = &pTempNode->Next;
                   }
@@ -1654,11 +1722,17 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
             iLen = (int)strlen(line_buffer);
             if (iLen < 79)
             {
+#ifdef _WIN32
                strncat_s(line_buffer, iBufferSize, "\n", 1);
 //               line_buffer[iLen] = '\n';
 //               line_buffer[iLen + 1] = '\0';
 //               strncpy_s(szNoKwChat[iNumNoKwChats], sizeof(szNoKwChat[0]), line_buffer, sizeof(szNoKwChat[iNumNoKwChats]) - 1);
                strncpy_s(szNoKwChat[iNumNoKwChats], sizeof(szNoKwChat[0]), line_buffer, (unsigned int)strlen(line_buffer));
+#else
+               strncat(line_buffer, "\n", iBufferSize);
+               line_buffer[79] = 0;
+               strncpy(szNoKwChat[iNumNoKwChats], line_buffer, sizeof(szNoKwChat[iNumNoKwChats]));
+#endif
                iNumNoKwChats++;
             }
             else
@@ -1680,7 +1754,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
    // Load & Initialise Botskill.cfg
    _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botskill.cfg", g_szGameDirectory);
+#ifdef _WIN32
    fopen_s (&fp, szDirectory, "r");
+#else
+   fp = fopen(szDirectory, "r");
+#endif
    if (fp == NULL)
       UTIL_ServerPrint ("No Botskill.cfg ! Using defaults...\n");
    else
@@ -1691,10 +1769,13 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
       {
          if ((line_buffer[0] == '#') || (line_buffer[0] == 0) || (line_buffer[0] == '\r') || (line_buffer[0] == '\n'))
             continue; // ignore comments or blank lines
-
+#ifdef _WIN32
          strncpy_s (arg0, sizeof(arg0), GetField (line_buffer, 0), sizeof (arg0) - 1);
          strncpy_s (arg1, sizeof(arg1), GetField (line_buffer, 1), sizeof (arg1) - 1);
-
+#else
+         strncpy(arg0, GetField(line_buffer, 0), sizeof(arg0));
+         strncpy(arg1, GetField(line_buffer, 1), sizeof(arg1));
+#endif
          if (FStrEq (arg0, "MIN_DELAY"))
             BotSkillDelays[i].fMinSurpriseDelay = (float) atof (arg1);
          else if (FStrEq (arg0, "MAX_DELAY"))
@@ -1728,7 +1809,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
    // Load & Initialise BotLogos from BotLogos.cfg
    _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botlogos.cfg", g_szGameDirectory);
+#ifdef _WIN32
    fopen_s (&fp, szDirectory, "r");
+#else
+   fp = fopen(szDirectory, "r");
+#endif
    if (fp == NULL)
       UTIL_ServerPrint ("No BotLogos.cfg ! Using Defaults...\n");
    else
@@ -1739,8 +1824,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
       {
          if ((line_buffer[0] == '#') || (line_buffer[0] == 0) || (line_buffer[0] == '\r') || (line_buffer[0] == '\n'))
             continue; // ignore comments or blank lines
-
+#ifdef _WIN32
          strncpy_s (szSprayNames[g_iNumLogos], sizeof(szSprayNames[0]), GetField (line_buffer, 0), sizeof (szSprayNames[g_iNumLogos]) - 1);
+#else
+         strncpy(szSprayNames[g_iNumLogos], GetField(line_buffer, 0), sizeof(szSprayNames[g_iNumLogos]));
+#endif         
          g_iNumLogos++;
       }
 
@@ -1750,7 +1838,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
 
    // Load & initialise Weapon Stuff from 'BotWeapons.cfg'
    _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/botweapons.cfg", g_szGameDirectory);
+#ifdef _WIN32
    fopen_s (&fp, szDirectory, "r");
+#else
+   fp = fopen(szDirectory, "r");
+#endif
    if (fp == NULL)
       UTIL_ServerPrint ("No BotWeapons.cfg ! Using Defaults...\n");
    else
@@ -1762,9 +1854,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
       {
          if ((line_buffer[0] == '#') || (line_buffer[0] == 0) || (line_buffer[0] == '\r') || (line_buffer[0] == '\n'))
             continue; // ignore comments or blank lines
-
+#ifdef _WIN32
          strncpy_s (arg0, sizeof(arg0), GetField (line_buffer, 0), sizeof (arg0) - 1);
-
+#else
+         strncpy(arg0, GetField(line_buffer, 0), sizeof(arg0));
+#endif
          if (iParseWeapons < 2)
          {
             if (FStrEq (arg0, "[STANDARD]"))
@@ -1829,7 +1923,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
       UTIL_ServerPrint ("Taking settings from podbot.cfg\n");
 
       _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/podbot.cfg", g_szGameDirectory);
+#ifdef _WIN32
       fopen_s (&bot_cfg_fp, szDirectory, "r");
+#else
+      bot_cfg_fp = fopen(szDirectory, "r");
+#endif
       if (bot_cfg_fp == NULL)
          UTIL_ServerPrint ("podbot.cfg File not found\n");
 
@@ -1840,10 +1938,13 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
          {
             if ((line_buffer[0] == '#') || (line_buffer[0] == '\r') || (line_buffer[0] == '\n') || (line_buffer[0] == 0))
                continue; // ignore comments or blank lines
-
+#ifdef _WIN32
             _snprintf_s (cmd, sizeof (cmd), "%s", GetField (line_buffer, 0));
             _snprintf_s (arg1, sizeof (arg1), "%s", GetField (line_buffer, 1));
-
+#else
+            snprintf(cmd, sizeof(cmd), GetField(line_buffer, 0));
+            snprintf(arg1, sizeof(arg1), GetField(line_buffer, 1));
+#endif
             if ((FStrEq (cmd, "bind"))
                || (FStrEq (cmd, g_rgpszPbCmds[PBCMD])
                   && (FStrEq (arg1, g_rgpszPbCmds[PBCMD_ADD])
@@ -1940,7 +2041,11 @@ void ServerActivate (edict_t *pEdictList, int edictCount, int clientMax)
    g_bRoundEnded = FALSE;                    // KWo - 30.09.2010
 
    // Assume Map type for aim or awp type
+#ifdef _WIN32
    strcpy_s (filename, sizeof(filename), STRING(gpGlobals->mapname)); // KWo - 18.03.2006 - Thanks to THE_STORM
+#else
+   strcpy(filename, STRING(gpGlobals->mapname)); // KWo - 18.03.2006 - Thanks to THE_STORM
+#endif
    if (filename[0] == 'a')
    {
       if (filename[1] == 'w')
@@ -1981,7 +2086,11 @@ void ServerDeactivate (void)
       if (bots[index].is_used)
       {
          BotCreateTab[tab_index].bNeedsCreation = TRUE;
+#ifdef _WIN32
          strncpy_s (BotCreateTab[tab_index].bot_name, sizeof(BotCreateTab[tab_index].bot_name), bots[index].name, sizeof (BotCreateTab[tab_index].bot_name) - 1);
+#else
+         strncpy(BotCreateTab[tab_index].bot_name, bots[index].name, sizeof(BotCreateTab[tab_index].bot_name));
+#endif
          BotCreateTab[tab_index].bot_skill = bots[index].bot_skill;
          BotCreateTab[tab_index].bot_personality = bots[index].bot_personality;
          BotCreateTab[tab_index].bot_team = bots[index].bot_team;
@@ -2220,7 +2329,11 @@ void StartFrame (void)
       memset(arg4, 0, sizeof (arg4));
       memset(arg5, 0, sizeof (arg5));
       _snprintf_s (szDirectory, sizeof (szDirectory), "%s/addons/podbot/podbot.cfg", g_szGameDirectory);
+#ifdef _WIN32
       fopen_s (&bot_cfg_fp, szDirectory, "r");
+#else
+      bot_cfg_fp = fopen(szDirectory, "r");
+#endif
       if (bot_cfg_fp == NULL)
          UTIL_ServerPrint ("podbot.cfg File not found\n");
 
@@ -2834,7 +2947,11 @@ void PbCmdParser (edict_t *pEdict, const char *pcmd, const char *arg1, const cha
       {
          memset (&BotCreateTab[index], 0, sizeof (createbot_t));
          if ((arg5 != NULL) && (*arg4 != 0))
+#ifdef _WIN32
             strncpy_s (BotCreateTab[index].bot_name, sizeof(BotCreateTab[index].bot_name), arg5, sizeof (BotCreateTab[index].bot_name) - 1);
+#else
+            strncpy(BotCreateTab[index].bot_name, arg5, sizeof(BotCreateTab[index].bot_name));
+#endif
          BotCreateTab[index].bot_skill = iSkill;
          BotCreateTab[index].bot_personality = iPersonality;
          BotCreateTab[index].bot_team = iTeam;

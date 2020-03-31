@@ -17,6 +17,10 @@
 #include "bot_globals.h"
 #include <vector>
 
+#ifdef __linux__
+#define _snprintf_s snprintf
+#endif
+
 // adds a path between 2 waypoints
 void WaypointAddPath (short int add_index, short int path_index, float fDistance)
 {
@@ -1744,8 +1748,11 @@ void SaveExperienceTab (void)
       ALERT (at_logged, "Podbot mm - Experience Data not saved - waypoints have been changed.\n");
       return;
    }
-
+#ifdef _WIN32
    strncpy_s (header.filetype, sizeof(header.filetype), "PODEXP!", 7);
+#else
+   strncpy(header.filetype, "PODEXP!", sizeof(header.filetype));
+#endif
    header.experiencedata_file_version = EXPERIENCE_VERSION;
    header.number_of_waypoints = g_iNumWaypoints;
 
@@ -1831,8 +1838,11 @@ void InitExperienceTab (void)
    {
       // Now build the real filename
       _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pxp", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+#ifdef _WIN32
       fopen_s (&bfp, filename, "rb");
-
+#else
+      bfp = fopen(filename, "rb");
+#endif
       // if file exists, read the experience Data from it
       if (bfp != NULL)
       {
@@ -1972,8 +1982,11 @@ void SaveVisTab (void)
          return;
       }
    }
-
+#ifdef _WIN32
    strncpy_s (header.filetype, sizeof(header.filetype), "PODVIS!", 7);
+#else
+   strncpy(header.filetype, "PODVIS!", sizeof(header.filetype));
+#endif
    header.vistable_file_version = VISTABLE_VERSION;
    header.number_of_waypoints = g_iNumWaypoints;
 
@@ -2027,8 +2040,11 @@ void InitVisTab (void)
    {
       // Now build the real filename
       _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pvi", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
+#ifdef _WIN32
       fopen_s (&bfp, filename, "rb");
-
+#else
+      bfp = fopen(filename, "rb");
+#endif
       // if file exists, read the experience Data from it
       if (bfp != NULL)
       {
@@ -2263,8 +2279,11 @@ bool WaypointLoad (void)
    g_bWaypointsSaved = FALSE;
 
    _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pwf", g_szGameDirectory, g_sz_cv_WPT_Folder, STRING (gpGlobals->mapname));
-
+#ifdef _WIN32
    fopen_s (&bfp, filename, "rb");
+#else
+   bfp = fopen(filename, "rb");
+#endif
    if (bfp == NULL)
    {
       UTIL_ServerPrint ("Waypoint file %s does not exist!\n", filename);
@@ -2454,20 +2473,33 @@ void WaypointSave (void)
    PATH *p;
 
    g_bWaypointsChanged = TRUE;
-
+#ifdef _WIN32
    strncpy_s (header.filetype, sizeof(header.filetype), "PODWAY!", sizeof (header.filetype) - 1);
+#else
+   strncpy(header.filetype, "PODWAY!", sizeof(header.filetype));
+#endif
    header.waypoint_file_version = WAYPOINT_VERSION7;
    header.number_of_waypoints = g_iNumWaypoints;
 
    memset (header.mapname, 0, sizeof (header.mapname));
    memset (header.creatorname, 0, sizeof (header.creatorname));
+#ifdef _WIN32
    strncpy_s (header.mapname, sizeof(header.mapname), STRING (gpGlobals->mapname), sizeof (header.mapname) - 1);
+#else
+   strncpy(header.mapname, STRING(gpGlobals->mapname), sizeof(header.mapname));
+#endif
    header.mapname[31] = 0;
+#ifdef _WIN32
    strncpy_s (header.creatorname, sizeof(header.creatorname), STRING (pHostEdict->v.netname), sizeof (header.creatorname) - 1);
-
+#else
+   strncpy(header.creatorname, STRING(pHostEdict->v.netname), sizeof(header.creatorname));
+#endif
    _snprintf_s (filename, sizeof (filename), "%s/addons/podbot/%s/%s.pwf", g_szGameDirectory, g_sz_cv_WPT_Folder, header.mapname);
-
+#ifdef WIN32
    fopen_s (&bfp, filename, "wb");
+#else
+   bfp = fopen(filename, "wb");
+#endif
 
    if (bfp == NULL)
    {
@@ -2887,8 +2919,11 @@ void WaypointThink (void)
       for (i = 0; i < MAX_PATH_INDEX; i++)
          if ((pPath->index[i] != -1) && (pPath->connectflag[i] & C_FL_JUMP))
             isJumpWaypoint = TRUE;
-
+#ifdef _WIN32
       int iLength = sprintf_s (szMessage, sizeof(szMessage),
+#else
+      int iLength = sprintf(szMessage,
+#endif
                     "\n"
                     "\n"
                     "\n"
@@ -2922,8 +2957,11 @@ void WaypointThink (void)
       {
          int iDangerIndexCT = (pBotExperienceData + index * g_iNumWaypoints + index)->iTeam1_danger_index;
          int iDangerIndexT = (pBotExperienceData + index * g_iNumWaypoints + index)->iTeam0_danger_index;
-
+#ifdef _WIN32
          iLength += sprintf_s (&szMessage[iLength], sizeof(szMessage),
+#else
+         iLength += sprintf(&szMessage[iLength],
+#endif
             " Experience Info [(DWP for CWP/EXP),(HDWP/HD)] :\n"
             "  CT: (%d / %u) , (%d / %d)\n"
             "  T:  (%d / %u) , (%d / %d)\n",
@@ -2945,8 +2983,11 @@ void WaypointThink (void)
          for (i = 0; i < MAX_PATH_INDEX; i++)
             if ((pCachedPath->index[i] != -1) && (pCachedPath->connectflag[i] & C_FL_JUMP))
                isJumpWaypoint = TRUE;
-
+#ifdef _WIN32
          iLength += sprintf_s (&szMessage[iLength], sizeof(szMessage),
+#else
+         iLength += sprintf(&szMessage[iLength],
+#endif
             "\n"
             "Cached Waypoint Information:\n"
             " Index Nr.: %d of %d, Radius: %d\n"
@@ -2981,8 +3022,11 @@ void WaypointThink (void)
          for (i = 0; i < MAX_PATH_INDEX; i++)
             if ((pFacedPath->index[i] != -1) && (pFacedPath->connectflag[i] & C_FL_JUMP))
                isJumpWaypoint = TRUE;
-
+#ifdef _WIN32
          iLength += sprintf_s (&szMessage[iLength], sizeof(szMessage),
+#else
+         iLength += sprintf(&szMessage[iLength],
+#endif
             "\n"
             "Faced Waypoint Information:\n"
             " Index Nr.: %d of %d, Radius: %d\n"

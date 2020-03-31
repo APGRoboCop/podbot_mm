@@ -16,6 +16,9 @@
 
 #include "bot_globals.h"
 
+#ifdef __linux__
+#define strncpy_s strncpy
+#endif
 
 int NumTeammatesNearPos (bot_t *pBot, Vector vecPosition, int iRadius)
 {
@@ -310,8 +313,11 @@ bool BotFindEnemy (bot_t *pBot)
 
          distance2 = (pPlayer->v.origin - pEdict->v.origin).Length ();
          memset (szBotEnemyModelName, 0, sizeof(szBotEnemyModelName));
+#ifdef _WIN32
          strncpy_s (szBotEnemyModelName, sizeof(szBotEnemyModelName), (INFOKEY_VALUE (GET_INFOKEYBUFFER (pPlayer), "model")), sizeof (szBotEnemyModelName) - 1);  // KWo - 12.08.2007
-
+#else
+         strncpy(szBotEnemyModelName, (INFOKEY_VALUE(GET_INFOKEYBUFFER(pPlayer), "model")), sizeof(szBotEnemyModelName));  // KWo - 12.08.2007
+#endif
          if (((distance2 >= nearestdistance)
             || ((!(FNullEnt (pNewEnemy)) && (distance > 0.0f) && ((distance2 >= 0.9f * distance)
                                                                 || (pBot->f_bot_see_new_enemy_time + 0.5f >= gpGlobals->time)))))
@@ -1350,7 +1356,11 @@ bool BotFireWeapon (Vector v_enemy, bot_t *pBot)
 
    if (!FNullEnt (pBot->pBotEnemy))
    {
+#ifdef _WIN32
       strncpy_s (szEnemyModelName, sizeof(szEnemyModelName), (INFOKEY_VALUE (GET_INFOKEYBUFFER (pBot->pBotEnemy), "model")), sizeof (szEnemyModelName) - 1); // KWo - 04.07.2008
+#else
+       strncpy(szEnemyModelName, (INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pBotEnemy), "model")), sizeof(szEnemyModelName)); // KWo - 04.07.2008
+#endif
       bEnemyIsChicken = ((strncmp ("chicken", szEnemyModelName, 7) == 0)
          || (strncmp ("zomb", szEnemyModelName, 4) == 0)); // KWo - 04.07.2008
 
@@ -2181,7 +2191,11 @@ void BotSelectBestWeapon (bot_t *pBot)
       iEnemyIndex = ENTINDEX(pBot->pBotEnemy)-1;
       iWeaponEnemy = clients[iEnemyIndex].iCurrentWeaponId;
       iDistance = (int)(pBot->pEdict->v.origin - pBot->pBotEnemy->v.origin).Length(); // KWo - 24.06.2008
+#ifdef _WIN32
       strncpy_s (szEnemyModelName, sizeof(szEnemyModelName), (INFOKEY_VALUE (GET_INFOKEYBUFFER (pBot->pBotEnemy), "model")), sizeof (szEnemyModelName) - 1); // KWo - 04.07.2008
+#else
+      strncpy(szEnemyModelName, (INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pBotEnemy), "model")), sizeof(szEnemyModelName)); // KWo - 04.07.2008
+#endif
       bEnemyIsChicken = ((strncmp ("chicken", szEnemyModelName, 7) == 0)
          || (strncmp ("zomb", szEnemyModelName, 4) == 0)); // KWo - 04.07.2008
    }

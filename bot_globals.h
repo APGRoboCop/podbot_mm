@@ -47,21 +47,19 @@
 #define  FORCEINLINE         inline
 #endif
 
-
-
 #define SVC_PINGS		17 // KWo - 02.03.2010 (missing in HLSDK!)
 
-inline void UTIL_ClampAngle (float *fAngle)
+inline void UTIL_ClampAngle(float* fAngle)
 {
-   // Whistler, TEST your bugfixes before submitting them!!! :D
-   if (*fAngle >= 180.0f)
-      *fAngle -= 360.0f * ((int) (*fAngle / 360) + 1); // and not 0.5
-   if (*fAngle < -180.0f)
-      *fAngle += 360.0f * ((int) (-*fAngle / 360) + 1); // and not 0.5
+	// Whistler, TEST your bugfixes before submitting them!!! :D
+	if (*fAngle >= 180.0f)
+		*fAngle -= 360.0f * ((int)(*fAngle / 360) + 1); // and not 0.5
+	if (*fAngle < -180.0f)
+		*fAngle += 360.0f * ((int)(-*fAngle / 360) + 1); // and not 0.5
 
-   if ((*fAngle >= 180.0f) || (*fAngle < -180.0f))
-      *fAngle = 0.0f; // heck, if we're still above the limit then something's REALLY fuckedup!
-   return;
+	if ((*fAngle >= 180.0f) || (*fAngle < -180.0f))
+		*fAngle = 0.0f; // heck, if we're still above the limit then something's REALLY fuckedup!
+	return;
 }
 /*
 inline void UTIL_ClampAngle (float *fAngle) // KWo - 17.02.2008 (inline again)
@@ -73,7 +71,7 @@ inline void UTIL_ClampAngle (float *fAngle) // KWo - 17.02.2008 (inline again)
 
    *fAngle = (360.0f / 65536.0f) * (static_cast <int> ((*fAngle + 180.0f) * (65536.0f / 360.0f)) & 65535) - 180.0f;
    if (*fAngle == -180.0f)
-      *fAngle = 180.0f;
+	  *fAngle = 180.0f;
    return;
 }
 */
@@ -83,42 +81,42 @@ inline void UTIL_ClampVector (Vector *vecAngles) // KWo - 17.02.2008 (inline aga
    vecAngles->x = (180.0f / 65536.0f) * (static_cast <int> ((vecAngles->x + 90.0f) * (65536.0f / 180.0f)) & 65535) - 90.0f;
    vecAngles->y = (360.0f / 65536.0f) * (static_cast <int> ((vecAngles->y + 180.0f) * (65536.0f / 360.0f)) & 65535) - 180.0f;
    if (vecAngles->x > 89.0f)
-      vecAngles->x = 89.0f;
+	  vecAngles->x = 89.0f;
    else if (vecAngles->x < -89.0f)
-      vecAngles->x = -89.0f;
+	  vecAngles->x = -89.0f;
    if (vecAngles->y > 180.0f)
-      vecAngles->y = 180.0f;
+	  vecAngles->y = 180.0f;
    else if (vecAngles->y == -180.0f)
-      vecAngles->y = 180.0f;
+	  vecAngles->y = 180.0f;
    else if (vecAngles->y < -179.0f)
-      vecAngles->y = -179.0f;
+	  vecAngles->y = -179.0f;
    vecAngles->z = 0.0f;
    return;
 }
 */
-inline void UTIL_ClampVector (Vector *vecAngles)
+inline void UTIL_ClampVector(Vector* vecAngles)
 {
-   // Whistler, TEST your bugfixes before submitting them!!! :D
-   if (vecAngles->x >= 180)
-      vecAngles->x -= 360 * ((int) (vecAngles->x / 360) + 1); // and not 0.5
-   if (vecAngles->x < -180)
-      vecAngles->x += 360 * ((int) (-vecAngles->x / 360) + 1); // and not 0.5
-   if (vecAngles->y >= 180)
-      vecAngles->y -= 360 * ((int) (vecAngles->y / 360) + 1); // and not 0.5
-   if (vecAngles->y < -180)
-      vecAngles->y += 360 * ((int) (-vecAngles->y / 360) + 1); // and not 0.5
-   vecAngles->z = 0.0;
+	// Whistler, TEST your bugfixes before submitting them!!! :D
+	if (vecAngles->x >= 180)
+		vecAngles->x -= 360 * ((int)(vecAngles->x / 360) + 1); // and not 0.5
+	if (vecAngles->x < -180)
+		vecAngles->x += 360 * ((int)(-vecAngles->x / 360) + 1); // and not 0.5
+	if (vecAngles->y >= 180)
+		vecAngles->y -= 360 * ((int)(vecAngles->y / 360) + 1); // and not 0.5
+	if (vecAngles->y < -180)
+		vecAngles->y += 360 * ((int)(-vecAngles->y / 360) + 1); // and not 0.5
+	vecAngles->z = 0.0;
 
-   if (vecAngles->x > 89)
-      vecAngles->x = 89;
-   else if (vecAngles->x < -89)
-      vecAngles->x = -89;
+	if (vecAngles->x > 89)
+		vecAngles->x = 89;
+	else if (vecAngles->x < -89)
+		vecAngles->x = -89;
 
-   if ((vecAngles->x >= 180) || (vecAngles->x < -180))
-      vecAngles->x = 0; // heck, if we're still above the limit then something's REALLY fuckedup!
-   if ((vecAngles->y >= 180) || (vecAngles->y < -180))
-      vecAngles->y = 0; // heck, if we're still above the limit then something's REALLY fuckedup!
-   return;
+	if ((vecAngles->x >= 180) || (vecAngles->x < -180))
+		vecAngles->x = 0; // heck, if we're still above the limit then something's REALLY fuckedup!
+	if ((vecAngles->y >= 180) || (vecAngles->y < -180))
+		vecAngles->y = 0; // heck, if we're still above the limit then something's REALLY fuckedup!
+	return;
 }
 
 extern float g_fTimeNextBombUpdate;
@@ -153,30 +151,30 @@ extern int iRadioSelect[32];
 extern int g_rgfLastRadio[2];
 extern float g_rgfLastRadioTime[2];
 extern char g_szWaypointMessage[512];
-extern const char *g_szSettingsMessage;         // KWo - 17.05.2008
-extern const char *g_szCommandsMessage;         // KWo - 17.05.2008
-extern const char *g_szWelcomeMessage;
+extern const char* g_szSettingsMessage;         // KWo - 17.05.2008
+extern const char* g_szCommandsMessage;         // KWo - 17.05.2008
+extern const char* g_szWelcomeMessage;
 extern int g_iNumLogos;
 extern int state;
 extern Vector g_vecBomb;
-extern edict_t *pHostEdict;
+extern edict_t* pHostEdict;
 extern bool g_bIsOldCS15;
 extern DLL_FUNCTIONS gFunctionTable;
 extern DLL_FUNCTIONS gFunctionTable_Post;
 extern enginefuncs_t g_engfuncs;
-extern globalvars_t  *gpGlobals;
+extern globalvars_t* gpGlobals;
 extern int gmsgFlashlight;                      // KWo - 25.05.2008
 extern int gmsgNVGToggle;                       // KWo - 26.05.2008
 extern char g_argv[1024];
-extern botname_t *g_pszBotNames;
+extern botname_t* g_pszBotNames;
 extern char szKillChat[100][256];
 extern char szBombChat[100][256];
 extern char szDeadChat[100][256];
 extern char szNoKwChat[100][256];
-extern const char *szUsedBotNames[32];
+extern const char* szUsedBotNames[32];
 extern int iUsedDeadChatIndex[10];             // KWo - 23.03.2010
 extern int iUsedUnknownChatIndex[5];          // KWo - 27.03.2010
-extern replynode_t *pChatReplies;
+extern replynode_t* pChatReplies;
 extern createbot_t BotCreateTab[32];
 extern client_t clients[32];
 extern bool g_bEditNoclip;
@@ -197,13 +195,13 @@ extern char g_cStoreAddbotTeam[2];	            // KWo - 08.01.2006
 extern char g_cStoreFillServerSkill[4];
 extern char g_cStoreFillServerPersonality[2];	// KWo - 08.01.2006
 extern char g_cStoreFillServerTeam[2];	         // KWo - 08.01.2006
-extern FILE *fp;
+extern FILE* fp;
 extern bool file_opened;
 extern bot_t bots[32];
 extern int msecnum;
 extern float msecdel;
 extern float msecval;
-extern void (*botMsgFunction) (void *, int);
+extern void (*botMsgFunction) (void*, int);
 extern int botMsgIndex;
 extern Vector g_vecHostOrigin;                  // KWo - 20.04.2013
 extern float g_fTimeRestartServer;
@@ -275,9 +273,9 @@ extern float g_f_cv_aim_influence_y_on_x;       // KWo - 06.04.2006
 extern float g_f_cv_aim_offset_delay;           // KWo - 06.04.2006
 extern float g_f_cv_aim_notarget_slowdown_ratio;   // KWo - 06.04.2006
 extern float g_f_cv_aim_target_anticipation_ratio; // KWo - 06.04.2006
-extern const char *g_sz_cv_PasswordField;       // KWo - 06.04.2006
-extern const char *g_sz_cv_Password;            // KWo - 06.04.2006
-extern const char *g_sz_cv_WPT_Folder;          // KWo - 17.11.2006
+extern const char* g_sz_cv_PasswordField;       // KWo - 06.04.2006
+extern const char* g_sz_cv_Password;            // KWo - 06.04.2006
+extern const char* g_sz_cv_WPT_Folder;          // KWo - 17.11.2006
 
 extern float g_f_cvars_upd_time;                // KWo - 02.05.2006
 extern float g_f_host_upd_time;                 // KWo - 18.05.2006
@@ -290,13 +288,13 @@ extern int g_iUpdGlExpState;                    // KWo - 02.05.2006
 extern bool g_bRecalcKills;                     // KWo - 02.05.2006
 extern bool g_bDeathMessageSent;                // KWo - 02.03.2010
 
-extern const char *g_TaskNames[19];             // KWo - 06.01.2008
-extern const char *g_ItemTypeNames[7];          // KWo - 28.08.2008
-extern const char *g_CollideMoveNames[8];       // KWo - 27.03.2010
-extern const char *g_rgpszPbCmds[NUM_PBCOMMANDS + 1];
-extern const char *g_rgpszPbCvars[NUM_PBCVARS + 1];
-extern cvar_t *g_p_cv_csdm_active;              // KWo - 15.04.2008
-extern cvar_t *g_rgcvarPointer[NUM_PBCVARS];    // KWo - 13.10.2006
+extern const char* g_TaskNames[19];             // KWo - 06.01.2008
+extern const char* g_ItemTypeNames[7];          // KWo - 28.08.2008
+extern const char* g_CollideMoveNames[8];       // KWo - 27.03.2010
+extern const char* g_rgpszPbCmds[NUM_PBCOMMANDS + 1];
+extern const char* g_rgpszPbCvars[NUM_PBCVARS + 1];
+extern cvar_t* g_p_cv_csdm_active;              // KWo - 15.04.2008
+extern cvar_t* g_rgcvarPointer[NUM_PBCVARS];    // KWo - 13.10.2006
 extern bot_weapon_select_t cs_weapon_select[NUM_WEAPONS + 1];
 extern bot_fire_delay_t cs_fire_delay[NUM_WEAPONS + 1];
 extern botaim_t BotAimTab[6];
@@ -309,7 +307,7 @@ extern bottask_t taskFilters[];
 extern int NormalWeaponPrefs[NUM_WEAPONS];
 extern int AgressiveWeaponPrefs[NUM_WEAPONS];
 extern int DefensiveWeaponPrefs[NUM_WEAPONS];
-extern int *ptrWeaponPrefs[];
+extern int* ptrWeaponPrefs[];
 extern char szSprayNames[NUM_SPRAYPAINTS][20];
 extern const char szSpeechSentences[16][80];
 
@@ -353,91 +351,91 @@ extern menutext_t menuWpAutoPathMaxDistance;
 
 #ifdef __linux__
 // Linux doesn't have this function so this emulates its functionality
-inline void *GetModuleHandle(const char *name)
+inline void* GetModuleHandle(const char* name)
 {
-   void *handle;
+	void* handle;
 
-   if( name == NULL )
-   {
-      // hmm, how can this be handled under linux....
-      // is it even needed?
-      return NULL;
-   }
+	if (name == NULL)
+	{
+		// hmm, how can this be handled under linux....
+		// is it even needed?
+		return NULL;
+	}
 
-    if( (handle=dlopen(name, RTLD_NOW))==NULL)
-    {
-            // couldn't open this file
-            return NULL;
-    }
+	if ((handle = dlopen(name, RTLD_NOW)) == NULL)
+	{
+		// couldn't open this file
+		return NULL;
+	}
 
-   // read "man dlopen" for details
-   // in short dlopen() inc a ref count
-   // so dec the ref count by performing the close
-   dlclose(handle);
-   return handle;
+	// read "man dlopen" for details
+	// in short dlopen() inc a ref count
+	// so dec the ref count by performing the close
+	dlclose(handle);
+	return handle;
 }
 #endif
 
 struct GL_msurface_t
 {
 #define SURF_UNDERWATER      0x80   // ONLY FOR OpenGL!!!
-//#define SURF_DONTWARP      0x100   // ONLY FOR OpenGL!!! (EXISTS?!?!?!?!?!??!?!?!?!?!?!??!)
+	//#define SURF_DONTWARP      0x100   // ONLY FOR OpenGL!!! (EXISTS?!?!?!?!?!??!?!?!?!?!?!??!)
 
-/*off=0(0)*/   int         visframe;      // should be drawn when node is crossed
-/*off=4(1)*/   mplane_t   *plane;         // pointer to shared plane
-/*off=8(2)*/   int         flags;         // see SURF_* #defines
+	/*off=0(0)*/   int         visframe;      // should be drawn when node is crossed
+	/*off=4(1)*/   mplane_t* plane;         // pointer to shared plane
+	/*off=8(2)*/   int         flags;         // see SURF_* #defines
 
-/*off=12(3)*/   int         firstedge;   // look up in model->surfedges[], negative numbers are backwards edges
-/*off=16(4)*/   int         numedges;
+	/*off=12(3)*/   int         firstedge;   // look up in model->surfedges[], negative numbers are backwards edges
+	/*off=16(4)*/   int         numedges;
 
-/*off=20(5)*/   short      texturemins[2]; // smallest s/t position on the surface.
-/*off=24(6)*/   short      extents[2];      // ?? s/t texture size, 1..256 for all non-sky surfaces
+	/*off=20(5)*/   short      texturemins[2]; // smallest s/t position on the surface.
+	/*off=24(6)*/   short      extents[2];      // ?? s/t texture size, 1..256 for all non-sky surfaces
 
-/*off=28(7)*/   int         light_s, light_t;   // gl lightmap coordinates
-/*off=36(9)*/   struct glpoly_t   *polys;            // multiple if warped
-/*off=40(10)*/   msurface_t   *texturechain;
-/*off=44(11)*/   mtexinfo_t   *texinfo;
+	/*off=28(7)*/   int         light_s, light_t;   // gl lightmap coordinates
+	/*off=36(9)*/   struct glpoly_t* polys;            // multiple if warped
+	/*off=40(10)*/   msurface_t* texturechain;
+	/*off=44(11)*/   mtexinfo_t* texinfo;
 
-// lighting info
-/*off=48(12)*/   int         dlightframe;   // last frame the surface was checked by an animated light
-/*off=52(13)*/   int         dlightbits;      // dynamically generated. Indicates if the surface illumination
-                        // is modified by an animated light.
-/*off=56(14)*/   int         lightmaptexturenum;
-/*off=60(15)*/   unsigned char      styles[MAXLIGHTMAPS]; // index into d_lightstylevalue[] for animated lights
-                             // no one surface can be effected by more than 4
-                             // animated lights.
+	// lighting info
+	/*off=48(12)*/   int         dlightframe;   // last frame the surface was checked by an animated light
+	/*off=52(13)*/   int         dlightbits;      // dynamically generated. Indicates if the surface illumination
+							// is modified by an animated light.
+	/*off=56(14)*/   int         lightmaptexturenum;
+	/*off=60(15)*/   unsigned char      styles[MAXLIGHTMAPS]; // index into d_lightstylevalue[] for animated lights
+								 // no one surface can be effected by more than 4
+								 // animated lights.
 
-/*off=64(16)*/   int         cached_light[MAXLIGHTMAPS];   // values currently used in lightmap
-/*off=80(20)*/   qboolean   cached_dlight;            // true if dynamic light in cache
+	/*off=64(16)*/   int         cached_light[MAXLIGHTMAPS];   // values currently used in lightmap
+	/*off=80(20)*/   qboolean   cached_dlight;            // true if dynamic light in cache
 
-/*off=84(21)*/   color24      *samples;   // [numstyles*surfsize]
+	/*off=84(21)*/   color24* samples;   // [numstyles*surfsize]
 
-/*off=88(22)*/   decal_t      *pdecals;
+	/*off=88(22)*/   decal_t* pdecals;
 };   // sizeof (GL_msurface_t) == 92 (23)
 struct GL_mnode_t
 {
-   enum ChildrenType_t
-   {
-      ChildrenType_Front,
-      ChildrenType_Back,
+	enum ChildrenType_t
+	{
+		ChildrenType_Front,
+		ChildrenType_Back,
 
-      ChildrenType_Total
-   };
+		ChildrenType_Total
+	};
 
-// common with leaf
-/*! Off=0(0)*/   int         contents;      // 0, to differentiate from leafs
-/*! Off=4(1)*/   int         visframe;      // node needs to be traversed if current
+	// common with leaf
+	/*! Off=0(0)*/   int         contents;      // 0, to differentiate from leafs
+	/*! Off=4(1)*/   int         visframe;      // node needs to be traversed if current
 
-/*! Off=8(2)*/   Vector      mins, maxs;      // for bounding box culling
+	/*! Off=8(2)*/   Vector      mins, maxs;      // for bounding box culling
 
-/*! Off=32(8)*/   mnode_t   *parent;
+	/*! Off=32(8)*/   mnode_t* parent;
 
-// node specific
-/*! Off=36(9)*/   mplane_t   *plane;
-/*! Off=40(10)*/   mnode_t   *children[ChildrenType_Total];
+	// node specific
+	/*! Off=36(9)*/   mplane_t* plane;
+	/*! Off=40(10)*/   mnode_t* children[ChildrenType_Total];
 
-/*! Off=48(12)*/   unsigned short      firstsurface;
-/*! Off=50(12.5)*/   unsigned short      numsurfaces;
+	/*! Off=48(12)*/   unsigned short      firstsurface;
+	/*! Off=50(12.5)*/   unsigned short      numsurfaces;
 };   // sizeof (GL_mnode_t) == 52 (13)
 
 #define   MAX_LIGHTSTYLES   64
@@ -445,22 +443,22 @@ struct GL_mnode_t
 
 struct lightstyle_t
 {
-   int  length;
-   char map[MAX_LIGHTSTYLES];
+	int  length;
+	char map[MAX_LIGHTSTYLES];
 };
 
 extern lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
 extern int          d_lightstylevalue[MAX_LIGHTSTYLEVALUE];   // 8.8 fraction of base light value
-extern model_t     *sv_worldmodel;   // Analog of sv.worldmodel.
+extern model_t* sv_worldmodel;   // Analog of sv.worldmodel.
 
 struct Color
 {
-   int red;
-   int green;
-   int blue;
+	int red;
+	int green;
+	int blue;
 
-   inline       void         Reset  (void)       { red = green = blue = 0; }
-   inline const unsigned int GetAvg (void) const { return (red + green + blue) / (sizeof (Color) / sizeof (int)); }
+	inline       void         Reset(void) { red = green = blue = 0; }
+	inline const unsigned int GetAvg(void) const { return (red + green + blue) / (sizeof(Color) / sizeof(int)); }
 };
 
 /*
@@ -471,150 +469,149 @@ LIGHT SAMPLING
 =============================================================================
 */
 
-
 namespace Light
 {
-//extern const mplane_t *lightplane (NULL);
-//extern Vector lightspot;
-   extern Color g_pointColor;
+	//extern const mplane_t *lightplane (NULL);
+	//extern Vector lightspot;
+	extern Color g_pointColor;
 
-   template <typename nodeType, typename surfaceType> extern const  bool RecursiveLightPoint (const nodeType *const node, const Vector  &start, const Vector &end)
-   {
-      float front, back, frac;
-      int side;
-      mplane_t *plane;
-      Vector mid;
-      surfaceType *surf;
-      int s, t, ds, dt;
-      int i;
-      mtexinfo_t *tex;
-      color24 *lightmap;
-      unsigned int scale;
-      unsigned char maps;
+	template <typename nodeType, typename surfaceType> extern const  bool RecursiveLightPoint(const nodeType* const node, const Vector& start, const Vector& end)
+	{
+		float front, back, frac;
+		int side;
+		mplane_t* plane;
+		Vector mid;
+		surfaceType* surf;
+		int s, t, ds, dt;
+		int i;
+		mtexinfo_t* tex;
+		color24* lightmap;
+		unsigned int scale;
+		unsigned char maps;
 
-      // Reliability check.
-      assert (node != NULL);
+		// Reliability check.
+		assert(node != NULL);
 
-      if (node->contents < 0)
-         return false;   // didn't hit anything
+		if (node->contents < 0)
+			return false;   // didn't hit anything
 
-      // Determine which side of the node plane our points are on
-      // FIXME: optimize for axial
-      plane = node->plane;
-      front = DotProduct (start, plane->normal) - plane->dist;
-      back = DotProduct (end, plane->normal) - plane->dist;
-      side = front < 0.0f;
+		 // Determine which side of the node plane our points are on
+		 // FIXME: optimize for axial
+		plane = node->plane;
+		front = DotProduct(start, plane->normal) - plane->dist;
+		back = DotProduct(end, plane->normal) - plane->dist;
+		side = front < 0.0f;
 
-      // If they're both on the same side of the plane, don't bother to split just check the appropriate child
-      if ((back < 0.0f) == side)
-         return RecursiveLightPoint <nodeType, surfaceType>  (reinterpret_cast <nodeType *> (node->children[side]), start,  end);
+		// If they're both on the same side of the plane, don't bother to split just check the appropriate child
+		if ((back < 0.0f) == side)
+			return RecursiveLightPoint <nodeType, surfaceType>(reinterpret_cast <nodeType*> (node->children[side]), start, end);
 
-      // calculate mid point
-      frac = front / (front - back);
-      mid = start + (end - start) * frac;
+		// calculate mid point
+		frac = front / (front - back);
+		mid = start + (end - start) * frac;
 
-      // go down front side
-      if (RecursiveLightPoint <nodeType, surfaceType>  (reinterpret_cast <nodeType *> (node->children[side]), start,  mid))
-         return true;   // hit something
+		// go down front side
+		if (RecursiveLightPoint <nodeType, surfaceType>(reinterpret_cast <nodeType*> (node->children[side]), start, mid))
+			return true;   // hit something
 
-      // Blow it off if it doesn't split the plane...
-      if ((back < 0.0f) == side)
-         return false;   // didn't hit anything
+		 // Blow it off if it doesn't split the plane...
+		if ((back < 0.0f) == side)
+			return false;   // didn't hit anything
 
-      // check for impact on this node
-   //   lightspot = mid;
-   //   lightplane = plane;
+		 // check for impact on this node
+	  //   lightspot = mid;
+	  //   lightplane = plane;
 
-      surf = reinterpret_cast <surfaceType *> (sv_worldmodel->surfaces) + node->firstsurface;
-      for (i = 0; i < node->numsurfaces; ++i, ++surf)
-      {
-         if (surf->flags & SURF_DRAWTILED)
-            continue;   // no lightmaps
+		surf = reinterpret_cast <surfaceType*> (sv_worldmodel->surfaces) + node->firstsurface;
+		for (i = 0; i < node->numsurfaces; ++i, ++surf)
+		{
+			if (surf->flags & SURF_DRAWTILED)
+				continue;   // no lightmaps
 
-         tex = surf->texinfo;
+			tex = surf->texinfo;
 
-         // See where in lightmap space our intersection point is
-         s = static_cast <int> (DotProduct (mid, Vector (tex->vecs[0])) + tex->vecs[0][3]);
-         t = static_cast <int> (DotProduct (mid, Vector (tex->vecs[1])) + tex->vecs[1][3]);
+			// See where in lightmap space our intersection point is
+			s = static_cast <int> (DotProduct(mid, Vector(tex->vecs[0])) + tex->vecs[0][3]);
+			t = static_cast <int> (DotProduct(mid, Vector(tex->vecs[1])) + tex->vecs[1][3]);
 
-         // Not in the bounds of our lightmap? punt...
-         if (s < surf->texturemins[0] || t < surf->texturemins[1])
-            continue;
+			// Not in the bounds of our lightmap? punt...
+			if (s < surf->texturemins[0] || t < surf->texturemins[1])
+				continue;
 
-         // assuming a square lightmap (FIXME: which ain't always the case),
-         // lets see if it lies in that rectangle. If not, punt...
-         ds = s - surf->texturemins[0];
-         dt = t - surf->texturemins[1];
+			// assuming a square lightmap (FIXME: which ain't always the case),
+			// lets see if it lies in that rectangle. If not, punt...
+			ds = s - surf->texturemins[0];
+			dt = t - surf->texturemins[1];
 
-         if (ds > surf->extents[0] || dt > surf->extents[1])
-            continue;
+			if (ds > surf->extents[0] || dt > surf->extents[1])
+				continue;
 
-         if (surf->samples == NULL)
-            return true;
+			if (surf->samples == NULL)
+				return true;
 
-         ds >>= 4;
-         dt >>= 4;
+			ds >>= 4;
+			dt >>= 4;
 
-         g_pointColor.Reset ();   // Reset point color.
+			g_pointColor.Reset();   // Reset point color.
 
-         const int smax ((surf->extents[0] >> 4) + 1);
-         const int tmax ((surf->extents[1] >> 4) + 1);
-         const int size (smax * tmax);
+			const int smax((surf->extents[0] >> 4) + 1);
+			const int tmax((surf->extents[1] >> 4) + 1);
+			const int size(smax * tmax);
 
-         lightmap = surf->samples + dt * smax + ds;
+			lightmap = surf->samples + dt * smax + ds;
 
-         // Compute the lightmap color at a particular point
-         for (maps = 0u; maps < MAXLIGHTMAPS && surf->styles[maps] != 255u; ++maps)
-         {
-            scale = d_lightstylevalue[surf->styles[maps]];
+			// Compute the lightmap color at a particular point
+			for (maps = 0u; maps < MAXLIGHTMAPS && surf->styles[maps] != 255u; ++maps)
+			{
+				scale = d_lightstylevalue[surf->styles[maps]];
 
-            g_pointColor.red += lightmap->r * scale;
-            g_pointColor.green += lightmap->g * scale;
-            g_pointColor.blue += lightmap->b * scale;
+				g_pointColor.red += lightmap->r * scale;
+				g_pointColor.green += lightmap->g * scale;
+				g_pointColor.blue += lightmap->b * scale;
 
-            lightmap += size;   // skip to next lightmap
-         }
+				lightmap += size;   // skip to next lightmap
+			}
 
-         g_pointColor.red >>= 8u;
-         g_pointColor.green >>= 8u;
-         g_pointColor.blue >>= 8u;
+			g_pointColor.red >>= 8u;
+			g_pointColor.green >>= 8u;
+			g_pointColor.blue >>= 8u;
 
-         return true;
-      }
+			return true;
+		}
 
-      // go down back side
-      return RecursiveLightPoint <nodeType, surfaceType>  (reinterpret_cast <nodeType *> (node->children[!side]), mid,  end);
-   }
+		// go down back side
+		return RecursiveLightPoint <nodeType, surfaceType>(reinterpret_cast <nodeType*> (node->children[!side]), mid, end);
+	}
 
-   inline const bool IsSoftwareDrawingMode (void)
-   {
-      static const bool isSoftwareDrawingMode (IS_DEDICATED_SERVER () || GetModuleHandle ("sw.dll") != NULL);
+	inline const bool IsSoftwareDrawingMode(void)
+	{
+		static const bool isSoftwareDrawingMode(IS_DEDICATED_SERVER() || GetModuleHandle("sw.dll") != NULL);
 
-      return isSoftwareDrawingMode;
-   }
+		return isSoftwareDrawingMode;
+	}
 
-   inline const bool ActualRecursiveLightPoint (const Vector &start, const Vector &end)
-   {
-      return IsSoftwareDrawingMode () ?
-         RecursiveLightPoint <mnode_t, msurface_t> (sv_worldmodel->nodes, start, end) :
-         RecursiveLightPoint <GL_mnode_t, GL_msurface_t>  (reinterpret_cast <GL_mnode_t *> (sv_worldmodel->nodes), start,  end);
-   }
+	inline const bool ActualRecursiveLightPoint(const Vector& start, const Vector& end)
+	{
+		return IsSoftwareDrawingMode() ?
+			RecursiveLightPoint <mnode_t, msurface_t>(sv_worldmodel->nodes, start, end) :
+			RecursiveLightPoint <GL_mnode_t, GL_msurface_t>(reinterpret_cast <GL_mnode_t*> (sv_worldmodel->nodes), start, end);
+	}
 
-   inline const unsigned char R_LightPoint (const Vector &p)
-   {
-   // Reliability check.
-      if (sv_worldmodel == NULL)
-         return 0u;
+	inline const unsigned char R_LightPoint(const Vector& p)
+	{
+		// Reliability check.
+		if (sv_worldmodel == NULL)
+			return 0u;
 
-      if (sv_worldmodel->lightdata == NULL)
-         return 255u;
+		if (sv_worldmodel->lightdata == NULL)
+			return 255u;
 
-      Vector end (p);
+		Vector end(p);
 
-      end.z -= 2048.0f;
+		end.z -= 2048.0f;
 
-      return ActualRecursiveLightPoint (p, end) == false ? 0u : static_cast <unsigned char> (g_pointColor.GetAvg ());
-   }
+		return ActualRecursiveLightPoint(p, end) == false ? 0u : static_cast <unsigned char> (g_pointColor.GetAvg());
+	}
 }
 
 #endif

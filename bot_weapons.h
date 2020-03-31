@@ -89,87 +89,84 @@
 // weapon numbers for podbot mm - used for buying and restriction - KWo - 11.03.2006
 enum pb_weapon_index
 {
-// Knife
-   PB_WEAPON_KNIFE = 0,
-// Pistols
-   PB_WEAPON_USP = 1,
-   PB_WEAPON_GLOCK18 = 2,
-   PB_WEAPON_DEAGLE = 3,
-   PB_WEAPON_P228 = 4,
-   PB_WEAPON_ELITE = 5,
-   PB_WEAPON_FIVESEVEN = 6,
+	// Knife
+	PB_WEAPON_KNIFE = 0,
+	// Pistols
+	PB_WEAPON_USP = 1,
+	PB_WEAPON_GLOCK18 = 2,
+	PB_WEAPON_DEAGLE = 3,
+	PB_WEAPON_P228 = 4,
+	PB_WEAPON_ELITE = 5,
+	PB_WEAPON_FIVESEVEN = 6,
 
-// Shotguns
-   PB_WEAPON_M3 = 7,
-   PB_WEAPON_XM1014 = 8,
+	// Shotguns
+	PB_WEAPON_M3 = 7,
+	PB_WEAPON_XM1014 = 8,
 
-// SMGs
-   PB_WEAPON_MP5NAVY = 9,
-   PB_WEAPON_TMP = 10,
-   PB_WEAPON_P90 = 11,
-   PB_WEAPON_MAC10 = 12,
-   PB_WEAPON_UMP45 = 13,
+	// SMGs
+	PB_WEAPON_MP5NAVY = 9,
+	PB_WEAPON_TMP = 10,
+	PB_WEAPON_P90 = 11,
+	PB_WEAPON_MAC10 = 12,
+	PB_WEAPON_UMP45 = 13,
 
-// Rifles
-   PB_WEAPON_AK47 = 14,
-   PB_WEAPON_SG552 = 15,
-   PB_WEAPON_M4A1 = 16,
-   PB_WEAPON_GALIL = 17,
-   PB_WEAPON_FAMAS = 18,
-   PB_WEAPON_AUG = 19,
-   PB_WEAPON_SCOUT = 20,
-   PB_WEAPON_AWP = 21,
-   PB_WEAPON_G3SG1 = 22,
-   PB_WEAPON_SG550 = 23,
+	// Rifles
+	PB_WEAPON_AK47 = 14,
+	PB_WEAPON_SG552 = 15,
+	PB_WEAPON_M4A1 = 16,
+	PB_WEAPON_GALIL = 17,
+	PB_WEAPON_FAMAS = 18,
+	PB_WEAPON_AUG = 19,
+	PB_WEAPON_SCOUT = 20,
+	PB_WEAPON_AWP = 21,
+	PB_WEAPON_G3SG1 = 22,
+	PB_WEAPON_SG550 = 23,
 
-// Machine Gun
-   PB_WEAPON_M249 = 24,
+	// Machine Gun
+	PB_WEAPON_M249 = 24,
 
-// Shield - as equivalent for primary weapon
-   PB_WEAPON_SHIELDGUN =  25
+	// Shield - as equivalent for primary weapon
+	PB_WEAPON_SHIELDGUN = 25
 };
 
 // Equipement and ammo numbers for podbot mm - used for buying and restriction - KWo - 11.03.2006
 enum pb_equipment_index
 {
-   PB_WEAPON_VEST = 0,
-   PB_WEAPON_VESTHELM = 1,
-   PB_WEAPON_FLASHBANG = 2,
-   PB_WEAPON_HEGRENADE = 3,
-   PB_WEAPON_SMOKEGRENADE = 4,
-   PB_WEAPON_DEFUSER = 5,
-   PB_WEAPON_NVGS = 6,
-   PB_WEAPON_AMMO1 = 7,
-   PB_WEAPON_AMMO2 = 8
+	PB_WEAPON_VEST = 0,
+	PB_WEAPON_VESTHELM = 1,
+	PB_WEAPON_FLASHBANG = 2,
+	PB_WEAPON_HEGRENADE = 3,
+	PB_WEAPON_SMOKEGRENADE = 4,
+	PB_WEAPON_DEFUSER = 5,
+	PB_WEAPON_NVGS = 6,
+	PB_WEAPON_AMMO1 = 7,
+	PB_WEAPON_AMMO2 = 8
 };
 
 typedef struct
 {
-   char szClassname[64];
-   int iAmmo1; // ammo index for primary ammo
-   int iAmmo1Max; // max primary ammo
-   int iAmmo2; // ammo index for secondary ammo
-   int iAmmo2Max; // max secondary ammo
-   int iSlot; // HUD slot (0 based)
-   int iPosition; // slot position
-   int iId; // weapon ID
-   int iFlags; // flags???
+	char szClassname[64];
+	int iAmmo1; // ammo index for primary ammo
+	int iAmmo1Max; // max primary ammo
+	int iAmmo2; // ammo index for secondary ammo
+	int iAmmo2Max; // max secondary ammo
+	int iSlot; // HUD slot (0 based)
+	int iPosition; // slot position
+	int iId; // weapon ID
+	int iFlags; // flags???
 } bot_weapon_t;
-
-
 
 typedef struct
 {
-   int iId;
-   float primary_base_delay;
-   float primary_min_delay[6];
-   float primary_max_delay[6];
-   float secondary_base_delay;
-   float secondary_min_delay[5];
-   float secondary_max_delay[5];
-   int iMaxFireBullets;
-   float fMinBurstPauseFactor;
+	int iId;
+	float primary_base_delay;
+	float primary_min_delay[6];
+	float primary_max_delay[6];
+	float secondary_base_delay;
+	float secondary_min_delay[5];
+	float secondary_max_delay[5];
+	int iMaxFireBullets;
+	float fMinBurstPauseFactor;
 } bot_fire_delay_t;
-
 
 #endif // BOT_WEAPONS_H

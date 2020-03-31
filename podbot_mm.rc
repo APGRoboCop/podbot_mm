@@ -3,8 +3,8 @@
 #include <winver.h>
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 2018,8,28,0
-PRODUCTVERSION 2018,8,28,0
+FILEVERSION 2018, 8, 28, 0
+PRODUCTVERSION 2018, 8, 28, 0
 FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
 FILEFLAGS VS_FF_DEBUG
@@ -15,26 +15,26 @@ FILEOS VOS__WINDOWS32
 FILETYPE VFT_DLL
 FILESUBTYPE VFT2_UNKNOWN
 BEGIN
-   BLOCK "StringFileInfo"
-   BEGIN
-      BLOCK "040904b0"
-      BEGIN
-         VALUE "Comments", "\0"
-         VALUE "CompanyName", "\0"
-         VALUE "FileDescription", "MetaMod Plugin\0"
-         VALUE "FileVersion", "20180828\0"
-         VALUE "InternalName", "Podbot mm\0"
-         VALUE "LegalCopyright", "\0"
-         VALUE "LegalTrademarks", "\0"
-         VALUE "OriginalFilename", "podbot_mm.dll\0"
-         VALUE "PrivateBuild", "3.0 Build 23a\0"
-         VALUE "ProductName", "Podbot mm\0"
-         VALUE "ProductVersion", "20180828\0"
-         VALUE "SpecialBuild", "3.0 Build 23a\0"
-      END
-   END
-   BLOCK "VarFileInfo"
-   BEGIN
-      VALUE "Translation", 0x409, 1200
-   END
+BLOCK "StringFileInfo"
+BEGIN
+BLOCK "040904b0"
+BEGIN
+VALUE "Comments", "\0"
+VALUE "CompanyName", "\0"
+VALUE "FileDescription", "MetaMod Plugin\0"
+VALUE "FileVersion", "20180828\0"
+VALUE "InternalName", "Podbot mm\0"
+VALUE "LegalCopyright", "\0"
+VALUE "LegalTrademarks", "\0"
+VALUE "OriginalFilename", "podbot_mm.dll\0"
+VALUE "PrivateBuild", "3.0 Build 23a\0"
+VALUE "ProductName", "Podbot mm\0"
+VALUE "ProductVersion", "20180828\0"
+VALUE "SpecialBuild", "3.0 Build 23a\0"
+END
+END
+BLOCK "VarFileInfo"
+BEGIN
+VALUE "Translation", 0x409, 1200
+END
 END

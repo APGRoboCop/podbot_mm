@@ -29,14 +29,14 @@ int NumTeammatesNearPos(bot_t* pBot, Vector vecPosition, int iRadius)
 	Vector vPlayerOrigin; // KWo - 19.10.2008
 
 	if (g_b_cv_ffa) // KWo - 05.10.2006
-		return (0);
+		return 0;
 
 	for (i = 0; i < gpGlobals->maxClients; i++)
 	{
 		if (!(clients[i].iFlags & CLIENT_USED)
 			|| !(clients[i].iFlags & CLIENT_ALIVE)
-			|| ((clients[i].iTeam != pBot->bot_team) || (g_b_cv_ffa)) // KWo - 05.10.2006
-			|| (clients[i].pEdict == pEdict))
+			|| (clients[i].iTeam != pBot->bot_team || g_b_cv_ffa) // KWo - 05.10.2006
+			|| clients[i].pEdict == pEdict)
 			continue;
 
 		fDistance = (clients[i].vOrigin - vecPosition).Length();
@@ -48,7 +48,7 @@ int NumTeammatesNearPos(bot_t* pBot, Vector vecPosition, int iRadius)
 		}
 	}
 
-	return (iCount);
+	return iCount;
 }
 
 int NumEnemiesNearPos(bot_t* pBot, Vector vecPosition, int iRadius)
@@ -62,7 +62,7 @@ int NumEnemiesNearPos(bot_t* pBot, Vector vecPosition, int iRadius)
 	{
 		if (!(clients[i].iFlags & CLIENT_USED)
 			|| !(clients[i].iFlags & CLIENT_ALIVE)
-			|| (((clients[i].iTeam == pBot->bot_team)) && (!g_b_cv_ffa))) // KWo - 05.10.2006
+			|| clients[i].iTeam == pBot->bot_team && !g_b_cv_ffa) // KWo - 05.10.2006
 			continue;
 
 		fDistance = (clients[i].vOrigin - vecPosition).Length();
@@ -74,7 +74,7 @@ int NumEnemiesNearPos(bot_t* pBot, Vector vecPosition, int iRadius)
 		}
 	}
 
-	return (iCount);
+	return iCount;
 }
 
 bool BotEnemyIsVisible(bot_t* pBot, edict_t* pEnemy) // KWo - 27.01.2008
@@ -91,13 +91,13 @@ bool BotEnemyIsVisible(bot_t* pBot, edict_t* pEnemy) // KWo - 27.01.2008
 	bool EnemyWeaponIsGun = false;// KWo - 17.01.2011
 
 	if (FNullEnt(pEnemy))
-		return(false);
+		return false;
 	if (!FStrEq(STRING(pEnemy->v.classname), "player"))
-		return(false);
+		return false;
 
 	// Can't see the target entity if blinded or smoked...
 	if ((pBot->pEdict->v.origin - pEnemy->v.origin).Length() > pBot->f_view_distance) // KWo - 14.09.2008
-		return (FALSE);
+		return false;
 
 	// KWo - 22.03.2008 - added invisibility check
 	RenderFx = pEnemy->v.renderfx;
@@ -105,46 +105,46 @@ bool BotEnemyIsVisible(bot_t* pBot, edict_t* pEnemy) // KWo - 27.01.2008
 	RenderColor = pEnemy->v.rendercolor;
 	RenderAmount = pEnemy->v.renderamt;
 	EntEnemyIndex = ENTINDEX(pEnemy) - 1;                                                    // 17.01.2011
-	if ((EntEnemyIndex >= 0) && (EntEnemyIndex < gpGlobals->maxClients))                      // 17.01.2011
+	if (EntEnemyIndex >= 0 && EntEnemyIndex < gpGlobals->maxClients)                      // 17.01.2011
 	{
 		EnemyWeapon = clients[EntEnemyIndex].iCurrentWeaponId;                                 // 17.01.2011
-		EnemyWeaponIsGun = (WeaponIsPistol(EnemyWeapon) || WeaponIsPrimaryGun(EnemyWeapon));   // 17.01.2011
+		EnemyWeaponIsGun = WeaponIsPistol(EnemyWeapon) || WeaponIsPrimaryGun(EnemyWeapon);   // 17.01.2011
 	}
 
-	if (((RenderFx == kRenderFxExplode) || (pEnemy->v.effects & EF_NODRAW))                   // 17.01.2011
-		&& (!(pEnemy->v.oldbuttons & IN_ATTACK) || !(EnemyWeaponIsGun))) // kRenderFxExplode is always invisible even for mode kRenderNormal
-		return(false);
-	else if (((RenderFx == kRenderFxExplode) || (pEnemy->v.effects & EF_NODRAW))
-		&& (pEnemy->v.oldbuttons & IN_ATTACK) && (EnemyWeaponIsGun))
+	if ((RenderFx == kRenderFxExplode || pEnemy->v.effects & EF_NODRAW)                   // 17.01.2011
+		&& (!(pEnemy->v.oldbuttons & IN_ATTACK) || !EnemyWeaponIsGun)) // kRenderFxExplode is always invisible even for mode kRenderNormal
+		return false;
+	else if ((RenderFx == kRenderFxExplode || pEnemy->v.effects & EF_NODRAW)
+		&& pEnemy->v.oldbuttons & IN_ATTACK && EnemyWeaponIsGun)
 		SemiTransparent = true;
-	else if ((RenderFx != kRenderFxHologram) && (RenderFx != kRenderFxExplode)
-		&& (RenderMode != kRenderNormal)) // kRenderFxHologram is always visible no matter what is the mode
+	else if (RenderFx != kRenderFxHologram && RenderFx != kRenderFxExplode
+		&& RenderMode != kRenderNormal) // kRenderFxHologram is always visible no matter what is the mode
 	{
 		if (RenderFx == kRenderFxGlowShell)
 		{
-			if ((RenderAmount <= 20.0f) && (RenderColor.x <= 20)
-				&& (RenderColor.y <= 20) && (RenderColor.z <= 20))
+			if (RenderAmount <= 20.0f && RenderColor.x <= 20
+				&& RenderColor.y <= 20 && RenderColor.z <= 20)
 			{
-				if (!(pEnemy->v.oldbuttons & IN_ATTACK) || !(EnemyWeaponIsGun))
+				if (!(pEnemy->v.oldbuttons & IN_ATTACK) || !EnemyWeaponIsGun)
 				{
-					return (FALSE);
+					return false;
 				}
 				else
 				{
 					SemiTransparent = true;
 				}
 			}
-			else if ((RenderAmount <= 60.0f) && (RenderColor.x <= 60)
-				&& (RenderColor.y <= 60) && (RenderColor.z <= 60))
+			else if (RenderAmount <= 60.0f && RenderColor.x <= 60
+				&& RenderColor.y <= 60 && RenderColor.z <= 60)
 				SemiTransparent = true;
 		}
 		else
 		{
 			if (RenderAmount <= 20)
 			{
-				if (!(pEnemy->v.oldbuttons & IN_ATTACK) || !(EnemyWeaponIsGun))
+				if (!(pEnemy->v.oldbuttons & IN_ATTACK) || !EnemyWeaponIsGun)
 				{
-					return (FALSE);
+					return false;
 				}
 				else
 				{
@@ -159,28 +159,28 @@ bool BotEnemyIsVisible(bot_t* pBot, edict_t* pEnemy) // KWo - 27.01.2008
 	// KWo - 23.03.2008 - added darkness check
 	LightLevel = UTIL_IlluminationOf(pEnemy);
 
-	if ((!pBot->bUsesNVG) && (((LightLevel < 3.0f) && (g_f_cv_skycolor > 50.0f)) || ((LightLevel < 25.0f) && (g_f_cv_skycolor <= 50.0f)))
-		&& (!(pEnemy->v.effects & EF_DIMLIGHT)) /* && (!g_bIsOldCS15) */ && (!(pEnemy->v.oldbuttons & IN_ATTACK) || !(EnemyWeaponIsGun))) // 17.01.2011
+	if (!pBot->bUsesNVG && (LightLevel < 3.0f && g_f_cv_skycolor > 50.0f || LightLevel < 25.0f && g_f_cv_skycolor <= 50.0f)
+		&& !(pEnemy->v.effects & EF_DIMLIGHT) /* && (!g_bIsOldCS15) */ && (!(pEnemy->v.oldbuttons & IN_ATTACK) || !EnemyWeaponIsGun)) // 17.01.2011
 	{
-		return (FALSE);
+		return false;
 	}
-	else if (((((LightLevel < 10.0f) && (g_f_cv_skycolor > 50.0f)) || ((LightLevel < 30.0f) && (g_f_cv_skycolor <= 50.0f)))
-		|| ((pEnemy->v.oldbuttons & IN_ATTACK) && (EnemyWeaponIsGun)))
-		&& (!pBot->bUsesNVG) && (!(pEnemy->v.effects & EF_DIMLIGHT)))
+	else if ((LightLevel < 10.0f && g_f_cv_skycolor > 50.0f || LightLevel < 30.0f && g_f_cv_skycolor <= 50.0f
+		|| pEnemy->v.oldbuttons & IN_ATTACK && EnemyWeaponIsGun)
+		&& !pBot->bUsesNVG && !(pEnemy->v.effects & EF_DIMLIGHT))
 	{
 		SemiTransparent = true; // in this case we can notice the enemy, but not so good...
 	}
 
 	// trace a line from bot's eyes to the destination...
 	TRACE_LINE(GetGunPosition(pBot->pEdict), GetGunPosition(pEnemy), dont_ignore_monsters, pBot->pEdict, &tr);
-	if ((tr.flFraction <= 1.0f) && (tr.pHit == pEnemy) && (pBot->bUsesNVG || (!SemiTransparent))) // KWo - 22.03.2008
-		return (true);
+	if (tr.flFraction <= 1.0f && tr.pHit == pEnemy && (pBot->bUsesNVG || !SemiTransparent)) // KWo - 22.03.2008
+		return true;
 
 	TRACE_LINE(GetGunPosition(pBot->pEdict), pEnemy->v.origin, dont_ignore_monsters, pBot->pEdict, &tr);
-	if ((tr.flFraction <= 1.0f) && (tr.pHit == pEnemy)) // KWo - 24.02.2008
-		return (true);
+	if (tr.flFraction <= 1.0f && tr.pHit == pEnemy) // KWo - 24.02.2008
+		return true;
 
-	return(false);
+	return false;
 }
 
 bool BotFindEnemy(bot_t* pBot)
@@ -216,16 +216,16 @@ bool BotFindEnemy(bot_t* pBot)
  //   if (pBot->f_blind_time > gpGlobals->time) // Moved to BotSetConditions function - KWo 17.06.2018
  //      return (FALSE);
 
-	if (!FNullEnt(pBot->pBotEnemy) && (pBot->iStates & STATE_SEEINGENEMY)
-		&& ((g_i_botthink_index % 4) != (g_iFrameCounter % 4))) // KWo - 30.05.2010
+	if (!FNullEnt(pBot->pBotEnemy) && pBot->iStates & STATE_SEEINGENEMY
+		&& g_i_botthink_index % 4 != g_iFrameCounter % 4) // KWo - 30.05.2010
 	{
 		pBot->iAimFlags |= AIM_ENEMY;
 		pBot->iStates &= ~STATE_SUSPECTENEMY; // KWo - 09.02.2007
 		pBot->bShootThruHeard = FALSE;        // KWo - 10.07.2008
 		pBot->bShootThruSeen = FALSE;         // KWo - 10.07.2008
-		return (true);
+		return true;
 	}
-	else if (FNullEnt(pBot->pBotEnemy) && (pBot->f_bot_see_enemy_time + 5.0f > gpGlobals->time)) // KWo - 21.01.2008
+	else if (FNullEnt(pBot->pBotEnemy) && pBot->f_bot_see_enemy_time + 5.0f > gpGlobals->time) // KWo - 21.01.2008
 	{
 		pBot->iAimFlags |= AIM_LASTENEMY;
 		pBot->iStates |= STATE_SUSPECTENEMY;
@@ -259,16 +259,16 @@ bool BotFindEnemy(bot_t* pBot)
 		pPlayer = pBot->pBotEnemy;
 		iEnemyIndex = ENTINDEX(pPlayer) - 1; // KWo - 14.03.2010
 
-		if ((iEnemyIndex >= 0) && (iEnemyIndex < gpGlobals->maxClients))
+		if (iEnemyIndex >= 0 && iEnemyIndex < gpGlobals->maxClients)
 		{
 			if (IsAlive(pPlayer) || clients[iEnemyIndex].fDeathTime >= gpGlobals->time) // KWo 15.03.2010
 			{
-				if ((pBot->bot_team != clients[iEnemyIndex].iTeam) || g_b_cv_ffa
-					|| (pBot->pBotEnemy == pEdict->v.dmg_inflictor)) // KWo - 19.01.2011
+				if (pBot->bot_team != clients[iEnemyIndex].iTeam || g_b_cv_ffa
+					|| pBot->pBotEnemy == pEdict->v.dmg_inflictor) // KWo - 19.01.2011
 				{
 					vecEnd = GetGunPosition(pPlayer);
 
-					if (FInViewCone(&vecEnd, pEdict) && ((pPlayer->v.origin - pEdict->v.origin).Length() <= nearestdistance)) // KWo - 08.09.2009
+					if (FInViewCone(&vecEnd, pEdict) && (pPlayer->v.origin - pEdict->v.origin).Length() <= nearestdistance) // KWo - 08.09.2009
 					{
 						if (FBoxVisible(pBot, pPlayer, &vecVisible, &cHit)) // KWo - 25.03,2007
 						{
@@ -290,16 +290,16 @@ bool BotFindEnemy(bot_t* pBot)
 	}
 
 	// the old enemy is no longer visible or it was farer away than 400 units
-	if ((FNullEnt(pNewEnemy))
-		|| ((distance > 400.0f) && ((g_i_botthink_index % 4) == (g_iFrameCounter % 4)))) // KWo - 11.01.2012
+	if (FNullEnt(pNewEnemy)
+		|| distance > 400.0f && g_i_botthink_index % 4 == g_iFrameCounter % 4) // KWo - 11.01.2012
 	{
 		// search the world for enemies...
 		for (i = 0; i < gpGlobals->maxClients; i++)
 		{
 			if (!(clients[i].iFlags & CLIENT_USED)
-				|| (!(clients[i].iFlags & CLIENT_ALIVE) && (clients[i].fDeathTime <= gpGlobals->time)) // 15.03.2010
-				|| ((clients[i].iTeam == pBot->bot_team) && (!g_b_cv_ffa)) // KWo - 05.10.2006
-				|| (clients[i].pEdict == pEdict))
+				|| !(clients[i].iFlags & CLIENT_ALIVE) && clients[i].fDeathTime <= gpGlobals->time // 15.03.2010
+				|| clients[i].iTeam == pBot->bot_team && !g_b_cv_ffa // KWo - 05.10.2006
+				|| clients[i].pEdict == pEdict)
 				continue;
 
 			pPlayer = clients[i].pEdict;
@@ -309,16 +309,16 @@ bool BotFindEnemy(bot_t* pBot)
 				continue;
 
 			distance2 = (pPlayer->v.origin - pEdict->v.origin).Length();
-			memset(szBotEnemyModelName, 0, sizeof(szBotEnemyModelName));
+			memset(szBotEnemyModelName, 0, sizeof szBotEnemyModelName);
 #ifdef _WIN32
-			strncpy_s(szBotEnemyModelName, sizeof(szBotEnemyModelName), (INFOKEY_VALUE(GET_INFOKEYBUFFER(pPlayer), "model")), sizeof(szBotEnemyModelName) - 1);  // KWo - 12.08.2007
+			strncpy_s(szBotEnemyModelName, sizeof szBotEnemyModelName, INFOKEY_VALUE(GET_INFOKEYBUFFER(pPlayer), "model"), sizeof szBotEnemyModelName - 1);  // KWo - 12.08.2007
 #else
 			strncpy(szBotEnemyModelName, (INFOKEY_VALUE(GET_INFOKEYBUFFER(pPlayer), "model")), sizeof(szBotEnemyModelName));  // KWo - 12.08.2007
 #endif
-			if (((distance2 >= nearestdistance)
-				|| ((!(FNullEnt(pNewEnemy)) && (distance > 0.0f) && ((distance2 >= 0.9f * distance)
-					|| (pBot->f_bot_see_new_enemy_time + 0.5f >= gpGlobals->time)))))
-				&& ((!(g_iMapType & MAP_AS)) || (strcmp("vip", szBotEnemyModelName) != 0)))     // KWo - 05.09.2009
+			if ((distance2 >= nearestdistance
+				|| !FNullEnt(pNewEnemy) && distance > 0.0f && (distance2 >= 0.9f * distance
+					|| pBot->f_bot_see_new_enemy_time + 0.5f >= gpGlobals->time))
+				&& (!(g_iMapType & MAP_AS) || strcmp("vip", szBotEnemyModelName) != 0))     // KWo - 05.09.2009
 				continue;
 
 			if (!FBoxVisible(pBot, pPlayer, &vecVisible3, &cHit3))  // KWo - 08.01.2012
@@ -326,10 +326,10 @@ bool BotFindEnemy(bot_t* pBot)
 			//         if (!ENGINE_CHECK_VISIBILITY (pPlayer, pvs))
 			//            continue;
 
-			if (((distance2 < nearestdistance)
-				&& ((FNullEnt(pNewEnemy) || (distance == 0.0f)
-					|| ((distance2 < 0.9f * distance) && (pBot->f_bot_see_new_enemy_time + 0.5f < gpGlobals->time)))))
-				|| ((g_iMapType & MAP_AS) && (strcmp("vip", szBotEnemyModelName) == 0))) // KWo - 29.04.2008
+			if (distance2 < nearestdistance
+				&& (FNullEnt(pNewEnemy) || distance == 0.0f
+					|| distance2 < 0.9f * distance && pBot->f_bot_see_new_enemy_time + 0.5f < gpGlobals->time)
+				|| g_iMapType & MAP_AS && strcmp("vip", szBotEnemyModelName) == 0) // KWo - 29.04.2008
 			{
 				nearestdistance = distance2;
 				pNewEnemy2 = pPlayer;
@@ -339,12 +339,12 @@ bool BotFindEnemy(bot_t* pBot)
 				pBot->fChangeAimDirectionTime = gpGlobals->time + 1.0f;
 				iEnemyIndex = i;  // KWo - 14.03.2010
 				// On Assassination Maps target VIP first !
-				if ((g_iMapType & MAP_AS)
-					&& (strcmp("vip", szBotEnemyModelName) == 0)) // Is VIP ? -  KWo - 12.08.2007
+				if (g_iMapType & MAP_AS
+					&& strcmp("vip", szBotEnemyModelName) == 0) // Is VIP ? -  KWo - 12.08.2007
 					break;
 			}
 		}
-		if ((FNullEnt(pNewEnemy) || (distance > 400.0f)) && (!FNullEnt(pNewEnemy2)))
+		if ((FNullEnt(pNewEnemy) || distance > 400.0f) && !FNullEnt(pNewEnemy2))
 		{
 			pNewEnemy = pNewEnemy2;
 			pBot->ucVisibility = cHit2;
@@ -391,14 +391,14 @@ bool BotFindEnemy(bot_t* pBot)
 		// Should simulate human players seeing a Teammate firing
 		// In this case he should take our enemy as his own suspected enemy...
 
-		if ((pEdict->v.oldbuttons & IN_ATTACK) && (!g_b_cv_ffa)) // KWo - 13.07.2008
+		if (pEdict->v.oldbuttons & IN_ATTACK && !g_b_cv_ffa) // KWo - 13.07.2008
 		{
 			for (j = 0; j < gpGlobals->maxClients; j++)
 			{
-				if (!(bots[j].is_used)
-					|| (bots[j].bDead)
-					|| (bots[j].bot_team != pBot->bot_team)
-					|| (bots[j].pEdict == pEdict))
+				if (!bots[j].is_used
+					|| bots[j].bDead
+					|| bots[j].bot_team != pBot->bot_team
+					|| bots[j].pEdict == pEdict)
 					continue;
 
 				pFriendlyBot = &bots[j];
@@ -410,10 +410,10 @@ bool BotFindEnemy(bot_t* pBot)
 					if (pFriendlyBot->vecLastEnemyOrigin != g_vecZero)  // KWo - 08.04.2010
 						FrDistLastEn = (pFriendlyBot->pEdict->v.origin - pFriendlyBot->vecLastEnemyOrigin).Length();
 
-					if ((pFriendlyBot->f_bot_see_enemy_time + 4.0f < gpGlobals->time)
-						&& (((pFriendlyBot->f_heard_sound_time + 4.0f < gpGlobals->time)
-							&& (FNullEnt(pFriendlyBot->pLastEnemy)))
-							|| (FrDistLastEn < (pFriendlyBot->pEdict->v.origin - pBot->vecLastEnemyOrigin).Length()))
+					if (pFriendlyBot->f_bot_see_enemy_time + 4.0f < gpGlobals->time
+						&& (pFriendlyBot->f_heard_sound_time + 4.0f < gpGlobals->time
+							&& FNullEnt(pFriendlyBot->pLastEnemy)
+							|| FrDistLastEn < (pFriendlyBot->pEdict->v.origin - pBot->vecLastEnemyOrigin).Length())
 						&& FNullEnt(pFriendlyBot->pBotEnemy))// KWo - 08.04.2010
 					{
 						if (FInViewCone(&pEdict->v.origin, pFriendlyBot->pEdict))
@@ -445,16 +445,16 @@ bool BotFindEnemy(bot_t* pBot)
 			//         pBot->vecVisPos = vecVisible; // KWo - 25.01.2008 // KWo - 08.01.2012
 			pBot->pBotUser = NULL;  // don't follow user when enemy found
 			pBot->f_bot_see_enemy_time = gpGlobals->time;
-			return (TRUE);
+			return true;
 		}
 		else
 		{
-			if ((pBot->f_bot_see_enemy_time + 4.0f < gpGlobals->time)
-				&& ((pEdict->v.weapons & (1 << CS_WEAPON_C4))
+			if (pBot->f_bot_see_enemy_time + 4.0f < gpGlobals->time
+				&& (pEdict->v.weapons & 1 << CS_WEAPON_C4
 					|| BotHasHostage(pBot) || !FNullEnt(pBot->pBotUser))
-				&& (!g_b_cv_ffa) && (g_b_cv_radio) && (RANDOM_LONG(1, 100) < 20)
-				&& (((pBot->bot_team == TEAM_CS_COUNTER) && (g_iAliveCTs > 1))
-					|| ((pBot->bot_team == TEAM_CS_TERRORIST) && (g_iAliveTs > 1)))) // KWo - 06.03.2010
+				&& !g_b_cv_ffa && g_b_cv_radio && RANDOM_LONG(1, 100) < 20
+				&& (pBot->bot_team == TEAM_CS_COUNTER && g_iAliveCTs > 1
+					|| pBot->bot_team == TEAM_CS_TERRORIST && g_iAliveTs > 1)) // KWo - 06.03.2010
 				BotPlayRadioMessage(pBot, RADIO_ENEMYSPOTTED);
 
 			pBot->f_enemy_surprise_time = gpGlobals->time + pBot->f_actual_reaction_time;
@@ -475,7 +475,7 @@ bool BotFindEnemy(bot_t* pBot)
 			pBot->fEnemyReachableTimer = 0.0f;
 			pBot->pBotUser = NULL;  // don't follow user when enemy found
 
-			return (TRUE);
+			return true;
 		}
 	}
 	else if (!FNullEnt(pBot->pBotEnemy))
@@ -483,16 +483,16 @@ bool BotFindEnemy(bot_t* pBot)
 		pNewEnemy = pBot->pBotEnemy;
 		pBot->pLastEnemy = pNewEnemy;
 		iEnemyIndex = ENTINDEX(pNewEnemy) - 1; // KWo - 14.03.2010
-		if ((iEnemyIndex >= 0) && (iEnemyIndex < gpGlobals->maxClients))
+		if (iEnemyIndex >= 0 && iEnemyIndex < gpGlobals->maxClients)
 		{
-			if ((!IsAlive(pNewEnemy) && (clients[iEnemyIndex].fDeathTime <= gpGlobals->time))
-				|| (IsAlive(pNewEnemy) && (clients[iEnemyIndex].fDeathTime > gpGlobals->time))
-				|| ((pEdict->v.dmgtime + 1.5f <= gpGlobals->time) && (pEdict->v.dmg_inflictor == pBot->pBotEnemy)
-					&& (clients[iEnemyIndex].iTeam == pBot->bot_team) && !(g_b_cv_ffa))) // KWo - 18.01.2011
+			if (!IsAlive(pNewEnemy) && clients[iEnemyIndex].fDeathTime <= gpGlobals->time
+				|| IsAlive(pNewEnemy) && clients[iEnemyIndex].fDeathTime > gpGlobals->time
+				|| pEdict->v.dmgtime + 1.5f <= gpGlobals->time && pEdict->v.dmg_inflictor == pBot->pBotEnemy
+				&& clients[iEnemyIndex].iTeam == pBot->bot_team && !g_b_cv_ffa) // KWo - 18.01.2011
 			{
 				pBot->iStates &= ~STATE_SEEINGENEMY;          // KWo - 10.07.2008
 				pBot->pBotEnemy = NULL;
-				return (FALSE);
+				return false;
 			}
 		}
 
@@ -501,9 +501,9 @@ bool BotFindEnemy(bot_t* pBot)
 		if (pBot->fShootThruSeenCheckTime < gpGlobals->time)  // KWo - 23.03.2008
 		{
 			iShootThruFreq = BotAimTab[pBot->bot_skill / 20].iSeenShootThruProb;
-			if ((g_b_cv_shootthruwalls) && (RANDOM_LONG(1, 100) <= iShootThruFreq)
+			if (g_b_cv_shootthruwalls && RANDOM_LONG(1, 100) <= iShootThruFreq
 				&& WeaponShootsThru(pBot->current_weapon.iId)
-				&& (pBot->f_bot_see_enemy_time + 0.6f > gpGlobals->time))    // KWo - 08.01.2012
+				&& pBot->f_bot_see_enemy_time + 0.6f > gpGlobals->time)    // KWo - 08.01.2012
 			{
 				pBot->fShootThruSeenCheckTime = gpGlobals->time + 0.2f;      // KWo - 23.03.2008
 				if (vecVisible == g_vecZero)   // KWo - 17.06.2018
@@ -528,11 +528,11 @@ bool BotFindEnemy(bot_t* pBot)
 			pBot->iAimFlags |= AIM_LASTENEMY;
 			pBot->iAimFlags |= AIM_ENEMY;          // KWo - 10.07.2008 - very important for work this function!!!
 			pBot->pLastEnemy = pNewEnemy;
-			return (TRUE);
+			return true;
 		}
-		return (FALSE);
+		return false;
 	}
-	return (FALSE);
+	return false;
 }
 
 Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
@@ -556,7 +556,7 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 	static float fRandomFactor;
 
 	if (pBot->f_blind_time > gpGlobals->time) // KWo - 04.10.2009
-		return (pBot->vecLastEnemyOrigin);
+		return pBot->vecLastEnemyOrigin;
 
 	if (pBot->fEnemyOriginUpdateTime < gpGlobals->time)  // KWo - 04.10.2009
 	{
@@ -576,7 +576,7 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 
 	// Compensate both the enemy's and the bot's own velocity
 
-	vecVel = 1.0f * (pBot->fTimeFrameInterval /* - gpGlobals->frametime */) * pBotEnemy->v.velocity - 1.0f * (pBot->fTimeFrameInterval) * pBot->pEdict->v.velocity;
+	vecVel = 1.0f * pBot->fTimeFrameInterval /* - gpGlobals->frametime */ * pBotEnemy->v.velocity - 1.0f * pBot->fTimeFrameInterval * pBot->pEdict->v.velocity;
 
 	// bots now don't update target all time, but every 0.5f sec (for skill 100 it's 0.0f)
 	// so randomize target will not affect bot crosshair all frames - it's more realistic than in PB2.5f,
@@ -584,9 +584,9 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 
 	iEnemyIndex = ENTINDEX(pBotEnemy) - 1;                      // KWo - 18.01.2011
 	bEnemyTeamnate = FALSE;                                     // KWo - 18.01.2011
-	if ((iEnemyIndex >= 0) && (iEnemyIndex < gpGlobals->time))   // KWo - 18.01.2011
+	if (iEnemyIndex >= 0 && iEnemyIndex < gpGlobals->time)   // KWo - 18.01.2011
 	{
-		if ((pBot->bot_team == clients[iEnemyIndex].iTeam) && (!g_b_cv_ffa))
+		if (pBot->bot_team == clients[iEnemyIndex].iTeam && !g_b_cv_ffa)
 			bEnemyTeamnate = TRUE;
 	}
 
@@ -609,24 +609,24 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 	if (ucVis & WAIST_VISIBLE)
 	{
 		// Use Waist as Target for big distances
-		if (((fDistance > 1200.0f + 4.0f * pBot->bot_skill) && (!bBotUsesSniper) && (!bBotUsesAssaultSniper))
-			|| (bEnemyTeamnate))                               // KWo - 18.01.2011
+		if (fDistance > 1200.0f + 4.0f * pBot->bot_skill && !bBotUsesSniper && !bBotUsesAssaultSniper
+			|| bEnemyTeamnate)                               // KWo - 18.01.2011
 			ucVis &= ~HEAD_VISIBLE;
-		if (((bBotUsesRifle && !bBotUsesAssaultSniper) || (iWeapId == CS_WEAPON_M3)
-			|| (iWeapId == CS_WEAPON_XM1014) || (iWeapId == CS_WEAPON_M249)) && (fDistance > 1200.0f + 4.0f * pBot->bot_skill)) // KWo - 09.02.2008
+		if ((bBotUsesRifle && !bBotUsesAssaultSniper || iWeapId == CS_WEAPON_M3
+			|| iWeapId == CS_WEAPON_XM1014 || iWeapId == CS_WEAPON_M249) && fDistance > 1200.0f + 4.0f * pBot->bot_skill) // KWo - 09.02.2008
 			ucVis &= ~HEAD_VISIBLE;
 	}
 
 	// If we only suspect an Enemy behind a Wall take the worst Skill
-	if ((((pBot->iStates & STATE_SUSPECTENEMY) && !(pBot->iStates & STATE_SEEINGENEMY) && (pBot->bShootThruSeen))
-		|| ((pBot->iStates & STATE_SEEINGENEMY) && (pBot->f_bot_see_enemy_time + 5.0f > gpGlobals->time)
-			&& (pBot->f_bot_see_enemy_time < gpGlobals->time)))
+	if ((pBot->iStates & STATE_SUSPECTENEMY && !(pBot->iStates & STATE_SEEINGENEMY) && pBot->bShootThruSeen
+		|| pBot->iStates & STATE_SEEINGENEMY && pBot->f_bot_see_enemy_time + 5.0f > gpGlobals->time
+		&& pBot->f_bot_see_enemy_time < gpGlobals->time)
 		&& !FNullEnt(pBotEnemy)) // KWo - 08.01.2012
 	{
-		if (((fDistance < 2000.0f) || (BotUsesSniper(pBot)))
+		if ((fDistance < 2000.0f || BotUsesSniper(pBot))
 			/* && ( (pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time) */
-			&& (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)
-			&& (pBot->f_bot_see_enemy_time + 5.0f > gpGlobals->time)) // KWo - 14.10.2011
+			&& pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time
+			&& pBot->f_bot_see_enemy_time + 5.0f > gpGlobals->time) // KWo - 14.10.2011
 		{
 			fRandomFactor = 2.0f * (gpGlobals->time - pBot->f_bot_see_enemy_time + 1.0f); // KWo - 11.07.2008
 			if (fRandomFactor < 2.0f) // KWo - 11.07.2008
@@ -635,9 +635,9 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 				fRandomFactor = 8.0f;
 
 			target = pBot->vecLastEnemyOrigin; // KWo - 13.08.2008
-			if ((pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time)
-				&& (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)
-				&& (pBot->f_bot_see_enemy_time + 1.0f < gpGlobals->time)) // KWo - 08.01.2012
+			if (pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time
+				&& pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time
+				&& pBot->f_bot_see_enemy_time + 1.0f < gpGlobals->time) // KWo - 08.01.2012
 			{
 				//            target = pBotEnemy->v.origin;
 				//            target.x = target.x + RANDOM_FLOAT (pBotEnemy->v.mins.x * fRandomFactor, pBotEnemy->v.maxs.x * fRandomFactor);
@@ -663,16 +663,16 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 			vecRandom = g_vecZero;                                   // KWo - 12.09.2011
 		}
 	}
-	else if ((pBot->iStates & STATE_SEEINGENEMY) && !FNullEnt(pBotEnemy))
+	else if (pBot->iStates & STATE_SEEINGENEMY && !FNullEnt(pBotEnemy))
 	{
-		if ((ucVis & HEAD_VISIBLE) && (ucVis & WAIST_VISIBLE))
+		if (ucVis & HEAD_VISIBLE && ucVis & WAIST_VISIBLE)
 		{
 			if (RANDOM_LONG(1, 100) <= BotAimTab[pBot->bot_skill / 20].iHeadShot_Frequency)
 			{
 				target = GetGunPosition(pBotEnemy);  // aim for the head
 
 				// the idea taken rom YapB
-				if ((fDistance < 3000.0f) && (fDistance > 2 * MIN_BURST_DISTANCE)) // KWo - 09.04.2010
+				if (fDistance < 3000.0f && fDistance > 2 * MIN_BURST_DISTANCE) // KWo - 09.04.2010
 				{
 					if (bBotUsesSniper)
 						target.z += 3.5f; // 3.5
@@ -686,10 +686,10 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 						target.z += 5.5f; // 3.0
 					else if (iWeapId == CS_WEAPON_M249)
 						target.z += 2.5f;
-					else if ((iWeapId == CS_WEAPON_XM1014) || (iWeapId == CS_WEAPON_M3))
+					else if (iWeapId == CS_WEAPON_XM1014 || iWeapId == CS_WEAPON_M3)
 						target.z += 10.5f; // 1.5
 				}
-				else if ((fDistance > MIN_BURST_DISTANCE) && (fDistance <= 2 * MIN_BURST_DISTANCE))   // KWo - 09.04.2010
+				else if (fDistance > MIN_BURST_DISTANCE && fDistance <= 2 * MIN_BURST_DISTANCE)   // KWo - 09.04.2010
 				{
 					if (bBotUsesSniper)
 						target.z += 3.5f;
@@ -703,7 +703,7 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 						target.z += 1.0f; // -1.0
 					else if (iWeapId == CS_WEAPON_M249)
 						target.z -= 2.0f; // -2.0
-					else if ((iWeapId == CS_WEAPON_XM1014) || (iWeapId == CS_WEAPON_M3))
+					else if (iWeapId == CS_WEAPON_XM1014 || iWeapId == CS_WEAPON_M3)
 						target.z += 10.0f; // 1.0
 				}
 				else if (fDistance < MIN_BURST_DISTANCE)   // KWo - 09.04.2010
@@ -720,7 +720,7 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 						target.z -= 4.5f;
 					else if (iWeapId == CS_WEAPON_M249)
 						target.z -= 6.0f;
-					else if ((iWeapId == CS_WEAPON_XM1014) || (iWeapId == CS_WEAPON_M3))
+					else if (iWeapId == CS_WEAPON_XM1014 || iWeapId == CS_WEAPON_M3)
 						target.z -= 5.0f;
 				}
 
@@ -737,7 +737,7 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 			// the idea taken rom YapB
 			if (true) // just to have the same identation like above...
 			{
-				if ((fDistance < 3000.0f) && (fDistance > 2 * MIN_BURST_DISTANCE)) // KWo - 09.04.2010
+				if (fDistance < 3000.0f && fDistance > 2 * MIN_BURST_DISTANCE) // KWo - 09.04.2010
 				{
 					if (bBotUsesSniper)
 						target.z += 5.5f; // 3.5
@@ -751,10 +751,10 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 						target.z += 5.5f; // 3.0
 					else if (iWeapId == CS_WEAPON_M249)
 						target.z += 2.5f;
-					else if ((iWeapId == CS_WEAPON_XM1014) || (iWeapId == CS_WEAPON_M3))
+					else if (iWeapId == CS_WEAPON_XM1014 || iWeapId == CS_WEAPON_M3)
 						target.z += 10.5f; // 1.5
 				}
-				else if ((fDistance > MIN_BURST_DISTANCE) && (fDistance <= 2 * MIN_BURST_DISTANCE))   // KWo - 09.04.2010
+				else if (fDistance > MIN_BURST_DISTANCE && fDistance <= 2 * MIN_BURST_DISTANCE)   // KWo - 09.04.2010
 				{
 					if (bBotUsesSniper)
 						target.z += 3.5f;
@@ -768,7 +768,7 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 						target.z += 1.0f; // -1.0
 					else if (iWeapId == CS_WEAPON_M249)
 						target.z -= 2.0f; // -2.0
-					else if ((iWeapId == CS_WEAPON_XM1014) || (iWeapId == CS_WEAPON_M3))
+					else if (iWeapId == CS_WEAPON_XM1014 || iWeapId == CS_WEAPON_M3)
 						target.z += 10.0f; // 1.0
 				}
 				else if (fDistance < MIN_BURST_DISTANCE)   // KWo - 09.04.2010
@@ -785,7 +785,7 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 						target.z -= 4.5f;
 					else if (iWeapId == CS_WEAPON_M249)
 						target.z -= 6.0f;
-					else if ((iWeapId == CS_WEAPON_XM1014) || (iWeapId == CS_WEAPON_M3))
+					else if (iWeapId == CS_WEAPON_XM1014 || iWeapId == CS_WEAPON_M3)
 						target.z -= 5.0f;
 				}
 				target.z -= 0.5f * (100 - pBot->bot_skill);  // 16.0f * fSkillMin; KWo - 11.03.2006
@@ -818,7 +818,7 @@ Vector BotBodyTarget(edict_t* pBotEnemy, bot_t* pBot)
 
 	pBot->vecEnemy = target;
 	pBot->vecLastEnemyOrigin = target; // KWo - 25.01.2008
-	return (target);
+	return target;
 }
 
 bool WeaponShootsThru(int iId)
@@ -830,93 +830,93 @@ bool WeaponShootsThru(int iId)
 	while (cs_weapon_select[i].iId)
 	{
 		if (cs_weapon_select[i].iId == iId)
-			return (cs_weapon_select[i].bShootsThru);
+			return cs_weapon_select[i].bShootsThru;
 
 		i++;
 	}
 
-	return (FALSE);
+	return false;
 }
 
 bool WeaponIsSniper(int iId)
 {
-	if ((iId == CS_WEAPON_AWP) || (iId == CS_WEAPON_G3SG1)
-		|| (iId == CS_WEAPON_SCOUT) || (iId == CS_WEAPON_SG550))
-		return (TRUE);
+	if (iId == CS_WEAPON_AWP || iId == CS_WEAPON_G3SG1
+		|| iId == CS_WEAPON_SCOUT || iId == CS_WEAPON_SG550)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool WeaponIsRifle(int iId)
 {
-	if ((iId == CS_WEAPON_AK47) || (iId == CS_WEAPON_M4A1)
-		|| (iId == CS_WEAPON_GALIL) || (iId == CS_WEAPON_FAMAS)
+	if (iId == CS_WEAPON_AK47 || iId == CS_WEAPON_M4A1
+		|| iId == CS_WEAPON_GALIL || iId == CS_WEAPON_FAMAS
 		|| WeaponIsAssualtSniper(iId))
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool WeaponIsAssualtSniper(int iId)
 {
-	if ((iId == CS_WEAPON_AUG) || (iId == CS_WEAPON_SG552))
-		return (TRUE);
+	if (iId == CS_WEAPON_AUG || iId == CS_WEAPON_SG552)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool WeaponIsSubmachineGun(int iId)
 {
-	return ((iId == CS_WEAPON_MP5NAVY) || (iId == CS_WEAPON_TMP)
-		|| (iId == CS_WEAPON_P90) || (iId == CS_WEAPON_MAC10)
-		|| (iId == CS_WEAPON_UMP45));
+	return iId == CS_WEAPON_MP5NAVY || iId == CS_WEAPON_TMP
+		|| iId == CS_WEAPON_P90 || iId == CS_WEAPON_MAC10
+		|| iId == CS_WEAPON_UMP45;
 }
 
 bool WeaponIsPrimaryGun(int iId)
 {
-	return ((WeaponIsSubmachineGun(iId)) || (WeaponIsSniper(iId))
-		|| (WeaponIsRifle(iId)) || (iId == CS_WEAPON_M3)
-		|| (iId == CS_WEAPON_XM1014) || (iId == CS_WEAPON_M249));
+	return WeaponIsSubmachineGun(iId) || WeaponIsSniper(iId)
+		|| WeaponIsRifle(iId) || iId == CS_WEAPON_M3
+		|| iId == CS_WEAPON_XM1014 || iId == CS_WEAPON_M249;
 }
 
 bool WeaponIsPistol(int iId)
 {
-	if ((iId == CS_WEAPON_USP) || (iId == CS_WEAPON_GLOCK18)
-		|| (iId == CS_WEAPON_DEAGLE) || (iId == CS_WEAPON_P228)
-		|| (iId == CS_WEAPON_ELITE) || (iId == CS_WEAPON_FIVESEVEN))
-		return (TRUE);
+	if (iId == CS_WEAPON_USP || iId == CS_WEAPON_GLOCK18
+		|| iId == CS_WEAPON_DEAGLE || iId == CS_WEAPON_P228
+		|| iId == CS_WEAPON_ELITE || iId == CS_WEAPON_FIVESEVEN)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool WeaponIsNade(int iId) // KWo - 15.01.2007
 {
-	return ((iId == CS_WEAPON_HEGRENADE) || (iId == CS_WEAPON_SMOKEGRENADE)
-		|| (iId == CS_WEAPON_FLASHBANG));
+	return iId == CS_WEAPON_HEGRENADE || iId == CS_WEAPON_SMOKEGRENADE
+		|| iId == CS_WEAPON_FLASHBANG;
 }
 
 bool BotUsesRifle(bot_t* pBot)
 {
 	if (WeaponIsRifle(pBot->current_weapon.iId)
 		|| WeaponIsSniper(pBot->current_weapon.iId))
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotUsesSniper(bot_t* pBot)
 {
 	if (WeaponIsSniper(pBot->current_weapon.iId))
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotUsesSubmachineGun(bot_t* pBot) // KWo - 20.10.2006 (from yapb)
 {
-	return ((pBot->current_weapon.iId == CS_WEAPON_MP5NAVY) || (pBot->current_weapon.iId == CS_WEAPON_TMP)
-		|| (pBot->current_weapon.iId == CS_WEAPON_P90) || (pBot->current_weapon.iId == CS_WEAPON_MAC10)
-		|| (pBot->current_weapon.iId == CS_WEAPON_UMP45));
+	return pBot->current_weapon.iId == CS_WEAPON_MP5NAVY || pBot->current_weapon.iId == CS_WEAPON_TMP
+		|| pBot->current_weapon.iId == CS_WEAPON_P90 || pBot->current_weapon.iId == CS_WEAPON_MAC10
+		|| pBot->current_weapon.iId == CS_WEAPON_UMP45;
 }
 
 bool BotHasPrimaryWeapon(bot_t* pBot)
@@ -928,13 +928,13 @@ bool BotHasPrimaryWeapon(bot_t* pBot)
 	while (pSelect->iId)
 	{
 		// is the bot carrying this weapon?
-		if (iWeapons & (1 << pSelect->iId))
-			return (TRUE);
+		if (iWeapons & 1 << pSelect->iId)
+			return true;
 
 		pSelect++;
 	}
 
-	return (FALSE);
+	return false;
 }
 
 bool BotHasSecondaryWeapon(bot_t* pBot) // KWo - 18.01.2011
@@ -944,59 +944,59 @@ bool BotHasSecondaryWeapon(bot_t* pBot) // KWo - 18.01.2011
 	int iCount = 1;
 
 	// loop through all the weapons until terminator is found...
-	while ((pSelect->iId) && (iCount < 7))
+	while (pSelect->iId && iCount < 7)
 	{
 		// is the bot carrying this weapon?
-		if (iWeapons & (1 << pSelect->iId))
-			return (TRUE);
+		if (iWeapons & 1 << pSelect->iId)
+			return true;
 		iCount++;
 		pSelect++;
 	}
 
-	return (FALSE);
+	return false;
 }
 
 bool BotHasSniperWeapon(bot_t* pBot) // KWo - 27.02.2007
 {
 	int iWeapons = pBot->pEdict->v.weapons;
 
-	if ((iWeapons & (1 << CS_WEAPON_SG550)) || (iWeapons & (1 << CS_WEAPON_G3SG1))
-		|| (iWeapons & (1 << CS_WEAPON_AWP)) || (iWeapons & (1 << CS_WEAPON_SCOUT)))
-		return (TRUE);
+	if (iWeapons & 1 << CS_WEAPON_SG550 || iWeapons & 1 << CS_WEAPON_G3SG1
+		|| iWeapons & 1 << CS_WEAPON_AWP || iWeapons & 1 << CS_WEAPON_SCOUT)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotHasRifleWeapon(bot_t* pBot) // KWo - 27.02.2007
 {
 	int iWeapons = pBot->pEdict->v.weapons;
 
-	if ((iWeapons & (1 << CS_WEAPON_AK47)) || (iWeapons & (1 << CS_WEAPON_SG552))
-		|| (iWeapons & (1 << CS_WEAPON_M4A1)) || (iWeapons & (1 << CS_WEAPON_GALIL))
-		|| (iWeapons & (1 << CS_WEAPON_FAMAS)) || (iWeapons & (1 << CS_WEAPON_AUG)))
-		return (TRUE);
+	if (iWeapons & 1 << CS_WEAPON_AK47 || iWeapons & 1 << CS_WEAPON_SG552
+		|| iWeapons & 1 << CS_WEAPON_M4A1 || iWeapons & 1 << CS_WEAPON_GALIL
+		|| iWeapons & 1 << CS_WEAPON_FAMAS || iWeapons & 1 << CS_WEAPON_AUG)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotHasSubmachineGun(bot_t* pBot) // KWo - 19.05.2010
 {
 	int iWeapons = pBot->pEdict->v.weapons;
 
-	if ((iWeapons & (1 << CS_WEAPON_MP5NAVY)) || (iWeapons & (1 << CS_WEAPON_TMP))
-		|| (iWeapons & (1 << CS_WEAPON_P90)) || (iWeapons & (1 << CS_WEAPON_MAC10))
-		|| (iWeapons & (1 << CS_WEAPON_UMP45)))
-		return (TRUE);
+	if (iWeapons & 1 << CS_WEAPON_MP5NAVY || iWeapons & 1 << CS_WEAPON_TMP
+		|| iWeapons & 1 << CS_WEAPON_P90 || iWeapons & 1 << CS_WEAPON_MAC10
+		|| iWeapons & 1 << CS_WEAPON_UMP45)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotHasCampWeapon(bot_t* pBot) // KWo - 19.05.2010
 {
 	if (BotHasSubmachineGun(pBot) || BotHasRifleWeapon(pBot) || BotHasSniperWeapon(pBot))
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotHasShield(bot_t* pBot)
@@ -1004,7 +1004,7 @@ bool BotHasShield(bot_t* pBot)
 	// code courtesy of Wei Mingzhi. He stuffed all the bot stuff into a CBaseBot class, but
 	// I'm a lazy bugger so I won't do the same.
 
-	return (strncmp(STRING(pBot->pEdict->v.viewmodel), "models/shield/v_shield_", 23) == 0);
+	return strncmp(STRING(pBot->pEdict->v.viewmodel), "models/shield/v_shield_", 23) == 0;
 }
 
 bool BotHasShieldDrawn(bot_t* pBot)
@@ -1012,39 +1012,39 @@ bool BotHasShieldDrawn(bot_t* pBot)
 	// code courtesy of Wei Mingzhi. BTW check out his YaPB !
 
 	if (!BotHasShield(pBot))
-		return (FALSE);
+		return false;
 	// KWo - 15.08.2007 - rewritten
 	if (WeaponIsPistol(pBot->current_weapon.iId))
-		return ((pBot->pEdict->v.weaponanim == 6) || (pBot->pEdict->v.weaponanim == 7));
+		return pBot->pEdict->v.weaponanim == 6 || pBot->pEdict->v.weaponanim == 7;
 	else if (pBot->current_weapon.iId == CS_WEAPON_KNIFE)
-		return (pBot->pEdict->v.weaponanim == 5);
+		return pBot->pEdict->v.weaponanim == 5;
 	else if (WeaponIsNade(pBot->current_weapon.iId))
-		return (pBot->pEdict->v.weaponanim == 4);
+		return pBot->pEdict->v.weaponanim == 4;
 	else
-		return (false);
+		return false;
 }
 
 bool PlayerHasShieldDrawn(edict_t* pPlayer) // KWo - 15.08.2007
 {
 	if (FNullEnt(pPlayer))
-		return (false);
+		return false;
 	if (!(pPlayer->v.flags & FL_CLIENT))
-		return (false);
+		return false;
 
 	if (strncmp(STRING(pPlayer->v.viewmodel), "models/shield/v_shield_", 23) != 0)
-		return (false);
+		return false;
 
 	int iPlayerIndex = ENTINDEX(pPlayer) - 1;
 	int iWeapon = clients[iPlayerIndex].iCurrentWeaponId;
 
 	if (WeaponIsPistol(iWeapon))
-		return ((pPlayer->v.weaponanim == 6) || (pPlayer->v.weaponanim == 7));
+		return pPlayer->v.weaponanim == 6 || pPlayer->v.weaponanim == 7;
 	else if (iWeapon == CS_WEAPON_KNIFE)
-		return (pPlayer->v.weaponanim == 5);
+		return pPlayer->v.weaponanim == 5;
 	else if (WeaponIsNade(iWeapon))
-		return (pPlayer->v.weaponanim == 4);
+		return pPlayer->v.weaponanim == 4;
 	else
-		return (false);
+		return false;
 }
 
 bool FireHurtsFriend(bot_t* pBot, float fDistance)
@@ -1062,8 +1062,8 @@ bool FireHurtsFriend(bot_t* pBot, float fDistance)
 	vecDirection = vecDirection.Normalize();
 
 	// check if friendlyfire is off.. now bots shoot through each other or ffa is on!
-	if ((!g_b_cv_FriendlyFire) || (g_b_cv_ffa)) // KWo - 05.10.2006
-		return (FALSE);
+	if (!g_b_cv_FriendlyFire || g_b_cv_ffa) // KWo - 05.10.2006
+		return false;
 
 	//   TRACE_HULL (GetGunPosition (pEdict), GetGunPosition (pEdict) + vecDirection * fDistance, dont_ignore_monsters, head_hull, pEdict, &tr);
 	TRACE_LINE(GetGunPosition(pEdict), GetGunPosition(pEdict) + vecDirection * fDistance * 1.1f, dont_ignore_monsters, pEdict, &tr); // KWo - 13.10.2006
@@ -1071,16 +1071,16 @@ bool FireHurtsFriend(bot_t* pBot, float fDistance)
 	if (!FNullEnt(tr.pHit))
 	{
 		i = ENTINDEX(tr.pHit) - 1;
-		if ((i >= 0) && (i < gpGlobals->maxClients))  // KWo - 13.03.2006
+		if (i >= 0 && i < gpGlobals->maxClients)  // KWo - 13.03.2006
 		{
-			if ((clients[i].iTeam == pBot->bot_team)
-				&& ((pEdict->v.dmg_inflictor != clients[i].pEdict) || (!g_b_cv_ffrev) || ((pEdict->v.dmgtime + 1.5f * pBot->fAgressionLevel) <= gpGlobals->time))
-				&& ((clients[i].iFlags & CLIENT_ALIVE) || (clients[i].fDeathTime >= gpGlobals->time)))  // KWo - 28.08.2018
+			if (clients[i].iTeam == pBot->bot_team
+				&& (pEdict->v.dmg_inflictor != clients[i].pEdict || !g_b_cv_ffrev || pEdict->v.dmgtime + 1.5f * pBot->fAgressionLevel <= gpGlobals->time)
+				&& (clients[i].iFlags & CLIENT_ALIVE || clients[i].fDeathTime >= gpGlobals->time))  // KWo - 28.08.2018
 			{
 				if (g_b_DebugCombat)
 					ALERT(at_logged, "[DEBUG] FireHurtsFriend - Bot %s cannot fire because it may hurt its friend %s (1).\n", pBot->name, STRING(clients[i].pEdict->v.netname));
 
-				return (TRUE);
+				return true;
 			}
 		}
 	}
@@ -1090,16 +1090,16 @@ bool FireHurtsFriend(bot_t* pBot, float fDistance)
 	{
 		if (!(clients[i].iFlags & CLIENT_USED)
 			|| !(clients[i].iFlags & CLIENT_ALIVE)
-			|| (clients[i].iTeam != pBot->bot_team)
-			|| ((pEdict->v.dmg_inflictor == clients[i].pEdict) && (g_b_cv_ffrev)) // KWo - 28.08.2018
-			|| (clients[i].pEdict == pEdict))
+			|| clients[i].iTeam != pBot->bot_team
+			|| pEdict->v.dmg_inflictor == clients[i].pEdict && g_b_cv_ffrev // KWo - 28.08.2018
+			|| clients[i].pEdict == pEdict)
 			continue;
 
 		pPlayer = clients[i].pEdict;
 
 		fTeamnateDist = (pPlayer->v.origin - pEdict->v.origin).Length();  // KWo - 28.10.2006
 		fSqDist = sqrtf(1089.0f + fTeamnateDist * fTeamnateDist); // KWo - 12.01.2007
-		fConeMin = (fTeamnateDist * fTeamnateDist) / (fSqDist * fSqDist); // KWo - 18.11.2006
+		fConeMin = fTeamnateDist * fTeamnateDist / (fSqDist * fSqDist); // KWo - 18.11.2006
   //      fConeMin = 0.985f;
 		fConeDev = GetShootingConeDeviation(pEdict, &pPlayer->v.origin);
 		if (fConeDev > fConeMin)  // KWo - 28.10.2006
@@ -1110,11 +1110,11 @@ bool FireHurtsFriend(bot_t* pBot, float fDistance)
 					ALERT(at_logged, "[DEBUG] FireHurtsFriend - Bot %s cannot fire because it may hurt its friend %s (2), fConeDev = %f, fConeMin = %f, fTeamnateDist = %f, fDistance = %f.\n",
 						pBot->name, STRING(pPlayer->v.netname), fConeDev, fConeMin, fTeamnateDist, fDistance);
 
-				return (TRUE);
+				return true;
 			}
 		}
 	}
-	return (FALSE);
+	return false;
 }
 
 bool IsShootableThruObstacle(edict_t* pEdict, Vector vecDest)
@@ -1134,13 +1134,13 @@ bool IsShootableThruObstacle(edict_t* pEdict, Vector vecDest)
 
 	UTIL_TraceLine(vecSrc, vecDest, ignore_monsters, ignore_glass, pentIgnore, &tr);
 
-	while ((tr.flFraction != 1.0f) && (iHits < 3))
+	while (tr.flFraction != 1.0f && iHits < 3)
 	{
 		iHits++;
 		iThickness++;
 		vecPoint = tr.vecEndPos + vecDir;
 
-		while ((POINT_CONTENTS(vecPoint) == CONTENTS_SOLID) && (iThickness < 98)) // KWo - 23.10.2006
+		while (POINT_CONTENTS(vecPoint) == CONTENTS_SOLID && iThickness < 98) // KWo - 23.10.2006
 		{
 			vecPoint = vecPoint + vecDir;
 			iThickness++;
@@ -1149,15 +1149,15 @@ bool IsShootableThruObstacle(edict_t* pEdict, Vector vecDest)
 		UTIL_TraceLine(vecPoint, vecDest, ignore_monsters, ignore_glass, pentIgnore, &tr);
 	}
 
-	if ((iHits < 3) && (iThickness < 98)) // KWo - 23.10.2006
+	if (iHits < 3 && iThickness < 98) // KWo - 23.10.2006
 	{
 		fDistance = (vecDest - vecPoint).Length();
 
 		if (fDistance < 512.0f /*121.95f */) // KWo - 12.07.2008
-			return (TRUE);
+			return true;
 	}
 
-	return (FALSE);
+	return false;
 }
 
 bool BotDoFirePause(bot_t* pBot, float fDistance, bot_fire_delay_t* pDelay)
@@ -1168,33 +1168,33 @@ bool BotDoFirePause(bot_t* pBot, float fDistance, bot_fire_delay_t* pDelay)
 	float f_Offset = 20.0f;
 	float f_Angle = 0.0f;
 
-	if ((pBot->iAimFlags & AIM_ENEMY) && (pBot->pBotEnemy != NULL))  // KWo - 25.04.2006
+	if (pBot->iAimFlags & AIM_ENEMY && pBot->pBotEnemy != NULL)  // KWo - 25.04.2006
 	{
 		if (PlayerHasShieldDrawn(pBot->pBotEnemy))// KWo - 15.08.2007
 		{
 			float flEnemyDot = GetShootingConeDeviation(pBot->pBotEnemy, &pBot->pEdict->v.origin);
 			if (flEnemyDot > 0.92f) // he is facing us - we cannot hurt him...
-				return (TRUE);
+				return true;
 		}
 		f_Distance = (pBot->pEdict->v.origin - pBot->pBotEnemy->v.origin).Length();
 	}
 
-	f_Angle = sqrt((fabsf(pBot->pEdict->v.punchangle.y) * M_PI / 180.0f) * (fabsf(pBot->pEdict->v.punchangle.y) * M_PI / 180.0f)
-		+ (fabsf(pBot->pEdict->v.punchangle.x) * M_PI / 180.0f) * (fabsf(pBot->pEdict->v.punchangle.x) * M_PI / 180.0f));  // KWo - 06.04.2010
+	f_Angle = sqrt(fabsf(pBot->pEdict->v.punchangle.y) * M_PI / 180.0f * (fabsf(pBot->pEdict->v.punchangle.y) * M_PI / 180.0f)
+		+ fabsf(pBot->pEdict->v.punchangle.x) * M_PI / 180.0f * (fabsf(pBot->pEdict->v.punchangle.x) * M_PI / 180.0f));  // KWo - 06.04.2010
 
-	if ((pBot->fTimeFirePause > gpGlobals->time) /* && (f_Distance * tanf(f_Angle) > 0.1f) */)
-		return (TRUE);
+	if (pBot->fTimeFirePause > gpGlobals->time /* && (f_Distance * tanf(f_Angle) > 0.1f) */)
+		return true;
 
 	// Thanks Whistler for punchangle stuff
 	if (fDistance < MIN_BURST_DISTANCE) // KWo - 09.04.2010
-		return (FALSE);
+		return false;
 	else if (fDistance < 2.0f * MIN_BURST_DISTANCE)
 		f_Offset = 10.0f;
 	else
 		f_Offset = 5.0f;
 
 	if (!BotUsesSniper(pBot)
-		&& (f_Distance * tanf(f_Angle) > f_Offset + 30.0f * ((100 - pBot->bot_skill) / 99.0f)))  // KWo - 09.04.2010
+		&& f_Distance * tanf(f_Angle) > f_Offset + 30.0f * ((100 - pBot->bot_skill) / 99.0f))  // KWo - 09.04.2010
   //   if (!BotUsesSniper (pBot) && (tan(fAngle) * f_Distance) > 10.0f + 30.0f * ((100 - pBot->bot_skill) / 99.0f))  // KWo - 22.10.2006
 	{
 		if (pBot->fTimeFirePause < gpGlobals->time - 0.4)
@@ -1221,7 +1221,7 @@ bool BotDoFirePause(bot_t* pBot, float fDistance, bot_fire_delay_t* pDelay)
 		  return (TRUE);
 	   }
 	*/
-	return (FALSE);
+	return false;
 }
 
 bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
@@ -1237,7 +1237,7 @@ bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
 	edict_t* pEdict = pBot->pEdict;
 	float fDistance = v_enemy.Length(); // how far away is the enemy?
 	float base_delay, min_delay, max_delay;
-	int skill = abs((pBot->bot_skill / 20) - 5);
+	int skill = abs(pBot->bot_skill / 20 - 5);
 	//   int iTask = BotGetSafeTask(pBot)->iTask;
 	bool bSecondaryOk = false; // KWo - 24.06.2008
 	bool bUseKnife = false;       // KWo - 04.07.2008
@@ -1245,15 +1245,15 @@ bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
 	char szEnemyModelName[64];    // KWo - 04.07.2008
 
 	// Currently switching Weapon ?
-	if ((pBot->current_weapon.iId == CS_WEAPON_INSWITCH) || pBot->bUsingGrenade
-		|| (pBot->fTimeWeaponSwitch + 0.1f > gpGlobals->time) || WeaponIsNade(pBot->current_weapon.iId)) // KWo - 19.01.2008
+	if (pBot->current_weapon.iId == CS_WEAPON_INSWITCH || pBot->bUsingGrenade
+		|| pBot->fTimeWeaponSwitch + 0.1f > gpGlobals->time || WeaponIsNade(pBot->current_weapon.iId)) // KWo - 19.01.2008
 	{
 		pBot->f_shoot_time = gpGlobals->time + 0.1f; // KWo - 17.11.2006
 
 		if (g_b_DebugCombat)
 			ALERT(at_logged, "[DEBUG] BotFireWeapon - Bot %s is not fireing because it is switching the weapon; time = %f.\n", pBot->name, gpGlobals->time);
 
-		return (FALSE);
+		return false;
 	}
 
 	// Don't shoot through TeamMates !
@@ -1262,17 +1262,17 @@ bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
 		if (g_b_DebugCombat)
 			ALERT(at_logged, "[DEBUG] BotFireWeapon - Bot %s is not fireing because it may hurt its friends; time = %f.\n", pBot->name, gpGlobals->time);
 
-		return (FALSE);
+		return false;
 	}
 	iId = pBot->current_weapon.iId;
 
-	if ((iId > 0) && (iId < MAX_WEAPONS)) // KWo - 05.04.2010
+	if (iId > 0 && iId < MAX_WEAPONS) // KWo - 05.04.2010
 		iNum = weapon_selectIndex[iId];
 
 	// TODO: Ammo Check doesn't always work in CS !! It seems to be because
 	// AmmoX and CurrentWeapon Messages don't work very well together - KWo - done ;)
-	if ((pBot->current_weapon.iClip == 0) && (weapon_defs[iId].iAmmo1 != -1)
-		&& (pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] > 0) && !WeaponIsNade(iId) && !pBot->bUsingGrenade) // KWo - 19.01.2008
+	if (pBot->current_weapon.iClip == 0 && weapon_defs[iId].iAmmo1 != -1
+		&& pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] > 0 && !WeaponIsNade(iId) && !pBot->bUsingGrenade) // KWo - 19.01.2008
 	{
 		if (pBot->f_reloadingtime == 0.0f)
 		{
@@ -1285,35 +1285,35 @@ bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
 			bottask_t TempTask = { NULL, NULL, TASK_SEEKCOVER, TASKPRI_SEEKCOVER, -1, 0.0, FALSE }; // KWo - 09.04.2010
 			BotPushTask(pBot, &TempTask); // KWo - 26.03.2007
 
-			if ((g_b_DebugCombat) && (pBot->bIsReloading) && (iId >= 0) && (iId < MAX_WEAPONS))
+			if (g_b_DebugCombat && pBot->bIsReloading && iId >= 0 && iId < MAX_WEAPONS)
 			{
 				ALERT(at_logged, "[DEBUG] BotFireWeapon - bot %s started to reload the weapon - %s, clip = %d, Ammo1 = %d, Ammo2 = %d, charge time = %.2f, time = %.2f.\n",
 					pBot->name, weapon_defs[iId].szClassname, pBot->current_weapon.iClip, pBot->current_weapon.iAmmo1, pBot->current_weapon.iAmmo2, cs_weapon_select[iNum].primary_charge_delay, gpGlobals->time);
 			}
 
-			return (FALSE);
+			return false;
 		}
-		else if ((pBot->bIsReloading) && (pBot->f_reloadingtime != 0.0f)
-			&& (pBot->f_reloadingtime < gpGlobals->time) && (pBot->fTimeWeaponSwitch + 0.3f < gpGlobals->time)) // KWo - 10.02.2008
+		else if (pBot->bIsReloading && pBot->f_reloadingtime != 0.0f
+			&& pBot->f_reloadingtime < gpGlobals->time && pBot->fTimeWeaponSwitch + 0.3f < gpGlobals->time) // KWo - 10.02.2008
 		{
 			pBot->bIsReloading = FALSE;
 			pBot->f_reloadingtime = 0.0f;
-			if ((WeaponIsPrimaryGun(iId)) && (pBot->current_weapon.iAmmo1 > 0))
+			if (WeaponIsPrimaryGun(iId) && pBot->current_weapon.iAmmo1 > 0)
 				pBot->current_weapon.iAmmo1 = 0;
-			if ((WeaponIsPistol(iId)) && (pBot->current_weapon.iAmmo2 > 0))
+			if (WeaponIsPistol(iId) && pBot->current_weapon.iAmmo2 > 0)
 				pBot->current_weapon.iAmmo2 = 0;
 			pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] = 0;
-			if ((pBot->current_weapon.iId != CS_WEAPON_KNIFE) && (pBot->f_spawn_time + 6.0f < gpGlobals->time)) // KWo - 30.03.2008
+			if (pBot->current_weapon.iId != CS_WEAPON_KNIFE && pBot->f_spawn_time + 6.0f < gpGlobals->time) // KWo - 30.03.2008
 				SelectWeaponByName(pBot, "weapon_knife");
 
 			if (g_b_DebugCombat)
 				ALERT(at_logged, "[DEBUG] BotFireWeapon - Bot %s was reloading the weapon %s too long time; time = %f.\n",
-					pBot->name, ((iId >= 0) && (iId < MAX_WEAPONS)) ? weapon_defs[iId].szClassname : "unknown", gpGlobals->time);
+					pBot->name, iId >= 0 && iId < MAX_WEAPONS ? weapon_defs[iId].szClassname : "unknown", gpGlobals->time);
 		}
 
-		if ((pBot->bIsReloading) && (iId >= 0) && (iId < MAX_WEAPONS))
+		if (pBot->bIsReloading && iId >= 0 && iId < MAX_WEAPONS)
 		{
-			if ((BotGetSafeTask(pBot)->iTask != TASK_SEEKCOVER) && (BotGetSafeTask(pBot)->iTask != TASK_HIDE)) // KWo - 18.02.2008
+			if (BotGetSafeTask(pBot)->iTask != TASK_SEEKCOVER && BotGetSafeTask(pBot)->iTask != TASK_HIDE) // KWo - 18.02.2008
 			{
 				if (g_b_DebugCombat || g_b_DebugTasks)
 					ALERT(at_logged, "[DEBUG] BotFireWeapon - Bot %s is reloading the weapon - preparing TASK_SEEKCOVER.\n", pBot->name);
@@ -1321,7 +1321,7 @@ bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
 				bottask_t TempTask = { NULL, NULL, TASK_SEEKCOVER, TASKPRI_SEEKCOVER, -1, 0.0, FALSE }; // KWo - 09.04.2010
 				BotPushTask(pBot, &TempTask);
 			}
-			return (FALSE);
+			return false;
 		}
 	}
 
@@ -1331,24 +1331,24 @@ bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
 	pSelect = &cs_weapon_select[0];
 	pDelay = &cs_fire_delay[0];
 
-	if ((g_b_cv_jasonmode) || (pBot->bIsChickenOrZombie))  // KWo - 14.06.2008
+	if (g_b_cv_jasonmode || pBot->bIsChickenOrZombie)  // KWo - 14.06.2008
 		goto WeaponSelectEnd;
 
 	if (!FNullEnt(pBot->pBotEnemy))
 	{
 #ifdef _WIN32
-		strncpy_s(szEnemyModelName, sizeof(szEnemyModelName), (INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pBotEnemy), "model")), sizeof(szEnemyModelName) - 1); // KWo - 04.07.2008
+		strncpy_s(szEnemyModelName, sizeof szEnemyModelName, INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pBotEnemy), "model"), sizeof szEnemyModelName - 1); // KWo - 04.07.2008
 #else
 		strncpy(szEnemyModelName, (INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pBotEnemy), "model")), sizeof(szEnemyModelName)); // KWo - 04.07.2008
 #endif
-		bEnemyIsChicken = ((strncmp("chicken", szEnemyModelName, 7) == 0)
-			|| (strncmp("zomb", szEnemyModelName, 4) == 0)); // KWo - 04.07.2008
+		bEnemyIsChicken = strncmp("chicken", szEnemyModelName, 7) == 0
+			|| strncmp("zomb", szEnemyModelName, 4) == 0; // KWo - 04.07.2008
 
 		if (pBot->bot_skill > 80)
 		{
-			if ((fDistance < 100.0f) && (!bEnemyIsChicken) && ((pBot->pEdict->v.health > 80)
-				|| ((pBot->pBotEnemy->v.weapons == CS_WEAPON_KNIFE)
-					&& !IsGroupOfEnemies(pBot, pEdict->v.origin)))) // KWo - 04.07.2008
+			if (fDistance < 100.0f && !bEnemyIsChicken && (pBot->pEdict->v.health > 80
+				|| pBot->pBotEnemy->v.weapons == CS_WEAPON_KNIFE
+				&& !IsGroupOfEnemies(pBot, pEdict->v.origin))) // KWo - 04.07.2008
 				bUseKnife = TRUE;
 		}
 
@@ -1360,7 +1360,7 @@ bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
 	while (pSelect[select_index].iId)
 	{
 		// is the bot NOT carrying this weapon?
-		if (!(pEdict->v.weapons & (1 << pSelect[select_index].iId)))
+		if (!(pEdict->v.weapons & 1 << pSelect[select_index].iId))
 		{
 			select_index++;  // skip to next weapon
 			continue;
@@ -1381,19 +1381,19 @@ bool BotFireWeapon(Vector v_enemy, bot_t* pBot)
 		// the bot is far enough away to use primary fire AND
 		// the bot is close enough to the enemy to use primary fire
 
-		if ((select_index > 0) && (select_index < 7)
-			&& ((pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] + pBot->m_rgAmmoInClip[iId]) >= pSelect[select_index].min_primary_ammo)) // KWo - 20.04.2010
+		if (select_index > 0 && select_index < 7
+			&& pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] + pBot->m_rgAmmoInClip[iId] >= pSelect[select_index].min_primary_ammo) // KWo - 20.04.2010
 		{
 			bSecondaryOk = true;
 			iChosenWeaponIndex = select_index;
 		}
 
-		if (((weapon_defs[iId].iAmmo1 == -1)
-			|| (pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] + pBot->m_rgAmmoInClip[iId] >= pSelect[select_index].min_primary_ammo))
+		if ((weapon_defs[iId].iAmmo1 == -1
+			|| pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] + pBot->m_rgAmmoInClip[iId] >= pSelect[select_index].min_primary_ammo)
 			&& (/* ((iTask != TASK_ATTACK) && !bSecondaryOk)
-				|| */ ((fDistance >= pSelect[select_index].primary_min_distance)
-	&& (fDistance <= pSelect[select_index].primary_max_distance))
-				|| (!bSecondaryOk && (fDistance > 100.0f)))) // KWo - 25.05.2010
+				|| */ fDistance >= pSelect[select_index].primary_min_distance
+				&& fDistance <= pSelect[select_index].primary_max_distance
+				|| !bSecondaryOk && fDistance > 100.0f)) // KWo - 25.05.2010
 			iChosenWeaponIndex = select_index;
 
 		select_index++;
@@ -1412,7 +1412,7 @@ WeaponSelectEnd:
 			ALERT(at_logged, "[DEBUG] BotFireWeapon - Bot %s has %s and wants to change to better weapon %s; time = %f.\n", pBot->name,
 				weapon_defs[pBot->current_weapon.iId].szClassname, weapon_defs[iId].szClassname, gpGlobals->time);
 
-		if ((pBot->current_weapon.iId != CS_WEAPON_INSWITCH) && (pBot->fTimeWeaponSwitch + 0.7 < gpGlobals->time)) // KWo - 10.02.2008
+		if (pBot->current_weapon.iId != CS_WEAPON_INSWITCH && pBot->fTimeWeaponSwitch + 0.7 < gpGlobals->time) // KWo - 10.02.2008
 		{
 			SelectWeaponByName(pBot, pSelect[select_index].weapon_name);
 			// Reset Burst Fire Variables
@@ -1424,7 +1424,7 @@ WeaponSelectEnd:
 				ALERT(at_logged, "[DEBUG] BotFireWeapon - Bot %s is changing the weapon to a better one - %s; time = %f.\n",
 					pBot->name, weapon_defs[iId].szClassname, gpGlobals->time);
 
-			return (FALSE);
+			return false;
 		}
 	}
 
@@ -1434,26 +1434,26 @@ WeaponSelectEnd:
 			ALERT(at_logged, "[DEBUG] BotFireWeapon - Bot %s is changing the zoom of the weapon %s; time = %f.\n",
 				pBot->name, weapon_defs[iId].szClassname, gpGlobals->time);
 
-		return (FALSE); // KWo - 07.07.2008
+		return false; // KWo - 07.07.2008
 	}
 
 	if (BotHasShieldDrawn(pBot))
-		return (FALSE); // KWo - 17.07.2007
+		return false; // KWo - 17.07.2007
 
-	if (/* (pDelay[select_index].iId != iId) && */ (pBot->fTimeWeaponSwitch + 0.7 > gpGlobals->time))
+	if (/* (pDelay[select_index].iId != iId) && */ pBot->fTimeWeaponSwitch + 0.7 > gpGlobals->time)
 	{
 		if (g_b_DebugCombat)
 			ALERT(at_logged, "[DEBUG] BotFireWeapon - Bot %s found a better weapon and is switching to it; time = %f.\n", pBot->name, gpGlobals->time);
 
-		return (FALSE);
+		return false;
 	}
 
 	if (BotUsesSniper(pBot) && !FNullEnt(pBot->pBotEnemy) && !pBot->bIsReloading)
 	{
 		if (/* (GetShootingConeDeviation (pBot->pBotEnemy, &pEdict->v.origin) < 0.95f)
-		   && */ (pEdict->v.velocity.x != 0.0f
-	|| pEdict->v.velocity.y != 0.0f
-	|| pEdict->v.velocity.z != 0.0f))
+		   && */ pEdict->v.velocity.x != 0.0f
+			|| pEdict->v.velocity.y != 0.0f
+			|| pEdict->v.velocity.z != 0.0f)
 		{
 			pBot->f_move_speed = 0.0f;
 			pBot->f_sidemove_speed = 0.0f;
@@ -1467,11 +1467,11 @@ WeaponSelectEnd:
 					ALERT(at_logged, "[DEBUG] Bot %s cannot shoot, because wants to don't move before shooting; f_move_speed = %f; f_sidemove_speed = %f; time = %f.\n",
 						pBot->name, pBot->f_move_speed, pBot->f_sidemove_speed, gpGlobals->time);
 
-				return (FALSE);
+				return false;
 			}
 		}
-		else if ((GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) >= 0.95f)
-			&& (pBot->f_shoot_time + 1.0f < gpGlobals->time)
+		else if (GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) >= 0.95f
+			&& pBot->f_shoot_time + 1.0f < gpGlobals->time
 			&& !(pEdict->v.oldbuttons & IN_DUCK)) // KWo - 24.06.2008
 		{
 			pBot->f_ducktime = gpGlobals->time + 2.5f;
@@ -1479,15 +1479,15 @@ WeaponSelectEnd:
 	}
 
 	base_delay = pDelay[select_index].primary_base_delay;
-	if ((g_bIsOldCS15) && (pBot->current_weapon.iId == CS_WEAPON_AWP)) // KWo - 26.08.2006
+	if (g_bIsOldCS15 && pBot->current_weapon.iId == CS_WEAPON_AWP) // KWo - 26.08.2006
 		base_delay = 1.2f;
 
 	min_delay = pDelay[select_index].primary_min_delay[skill];
 	max_delay = pDelay[select_index].primary_max_delay[skill];
 
 	// Need to care for burst fire ?
-	if ((fDistance < MIN_BURST_DISTANCE) || (iId == CS_WEAPON_KNIFE) // KWo - 05.06.2006
-		|| (pBot->f_blind_time > gpGlobals->time))
+	if (fDistance < MIN_BURST_DISTANCE || iId == CS_WEAPON_KNIFE // KWo - 05.06.2006
+		|| pBot->f_blind_time > gpGlobals->time)
 	{
 		if (iId == CS_WEAPON_KNIFE)
 		{
@@ -1513,7 +1513,7 @@ WeaponSelectEnd:
 				//      pBot->f_shoot_time = gpGlobals->time;
 
 				//            if (!BotUsesSniper (pBot) && (pDelay[select_index].iMaxFireBullets + RANDOM_LONG (0, 1) <= pBot->iBurstShotsFired))
-				if (!BotUsesSniper(pBot) && (10 <= pBot->iBurstShotsFired))
+				if (!BotUsesSniper(pBot) && 10 <= pBot->iBurstShotsFired)
 				{
 					pBot->iBurstShotsFired = 0;
 					pBot->fTimeFirePause = gpGlobals->time + RANDOM_FLOAT(0.2f, 0.4f + 0.3f * (100.0f - (float)pBot->bot_skill) / 100.0f);
@@ -1533,13 +1533,13 @@ WeaponSelectEnd:
 	{
 		if (BotDoFirePause(pBot, fDistance, &pDelay[select_index]))
 		{
-			return (FALSE);
+			return false;
 		}
 
 		// Don't attack with knife over long distance
 		if (iId == CS_WEAPON_KNIFE)
 		{
-			return (FALSE);
+			return false;
 		}
 
 		if (pSelect[select_index].primary_fire_hold)
@@ -1554,7 +1554,7 @@ WeaponSelectEnd:
 			pBot->f_zoomchecktime = pBot->f_shoot_time - 0.1f;
 		}
 	}
-	return (TRUE);
+	return true;
 }
 
 bool BotCheckZoom(bot_t* pBot)  // KWo - 09.07.2008
@@ -1565,8 +1565,8 @@ bool BotCheckZoom(bot_t* pBot)  // KWo - 09.07.2008
 	edict_t* pEdict = pBot->pEdict;
 	TraceResult tr;
 
-	if ((!BotUsesSniper(pBot) && !WeaponIsAssualtSniper(pBot->current_weapon.iId)))
-		return (false); // KWo - 07.07.2008
+	if (!BotUsesSniper(pBot) && !WeaponIsAssualtSniper(pBot->current_weapon.iId))
+		return false; // KWo - 07.07.2008
 
 	iZoomMagnification = 0;
 
@@ -1578,23 +1578,23 @@ bool BotCheckZoom(bot_t* pBot)  // KWo - 09.07.2008
 	// Check Distance for correct Sniper Zooming
 	if (WeaponIsAssualtSniper(pBot->current_weapon.iId))
 	{
-		if (fDistance > (MIN_BURST_DISTANCE * 2.0f))
+		if (fDistance > MIN_BURST_DISTANCE * 2.0f)
 			iZoomMagnification = 1;
 	}
 	else if (BotUsesSniper(pBot))
 	{
 		if (!(pBot->iAimFlags & AIM_ENEMY) && !(pBot->iAimFlags & AIM_LASTENEMY)
 			&& !(pBot->iAimFlags & AIM_PREDICTPATH) && !(pBot->iAimFlags & AIM_CAMP)
-			&& (pBot->f_bot_see_enemy_time + 5.0f < gpGlobals->time)
-			&& (pBot->f_heard_sound_time + 5.0f < gpGlobals->time))  // KWo - 08.07.2008
+			&& pBot->f_bot_see_enemy_time + 5.0f < gpGlobals->time
+			&& pBot->f_heard_sound_time + 5.0f < gpGlobals->time)  // KWo - 08.07.2008
 			iZoomMagnification = 0;
-		else if ((fDistance < 1500.0f) && (fDistance > MIN_BURST_DISTANCE))
+		else if (fDistance < 1500.0f && fDistance > MIN_BURST_DISTANCE)
 			iZoomMagnification = 1;
 		else if (fDistance >= 1500.0f)
 			iZoomMagnification = 2;
 	}
 
-	if ((fDistance <= MIN_BURST_DISTANCE) || (BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER))
+	if (fDistance <= MIN_BURST_DISTANCE || BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER)
 		iZoomMagnification = 0;
 
 	bZoomChange = FALSE;
@@ -1607,16 +1607,16 @@ bool BotCheckZoom(bot_t* pBot)  // KWo - 09.07.2008
 		break;
 
 	case 1:
-		if ((pEdict->v.fov != 40) && (pEdict->v.fov != 55))
+		if (pEdict->v.fov != 40 && pEdict->v.fov != 55)
 			bZoomChange = TRUE;
 		break;
 
 	case 2:
-		if ((pEdict->v.fov != 10) && (pEdict->v.fov != 15))
+		if (pEdict->v.fov != 10 && pEdict->v.fov != 15)
 			bZoomChange = TRUE;
 	}
 
-	if ((bZoomChange) && (pBot->f_zoomchecktime < gpGlobals->time)) // KWo - 08.07.2008
+	if (bZoomChange && pBot->f_zoomchecktime < gpGlobals->time) // KWo - 08.07.2008
 	{
 		pEdict->v.button |= IN_ATTACK2;
 		pBot->f_shoot_time = gpGlobals->time + 0.15f; // KWo - 02.04.2010
@@ -1626,7 +1626,7 @@ bool BotCheckZoom(bot_t* pBot)  // KWo - 09.07.2008
 
 		pBot->f_zoomchecktime = gpGlobals->time + 0.5f;
 	}
-	return (bZoomChange); // KWo - 07.07.2008
+	return bZoomChange; // KWo - 07.07.2008
 }
 
 bool BotCheckCorridor(bot_t* pBot) // KWo - 21.03.2006
@@ -1641,11 +1641,11 @@ bool BotCheckCorridor(bot_t* pBot) // KWo - 21.03.2006
 	Vector v_left;
 	Vector v_right;
 
-	if ((pBot->prev_wpt_index[0] < 0) || (pBot->prev_wpt_index[0] >= g_iNumWaypoints))
-		return (false);
+	if (pBot->prev_wpt_index[0] < 0 || pBot->prev_wpt_index[0] >= g_iNumWaypoints)
+		return false;
 
 	if (pBot->f_spawn_time + 30.0f > gpGlobals->time) // KWo - 08.10.2006
-		return (false);
+		return false;
 
 	v_src = pBot->wpt_origin + pBot->pEdict->v.view_ofs;
 	vec_mov_dir = (pBot->wpt_origin - paths[pBot->prev_wpt_index[0]]->origin).Normalize();
@@ -1654,20 +1654,20 @@ bool BotCheckCorridor(bot_t* pBot) // KWo - 21.03.2006
 	// fire a traceline forward to check if we have some space in front of us
 	TRACE_LINE(v_src, v_dest, ignore_monsters, pEdict, &tr1);
 	//   UTIL_DrawBeam (v_src, v_dest, 20, 50, 0, 0, 255, 0, 255, 0);
-	if (!FStrEq(STRING(tr1.pHit->v.classname), "worldspawn") || (tr1.flFraction < 1.0f))
-		return (false);
+	if (!FStrEq(STRING(tr1.pHit->v.classname), "worldspawn") || tr1.flFraction < 1.0f)
+		return false;
 	v_src = paths[pBot->prev_wpt_index[0]]->origin + pBot->pEdict->v.view_ofs;
 	v_dest = v_src - vec_mov_dir;
 	// fire a traceline back to check if we have some space back of us
 	TRACE_LINE(v_src, v_dest, ignore_monsters, pEdict, &tr1);
 	//   UTIL_DrawBeam (v_src, v_dest, 20, 50, 0, 0, 255, 0, 255, 0);
-	if (!FStrEq(STRING(tr1.pHit->v.classname), "worldspawn") || (tr1.flFraction < 1.0f))
-		return (false);
+	if (!FStrEq(STRING(tr1.pHit->v.classname), "worldspawn") || tr1.flFraction < 1.0f)
+		return false;
 
 	vec_mov_angle = UTIL_VecToAngles(vec_mov_dir);
 	MAKE_VECTORS(vec_mov_angle);
 	v_src = paths[pBot->prev_wpt_index[0]]->origin + pBot->pEdict->v.view_ofs;
-	v_left = v_src + gpGlobals->v_right * (-180);
+	v_left = v_src + gpGlobals->v_right * -180;
 	v_right = v_src + gpGlobals->v_right * 180;
 	TRACE_LINE(v_src, v_left, ignore_monsters, pEdict, &tr1);
 	TRACE_LINE(v_src, v_right, ignore_monsters, pEdict, &tr2);
@@ -1675,11 +1675,11 @@ bool BotCheckCorridor(bot_t* pBot) // KWo - 21.03.2006
 	//   UTIL_DrawBeam (v_src, v_right, 20, 50, 0, 0, 0, 255, 255, 0);
 
 	   // if both sides of trace origin are limited by some obstacles - probably we aren't in the free area
-	if ((tr1.flFraction < 1.0f) && (tr2.flFraction < 1.0f))
-		return (false);
+	if (tr1.flFraction < 1.0f && tr2.flFraction < 1.0f)
+		return false;
 
 	v_src = pBot->wpt_origin + vec_mov_dir + pBot->pEdict->v.view_ofs;
-	v_left = v_src + gpGlobals->v_right * (-250);
+	v_left = v_src + gpGlobals->v_right * -250;
 	v_right = v_src + gpGlobals->v_right * 250;
 	// now we need to fire 2 tracelines from forward position to the left and to the right
 	// to check if they are blocked both - it may mean we are in some corridor :)
@@ -1688,15 +1688,15 @@ bool BotCheckCorridor(bot_t* pBot) // KWo - 21.03.2006
 	//   UTIL_DrawBeam (v_src, v_left, 20, 50, 0, 255, 0, 0, 255, 0);
 	//   UTIL_DrawBeam (v_src, v_right, 20, 50, 0, 255, 0, 0, 255, 0);
 
-	if ((FStrEq(STRING(tr1.pHit->v.classname), "worldspawn")) && (tr1.flFraction < 0.5f)
-		&& (FStrEq(STRING(tr2.pHit->v.classname), "worldspawn")) && (tr2.flFraction < 0.5f))
+	if (FStrEq(STRING(tr1.pHit->v.classname), "worldspawn") && tr1.flFraction < 0.5f
+		&& FStrEq(STRING(tr2.pHit->v.classname), "worldspawn") && tr2.flFraction < 0.5f)
 	{
 		v_src = pBot->wpt_origin + pBot->pEdict->v.view_ofs;
 		v_dest = pBot->wpt_origin + vec_mov_dir + pBot->pEdict->v.view_ofs;
 		//      UTIL_DrawBeam (v_src, v_dest, 20, 50, 0, 0, 255, 0, 255, 0);
-		return (true);
+		return true;
 	}
-	return (false);
+	return false;
 }
 
 void BotFocusEnemy(bot_t* pBot)
@@ -1730,7 +1730,7 @@ void BotFocusEnemy(bot_t* pBot)
 		return;
 	}
 
-	if ((pBot->iAimFlags & AIM_ENEMY) && (pBot->f_bot_see_enemy_time + 0.6 < gpGlobals->time)
+	if (pBot->iAimFlags & AIM_ENEMY && pBot->f_bot_see_enemy_time + 0.6 < gpGlobals->time
 		&& !(BotGetSafeTask(pBot)->iTask == TASK_SHOOTBREAKABLE)) // KWo - 13.01.2012
 	{
 		pBot->bWantsToFire = FALSE;
@@ -1741,7 +1741,7 @@ void BotFocusEnemy(bot_t* pBot)
 	vecDist.z = 0;  // ignore z component (up & down)
 	f_distance = vecDist.Length();  // how far away is the enemy scum?
 
-	if ((f_distance < MIN_BURST_DISTANCE) && !BotUsesSniper(pBot))// KWo - 25.08.2006
+	if (f_distance < MIN_BURST_DISTANCE && !BotUsesSniper(pBot))// KWo - 25.08.2006
 	{
 		flDot = GetShootingConeDeviation(pEdict, &vecEnemy); // KWo - 01.10.2010
 		if (pBot->current_weapon.iId == CS_WEAPON_KNIFE)
@@ -1778,7 +1778,7 @@ void BotFocusEnemy(bot_t* pBot)
 				flEnemyDot = GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin);
 
 				// Enemy doesn't faces the Bot ?
-				if ((flEnemyDot > 0.9f) && (flDot > 0.92f) && !BotUsesSniper(pBot))
+				if (flEnemyDot > 0.9f && flDot > 0.92f && !BotUsesSniper(pBot))
 				{
 					pBot->bWantsToFire = TRUE;
 				}
@@ -1791,8 +1791,8 @@ void BotFocusEnemy(bot_t* pBot)
 					//               fSqDist = sqrt(fOffset * fOffset + f_distance * f_distance); // KWo - 18.11.2006
 					//               flDotStart = (f_distance * f_distance) / (fSqDist * fSqDist); // KWo - 18.11.2006
 
-					if (((pBot->pBotEnemy->v.velocity).Length() > 5.0f)
-						|| ((pEdict->v.velocity).Length() > 5.0f)) // KWo - 11.04.2010
+					if (pBot->pBotEnemy->v.velocity.Length() > 5.0f
+						|| pEdict->v.velocity.Length() > 5.0f) // KWo - 11.04.2010
 	  //                  flDotStart = 0.99f;
 	  //               if (flDot > flDotStart) // KWo - 18.11.2006
 						if (flDot > 0.99f) // KWo - 18.11.2006
@@ -1827,7 +1827,7 @@ void BotDoAttackMovement(bot_t* pBot)
 	if (FNullEnt(pBot->pBotEnemy))
 		return;
 
-	if ((pBot->current_weapon.iId == CS_WEAPON_KNIFE) || pBot->bIsChickenOrZombie) // KWo - 18.01.2011
+	if (pBot->current_weapon.iId == CS_WEAPON_KNIFE || pBot->bIsChickenOrZombie) // KWo - 18.01.2011
 		pBot->dest_origin = pBot->pBotEnemy->v.origin;
 
 	float f_distance;
@@ -1857,26 +1857,26 @@ void BotDoAttackMovement(bot_t* pBot)
 		bUsesSniper = BotUsesSniper(pBot);
 
 		// If suspecting Enemy stand still
-		if ((pBot->iStates & STATE_SUSPECTENEMY) && !(pBot->iStates & STATE_SEEINGENEMY))
+		if (pBot->iStates & STATE_SUSPECTENEMY && !(pBot->iStates & STATE_SEEINGENEMY))
 			iApproach = 49;
 
 		// If reloading or VIP back off
 		else if (pBot->bIsReloading || pBot->bIsVIP)
 			iApproach = 29;
-		else if ((iId == CS_WEAPON_KNIFE) || pBot->bIsChickenOrZombie) // Knife ?
+		else if (iId == CS_WEAPON_KNIFE || pBot->bIsChickenOrZombie) // Knife ?
 			iApproach = 100;
 		else
 		{
 			iApproach = (int)(pBot->pEdict->v.health * pBot->fAgressionLevel);	// KWo to remove warning
-			if (bUsesSniper && (iApproach > 49))
+			if (bUsesSniper && iApproach > 49)
 				iApproach = 49;
 		}
 
-		if (((((iApproach < 30) && (!g_bBombPlanted)) || (pBot->bIsVIP) || (pBot->bIsReloading))
-			&& /* (FInViewCone (&pEdict->v.origin, pBot->pBotEnemy) */ ((GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) > 0.8)
-				&& (pBot->iStates & STATE_SEEINGENEMY)))
-			|| (WeaponIsSniper(iWeaponEnemy)
-				&& (GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) > 0.95f))) // KWo - 09.04.2010 - stealen from YapB
+		if ((iApproach < 30 && !g_bBombPlanted || pBot->bIsVIP || pBot->bIsReloading)
+			&& /* (FInViewCone (&pEdict->v.origin, pBot->pBotEnemy) */ (GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) > 0.8
+				&& pBot->iStates & STATE_SEEINGENEMY)
+			|| WeaponIsSniper(iWeaponEnemy)
+			&& GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) > 0.95f) // KWo - 09.04.2010 - stealen from YapB
 		{
 			pBot->f_move_speed = -pEdict->v.maxspeed;
 			bottask_t TempTask = { NULL, NULL, TASK_SEEKCOVER, TASKPRI_SEEKCOVER, -1, 0.0f, FALSE }; // KWo - 09.04.2010
@@ -1888,10 +1888,10 @@ void BotDoAttackMovement(bot_t* pBot)
 		else
 			pBot->f_move_speed = pEdict->v.maxspeed;
 
-		if ((iId != CS_WEAPON_KNIFE) && (f_distance < 96.0f))
+		if (iId != CS_WEAPON_KNIFE && f_distance < 96.0f)
 			pBot->f_move_speed = -pEdict->v.maxspeed;
 
-		if (/* (!bSeekCover) && */ (bUsesSniper) && !pBot->bIsReloading) // KWo - 20.10.2006  thanks strelomet
+		if (/* (!bSeekCover) && */ bUsesSniper && !pBot->bIsReloading) // KWo - 20.10.2006  thanks strelomet
 		{
 			pBot->byFightStyle = 1;
 			pBot->f_lastfightstylecheck = gpGlobals->time;
@@ -1906,7 +1906,7 @@ void BotDoAttackMovement(bot_t* pBot)
 					pBot->byFightStyle = 0;
 				else if (f_distance < 1024.0f)
 				{
-					if ((IsGroupOfEnemies(pBot, pBot->pBotEnemy->v.origin)) || (WeaponIsSniper(iWeaponEnemy)))     // KWo - 15.04.2010
+					if (IsGroupOfEnemies(pBot, pBot->pBotEnemy->v.origin) || WeaponIsSniper(iWeaponEnemy))     // KWo - 15.04.2010
 						pBot->byFightStyle = 0;
 					else if (iRand < (BotUsesSubmachineGun(pBot) ? 50 : 30))   // KWo - 20.10.2006
 						pBot->byFightStyle = 0;
@@ -1915,7 +1915,7 @@ void BotDoAttackMovement(bot_t* pBot)
 				}
 				else
 				{
-					if ((IsGroupOfEnemies(pBot, pBot->pBotEnemy->v.origin)) || (WeaponIsSniper(iWeaponEnemy)))    // KWo - 15.04.2010
+					if (IsGroupOfEnemies(pBot, pBot->pBotEnemy->v.origin) || WeaponIsSniper(iWeaponEnemy))    // KWo - 15.04.2010
 						pBot->byFightStyle = 0;
 					else if (iRand < (BotUsesSubmachineGun(pBot) ? 80 : 93))   // KWo - 20.10.2006
 						pBot->byFightStyle = 1;
@@ -1929,11 +1929,11 @@ void BotDoAttackMovement(bot_t* pBot)
 		{
 			if (pBot->f_lastfightstylecheck + 3.0f < gpGlobals->time)
 			{
-				if (!FireHurtsFriend(pBot, f_distance) && (RANDOM_LONG(0, 100) < 50))
+				if (!FireHurtsFriend(pBot, f_distance) && RANDOM_LONG(0, 100) < 50)
 				{
-					if ((iId == CS_WEAPON_KNIFE) && (pBot->pBotEnemy->v.velocity.Length() > 10.0f)
-						&& (iWeaponEnemy == CS_WEAPON_KNIFE)
-						&& (2.0f * pBot->pEdict->v.health > pBot->pBotEnemy->v.health)) // KWo - 24.06.2008
+					if (iId == CS_WEAPON_KNIFE && pBot->pBotEnemy->v.velocity.Length() > 10.0f
+						&& iWeaponEnemy == CS_WEAPON_KNIFE
+						&& 2.0f * pBot->pEdict->v.health > pBot->pBotEnemy->v.health) // KWo - 24.06.2008
 						pBot->byFightStyle = 1;
 					else
 						pBot->byFightStyle = 0;
@@ -1946,14 +1946,14 @@ void BotDoAttackMovement(bot_t* pBot)
 		}
 
 		if ((WeaponIsPistol(iWeaponEnemy) || WeaponIsPrimaryGun(iWeaponEnemy))
-			&& FInViewCone(&pEdict->v.origin, pBot->pBotEnemy) && (iId == CS_WEAPON_KNIFE)) // KWo - 23.02.2008
+			&& FInViewCone(&pEdict->v.origin, pBot->pBotEnemy) && iId == CS_WEAPON_KNIFE) // KWo - 23.02.2008
 			pBot->byFightStyle = 0;
 
 		if (pBot->bIsChickenOrZombie) // KWo - 24.06.2008
 			pBot->byFightStyle = 0;
 
-		if (((pBot->bot_skill > 60) && (pBot->byFightStyle == 0))
-			|| /* pBot->bIsReloading || */ (WeaponIsPistol(iId) && (f_distance < 500.0f))) // KWo - 23.02.2008
+		if (pBot->bot_skill > 60 && pBot->byFightStyle == 0
+			|| /* pBot->bIsReloading || */ WeaponIsPistol(iId) && f_distance < 500.0f) // KWo - 23.02.2008
 		{
 			if (pBot->f_StrafeSetTime < gpGlobals->time)
 			{
@@ -2019,12 +2019,12 @@ void BotDoAttackMovement(bot_t* pBot)
 			if (pBot->bot_skill > 80)
 			{
 				float flEnemyDot = GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin);
-				if ((pBot->f_jumptime + 5.0f < gpGlobals->time) && (pEdict->v.flags & FL_ONGROUND)
-					&& (f_distance < 2 * MIN_BURST_DISTANCE) && (pBot->f_ducktime < gpGlobals->time))
+				if (pBot->f_jumptime + 5.0f < gpGlobals->time && pEdict->v.flags & FL_ONGROUND
+					&& f_distance < 2 * MIN_BURST_DISTANCE && pBot->f_ducktime < gpGlobals->time)
 				{
-					if ((g_i_botthink_index == g_iFrameCounter) && (RANDOM_LONG(1, 100) < 30)
-						&& (pEdict->v.velocity.Length2D() > 150.0f)
-						&& (flEnemyDot > 0.95f) && !bUsesSniper) // KWo - 24.06.2008
+					if (g_i_botthink_index == g_iFrameCounter && RANDOM_LONG(1, 100) < 30
+						&& pEdict->v.velocity.Length2D() > 150.0f
+						&& flEnemyDot > 0.95f && !bUsesSniper) // KWo - 24.06.2008
 					{
 						pEdict->v.button |= IN_JUMP;
 						pBot->f_jumptime = gpGlobals->time + 1.0f;
@@ -2036,16 +2036,16 @@ void BotDoAttackMovement(bot_t* pBot)
 		{
 			//        int iNearestToEnemyPoint = WaypointFindNearestToMove (pBot->pBotEnemy->v.origin);
 
-			if ((pBot->pTasks->iTask != TASK_SEEKCOVER) && (pBot->pTasks->iTask != TASK_ENEMYHUNT)
-				&& (pBot->ucVisibility & WAIST_VISIBLE)
-				&& (!(pBot->ucVisibility & CUSTOM_VISIBLE))
-				&& (g_i_botthink_index % 4 == g_iFrameCounter % 4)
-				&& (((bUsesSniper) && (RANDOM_LONG(0, 100) < 85))
-					|| (BotUsesRifle(pBot) && (RANDOM_LONG(0, 100) < 70))
-					|| (BotUsesSubmachineGun(pBot) && (RANDOM_LONG(0, 100) < 50)))
+			if (pBot->pTasks->iTask != TASK_SEEKCOVER && pBot->pTasks->iTask != TASK_ENEMYHUNT
+				&& pBot->ucVisibility & WAIST_VISIBLE
+				&& !(pBot->ucVisibility & CUSTOM_VISIBLE)
+				&& g_i_botthink_index % 4 == g_iFrameCounter % 4
+				&& (bUsesSniper && RANDOM_LONG(0, 100) < 85
+					|| BotUsesRifle(pBot) && RANDOM_LONG(0, 100) < 70
+					|| BotUsesSubmachineGun(pBot) && RANDOM_LONG(0, 100) < 50)
 				/* && (pBot->f_shoot_time - 0.2f < gpGlobals->time) */
-				&& (pBot->f_StrafeSetTime < gpGlobals->time) // strafe timer used to check if we can duck our bot...
-				&& (pBot->f_ducktime <= gpGlobals->time)
+				&& pBot->f_StrafeSetTime < gpGlobals->time // strafe timer used to check if we can duck our bot...
+				&& pBot->f_ducktime <= gpGlobals->time
 				&& (!(pEdict->v.button & IN_ATTACK) || !bUsesSniper)
 				&& !pBot->bIsReloading) // KWo - 24.06.2008
 			{
@@ -2069,7 +2069,7 @@ void BotDoAttackMovement(bot_t* pBot)
 			//         pEdict->v.button |= IN_DUCK;
 		}
 	}
-	else if ((pBot->bot_skill > 80) && (pEdict->v.flags & FL_ONGROUND) && (pBot->f_ducktime < gpGlobals->time))
+	else if (pBot->bot_skill > 80 && pEdict->v.flags & FL_ONGROUND && pBot->f_ducktime < gpGlobals->time)
 	{
 		if (f_distance < MIN_BURST_DISTANCE)
 		{
@@ -2097,8 +2097,8 @@ void BotDoAttackMovement(bot_t* pBot)
 	MAKE_VECTORS(pEdict->v.v_angle);  // KWo - 25.08.2008
 	if (pBot->bIsReloading)
 	{
-		vecForward = (gpGlobals->v_forward * (-pEdict->v.maxspeed)) * 0.2f;
-		vecSide = (gpGlobals->v_right * pBot->f_sidemove_speed) * 0.2f;
+		vecForward = gpGlobals->v_forward * -pEdict->v.maxspeed * 0.2f;
+		vecSide = gpGlobals->v_right * pBot->f_sidemove_speed * 0.2f;
 		vecTargetPos = pEdict->v.origin + vecForward + vecSide;
 		if (!IsDeadlyDropAtPos(pBot, vecTargetPos)) // KWo - 25.08.2008
 		{
@@ -2108,13 +2108,13 @@ void BotDoAttackMovement(bot_t* pBot)
 	}
 
 	if (!pBot->bInWater && !pBot->bOnLadder
-		&& ((pBot->f_move_speed != 0) || (pBot->f_sidemove_speed != 0)))
+		&& (pBot->f_move_speed != 0 || pBot->f_sidemove_speed != 0))
 	{
 		float fTimeRange = pBot->fTimeFrameInterval;  // KWo - 17.10.2006 - reverted back
 
-		vecForward = (gpGlobals->v_forward * pBot->f_move_speed) * 0.2f;
-		vecSide = (gpGlobals->v_right * pBot->f_sidemove_speed) * 0.2f;
-		vecTargetPos = pEdict->v.origin + vecForward + vecSide + (pEdict->v.velocity * fTimeRange);
+		vecForward = gpGlobals->v_forward * pBot->f_move_speed * 0.2f;
+		vecSide = gpGlobals->v_right * pBot->f_sidemove_speed * 0.2f;
+		vecTargetPos = pEdict->v.origin + vecForward + vecSide + pEdict->v.velocity * fTimeRange;
 
 		if (IsDeadlyDropAtPos(pBot, vecTargetPos))
 		{
@@ -2134,14 +2134,14 @@ int BotCheckGrenades(bot_t* pBot)
 {
 	int weapons = pBot->pEdict->v.weapons;
 
-	if (weapons & (1 << CS_WEAPON_HEGRENADE))
-		return (CS_WEAPON_HEGRENADE);
-	else if (weapons & (1 << CS_WEAPON_FLASHBANG))
-		return (CS_WEAPON_FLASHBANG);
-	else if (weapons & (1 << CS_WEAPON_SMOKEGRENADE))
-		return (CS_WEAPON_SMOKEGRENADE);
+	if (weapons & 1 << CS_WEAPON_HEGRENADE)
+		return CS_WEAPON_HEGRENADE;
+	else if (weapons & 1 << CS_WEAPON_FLASHBANG)
+		return CS_WEAPON_FLASHBANG;
+	else if (weapons & 1 << CS_WEAPON_SMOKEGRENADE)
+		return CS_WEAPON_SMOKEGRENADE;
 
-	return (-1);
+	return -1;
 }
 
 void BotSelectBestWeapon(bot_t* pBot)
@@ -2165,12 +2165,12 @@ void BotSelectBestWeapon(bot_t* pBot)
 		iWeaponEnemy = clients[iEnemyIndex].iCurrentWeaponId;
 		iDistance = (int)(pBot->pEdict->v.origin - pBot->pBotEnemy->v.origin).Length(); // KWo - 24.06.2008
 #ifdef _WIN32
-		strncpy_s(szEnemyModelName, sizeof(szEnemyModelName), (INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pBotEnemy), "model")), sizeof(szEnemyModelName) - 1); // KWo - 04.07.2008
+		strncpy_s(szEnemyModelName, sizeof szEnemyModelName, INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pBotEnemy), "model"), sizeof szEnemyModelName - 1); // KWo - 04.07.2008
 #else
 		strncpy(szEnemyModelName, (INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pBotEnemy), "model")), sizeof(szEnemyModelName)); // KWo - 04.07.2008
 #endif
-		bEnemyIsChicken = ((strncmp("chicken", szEnemyModelName, 7) == 0)
-			|| (strncmp("zomb", szEnemyModelName, 4) == 0)); // KWo - 04.07.2008
+		bEnemyIsChicken = strncmp("chicken", szEnemyModelName, 7) == 0
+			|| strncmp("zomb", szEnemyModelName, 4) == 0; // KWo - 04.07.2008
 	}
 
 	if (pBot->bIsReloading) // KWo - 10.07.2008
@@ -2180,7 +2180,7 @@ void BotSelectBestWeapon(bot_t* pBot)
 	while (pSelect[select_index].iId)
 	{
 		// is the bot NOT carrying this weapon?
-		if (!(iWeapons & (1 << pSelect[select_index].iId)))
+		if (!(iWeapons & 1 << pSelect[select_index].iId))
 		{
 			select_index++;  // skip to next weapon
 			continue;
@@ -2194,18 +2194,18 @@ void BotSelectBestWeapon(bot_t* pBot)
 		// the bot is far enough away to use primary fire AND
 		// the bot is close enough to the enemy to use primary fire
 
-		if ((select_index > 0) && (select_index < 7)
-			&& ((pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] + pBot->m_rgAmmoInClip[iId]) >= pSelect[select_index].min_primary_ammo)) // KWo - 20.04.2010
+		if (select_index > 0 && select_index < 7
+			&& pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] + pBot->m_rgAmmoInClip[iId] >= pSelect[select_index].min_primary_ammo) // KWo - 20.04.2010
 		{
 			bSecondaryOk = true;
 			iChosenWeaponIndex = select_index;
 		}
 
-		if (((weapon_defs[iId].iAmmo1 == -1)
-			|| (pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] + pBot->m_rgAmmoInClip[iId] >= pSelect[select_index].min_primary_ammo))
-			&& (((!bSecondaryOk) && (iDistance > 100))
-				|| ((iDistance >= pSelect[select_index].primary_min_distance)
-					&& (iDistance <= pSelect[select_index].primary_max_distance)))) // KWo - 20.04.2010
+		if ((weapon_defs[iId].iAmmo1 == -1
+			|| pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] + pBot->m_rgAmmoInClip[iId] >= pSelect[select_index].min_primary_ammo)
+			&& (!bSecondaryOk && iDistance > 100
+				|| iDistance >= pSelect[select_index].primary_min_distance
+				&& iDistance <= pSelect[select_index].primary_max_distance)) // KWo - 20.04.2010
 			iChosenWeaponIndex = select_index;
 
 		select_index++;
@@ -2220,17 +2220,17 @@ void BotSelectBestWeapon(bot_t* pBot)
 		float distance = (GetGunPosition(pBot->pEdict) - pBot->vecEnemy).Length();
 		if (pBot->bot_skill > 80)
 		{
-			if ((distance < 100.0f) && (!bEnemyIsChicken)
-				&& ((pBot->pEdict->v.health > 80)
-					|| ((iWeaponEnemy == CS_WEAPON_KNIFE)
-						&& (!IsGroupOfEnemies(pBot, pBot->pEdict->v.origin))))) // KWo - 04.07.2008
+			if (distance < 100.0f && !bEnemyIsChicken
+				&& (pBot->pEdict->v.health > 80
+					|| iWeaponEnemy == CS_WEAPON_KNIFE
+					&& !IsGroupOfEnemies(pBot, pBot->pEdict->v.origin))) // KWo - 04.07.2008
 			{
 				bUseKnife = TRUE;
 			}
 		}
 	}
 
-	if ((bUseKnife) || (g_b_cv_jasonmode) || (pBot->bIsChickenOrZombie))  // KWo - 14.06.2008
+	if (bUseKnife || g_b_cv_jasonmode || pBot->bIsChickenOrZombie)  // KWo - 14.06.2008
 		select_index = 0;
 	else
 		select_index = iChosenWeaponIndex;
@@ -2238,7 +2238,7 @@ void BotSelectBestWeapon(bot_t* pBot)
 	iId = pSelect[select_index].iId;
 
 	// select this weapon if it isn't already selected
-	if ((pBot->current_weapon.iId != iId) && (pBot->fTimeWeaponSwitch + 1.0f < gpGlobals->time)) // KWo - 08.04.2010
+	if (pBot->current_weapon.iId != iId && pBot->fTimeWeaponSwitch + 1.0f < gpGlobals->time) // KWo - 08.04.2010
 		SelectWeaponByName(pBot, pSelect[select_index].weapon_name);
 	return;
 }
@@ -2263,7 +2263,7 @@ int GetWeaponIndexOfBot(bot_t* pBot) // KWo - 04.04.2010
 	}
 	if (i >= 26)
 		iNum = 0;
-	return (iNum);
+	return iNum;
 }
 
 int HighestWeaponOfEdict(edict_t* pEdict)
@@ -2277,13 +2277,13 @@ int HighestWeaponOfEdict(edict_t* pEdict)
 	while (pSelect->iId)
 	{
 		// is the bot carrying this weapon?
-		if ((iWeapons & (1 << pSelect->iId)))
+		if (iWeapons & 1 << pSelect->iId)
 			iNum = i;
 		i++;
 		pSelect++;
 	}
 
-	return (iNum);
+	return iNum;
 }
 
 int HighestPistolOfEdict(edict_t* pEdict)
@@ -2297,7 +2297,7 @@ int HighestPistolOfEdict(edict_t* pEdict)
 	while (pSelect->iId)
 	{
 		// is the bot carrying this weapon?
-		if ((iWeapons & (1 << pSelect->iId)))
+		if (iWeapons & 1 << pSelect->iId)
 			iNum = i;
 		i++;
 		pSelect++;
@@ -2305,7 +2305,7 @@ int HighestPistolOfEdict(edict_t* pEdict)
 			break;
 	}
 
-	return (iNum);
+	return iNum;
 }
 
 void SelectWeaponByName(bot_t* pBot, char* pszName)
@@ -2341,7 +2341,7 @@ void BotCommandTeam(bot_t* pBot)
 	int ind;
 
 	// Prevent spamming
-	if ((pBot->fTimeTeamOrder + 2.0f < gpGlobals->time) && (!g_b_cv_ffa) && (g_b_cv_radio)) // KWo - 03.02.2007
+	if (pBot->fTimeTeamOrder + 2.0f < gpGlobals->time && !g_b_cv_ffa && g_b_cv_radio) // KWo - 03.02.2007
 	{
 		pBot->fTimeTeamOrder = gpGlobals->time;   // KWo - 06.03.2010
 
@@ -2350,8 +2350,8 @@ void BotCommandTeam(bot_t* pBot)
 		{
 			if (!(clients[ind].iFlags & CLIENT_USED)
 				|| !(clients[ind].iFlags & CLIENT_ALIVE)
-				|| (clients[ind].iTeam != pBot->bot_team)
-				|| (clients[ind].pEdict == pEdict))
+				|| clients[ind].iTeam != pBot->bot_team
+				|| clients[ind].pEdict == pEdict)
 				continue;
 
 			bSomeTeamnateAlive = TRUE;  // KWo - 25.04.2006
@@ -2365,9 +2365,9 @@ void BotCommandTeam(bot_t* pBot)
 		}
 
 		// Has Teammates ?
-		if ((bMemberNear) && (RANDOM_LONG(1, 100) < 30)) // KWo - 06.03.2010
+		if (bMemberNear && RANDOM_LONG(1, 100) < 30) // KWo - 06.03.2010
 		{
-			if ((pBot->bot_personality == 1) && !pBot->bIsVIP)
+			if (pBot->bot_personality == 1 && !pBot->bIsVIP)
 			{
 				BotPlayRadioMessage(pBot, RADIO_STORMTHEFRONT);
 				pBot->fTimeTeamOrder = gpGlobals->time;   // KWo - 07.07.2008
@@ -2378,10 +2378,10 @@ void BotCommandTeam(bot_t* pBot)
 				pBot->fTimeTeamOrder = gpGlobals->time;   // KWo - 07.07.2008
 			}
 		}
-		else if ((bSomeTeamnateAlive) && (pBot->iStates & STATE_SEEINGENEMY) && !FNullEnt(pBot->pBotEnemy)) // KWo - 13.09.2008
+		else if (bSomeTeamnateAlive && pBot->iStates & STATE_SEEINGENEMY && !FNullEnt(pBot->pBotEnemy)) // KWo - 13.09.2008
 		{
-			if ((GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) >= 0.9)
-				&& (pBot->pBotEnemy->v.oldbuttons & IN_ATTACK) && (RANDOM_LONG(1, 100) < 30)) // KWo - 06.03.2010
+			if (GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) >= 0.9
+				&& pBot->pBotEnemy->v.oldbuttons & IN_ATTACK && RANDOM_LONG(1, 100) < 30) // KWo - 06.03.2010
 			{
 				BotPlayRadioMessage(pBot, RADIO_TAKINGFIRE);
 				pBot->fTimeTeamOrder = gpGlobals->time;      // KWo - 07.07.2008
@@ -2403,8 +2403,8 @@ bool IsGroupOfEnemies(bot_t* pBot, Vector vLocation)
 	{
 		if (!(clients[i].iFlags & CLIENT_USED)
 			|| !(clients[i].iFlags & CLIENT_ALIVE)
-			|| (clients[i].pEdict == pEdict)
-			|| ((clients[i].iTeam == pBot->bot_team) && (!g_b_cv_ffa)))  // KWo - 25.04.2008
+			|| clients[i].pEdict == pEdict
+			|| clients[i].iTeam == pBot->bot_team && !g_b_cv_ffa)  // KWo - 25.04.2008
 			continue;
 
 		pPlayer = clients[i].pEdict;
@@ -2420,26 +2420,26 @@ bool IsGroupOfEnemies(bot_t* pBot, Vector vLocation)
 	}
 
 	if (iNumPlayers < 2)
-		return (FALSE);
+		return false;
 
 	if (g_b_cv_ffa)
 	{
 		if (g_iAliveCTs + g_iAliveTs > 0)
-			return ((float)iNumPlayers / (float)(g_iAliveCTs + g_iAliveTs) >= 0.25f); // 4/16
+			return (float)iNumPlayers / (float)(g_iAliveCTs + g_iAliveTs) >= 0.25f; // 4/16
 		else
-			return (FALSE);
+			return false;
 	}
 
-	if ((pBot->bot_team == TEAM_CS_TERRORIST) && (g_iAliveCTs > 0))
+	if (pBot->bot_team == TEAM_CS_TERRORIST && g_iAliveCTs > 0)
 	{
-		return ((float)iNumPlayers / (float)(g_iAliveCTs) >= 0.25f);
+		return (float)iNumPlayers / (float)g_iAliveCTs >= 0.25f;
 	}
-	else if ((pBot->bot_team == TEAM_CS_COUNTER) && (g_iAliveTs > 0))
+	else if (pBot->bot_team == TEAM_CS_COUNTER && g_iAliveTs > 0)
 	{
-		return ((float)iNumPlayers / (float)(g_iAliveTs) >= 0.25f);
+		return (float)iNumPlayers / (float)g_iAliveTs >= 0.25f;
 	}
 
-	return (FALSE);
+	return false;
 }
 
 //
@@ -2463,7 +2463,7 @@ Vector VecCheckToss(bot_t* pBot, const Vector& vecSpot1, Vector vecSpot2)
 	vecSpot2.z -= 15.0f;
 
 	if (vecSpot2.z - vecSpot1.z > 500)
-		return (g_vecZero); // to high, fail
+		return g_vecZero; // to high, fail
 
 	 // calculate the midpoint and apex of the 'triangle'
 	 // UNDONE: normalize any Z position differences between spot1 and spot2 so that triangle is always RIGHT
@@ -2487,8 +2487,8 @@ Vector VecCheckToss(bot_t* pBot, const Vector& vecSpot1, Vector vecSpot2)
 		vecMidPoint.z--;
 	}
 
-	if ((vecMidPoint.z < vecSpot2.z) /* || (vecMidPoint.z < vecSpot1.z) */)
-		return (g_vecZero); // to not enough space, fail
+	if (vecMidPoint.z < vecSpot2.z /* || (vecMidPoint.z < vecSpot1.z) */)
+		return g_vecZero; // to not enough space, fail
 
 	 // How high should the grenade travel to reach the apex
 	float distance1 = fabs(vecMidPoint.z - vecSpot1.z);
@@ -2499,7 +2499,7 @@ Vector VecCheckToss(bot_t* pBot, const Vector& vecSpot1, Vector vecSpot2)
 	float time2 = sqrtf(distance2 / (0.5f * flGravity));
 
 	if (time1 < 0.1f)
-		return (g_vecZero); // too close
+		return g_vecZero; // too close
 
 	if (time1 + time2 > 3.8f) // KWo - 27.07.2007
 	{
@@ -2529,13 +2529,13 @@ Vector VecCheckToss(bot_t* pBot, const Vector& vecSpot1, Vector vecSpot2)
 	   }
 	*/
 	TRACE_HULL(vecSpot1, vecApex, dont_ignore_monsters, head_hull, pEdict, &tr);
-	if ((tr.flFraction != 1.0f) || (tr.fAllSolid))
-		return (g_vecZero); // fail!
+	if (tr.flFraction != 1.0f || tr.fAllSolid)
+		return g_vecZero; // fail!
 
-	if ((!FNullEnt(pBot->pLastEnemy)) && (pBot->vecLastEnemyOrigin != g_vecZero)) // KWo - 23.07.2007
+	if (!FNullEnt(pBot->pLastEnemy) && pBot->vecLastEnemyOrigin != g_vecZero) // KWo - 23.07.2007
 		pEnEdict = pBot->pLastEnemy;
 	else
-		return (g_vecZero);
+		return g_vecZero;
 	/*
 	   if (pHostEdict)
 	   {
@@ -2550,11 +2550,11 @@ Vector VecCheckToss(bot_t* pBot, const Vector& vecSpot1, Vector vecSpot2)
 		Vector vecDir = (vecApex - vecSpot2).Normalize();
 		float n = -DotProduct(tr.vecPlaneNormal, vecDir);
 
-		if ((n > 0.7f) || (tr.flFraction < 0.8f)) // 60 degrees
-			return (g_vecZero);
+		if (n > 0.7f || tr.flFraction < 0.8f) // 60 degrees
+			return g_vecZero;
 	}
 
-	return (vecGrenadeVel);
+	return vecGrenadeVel;
 }
 
 //
@@ -2570,11 +2570,11 @@ Vector VecCheckThrow(bot_t* pBot, const Vector& vecSpot1, Vector vecSpot2, float
 	float flGravity = g_f_cv_Gravity * flGravityAdj; // KWo - 16.11.2006
 
 	vecSpot2 = vecSpot2 - pEdict->v.velocity;
-	Vector vecGrenadeVel = (vecSpot2 - vecSpot1);
+	Vector vecGrenadeVel = vecSpot2 - vecSpot1;
 
 	float time = vecGrenadeVel.Length() / 400.0f;  // KWo - 22.03.2006 - thanks to Whistler
 
-	if ((time < 0.01f) || (time > 4.0f))  // KWo - 19.06.2006
+	if (time < 0.01f || time > 4.0f)  // KWo - 19.06.2006
 		return g_vecZero; // fail
 
 	vecGrenadeVel = vecGrenadeVel * (1.0f / time);
@@ -2596,13 +2596,13 @@ Vector VecCheckThrow(bot_t* pBot, const Vector& vecSpot1, Vector vecSpot2, float
 	TraceResult tr;
 	//   TRACE_HULL (vecSpot1, vecApex, dont_ignore_monsters, head_hull, pEdict, &tr);
 	TRACE_LINE(vecSpot1, vecApex, dont_ignore_monsters, pEdict, &tr);
-	if ((tr.flFraction != 1.0f) || (tr.fAllSolid))  // KWo - 23.07.2007
-		return (g_vecZero); // fail!
+	if (tr.flFraction != 1.0f || tr.fAllSolid)  // KWo - 23.07.2007
+		return g_vecZero; // fail!
 
-	if ((!FNullEnt(pBot->pLastEnemy)) && (pBot->vecLastEnemyOrigin != g_vecZero)) // KWo - 23.07.2007
+	if (!FNullEnt(pBot->pLastEnemy) && pBot->vecLastEnemyOrigin != g_vecZero) // KWo - 23.07.2007
 		pEnEdict = pBot->pLastEnemy;
 	else
-		return (g_vecZero);
+		return g_vecZero;
 	/*
 	   if (pHostEdict)
 	   {
@@ -2619,8 +2619,8 @@ Vector VecCheckThrow(bot_t* pBot, const Vector& vecSpot1, Vector vecSpot2, float
 		float n = -DotProduct(tr.vecPlaneNormal, vecDir);
 
 		// 60 degrees
-		if (((n > 0.75f) || (tr.flFraction < 0.8f)))  // KWo - 19.06.2006
-			return (g_vecZero);
+		if (n > 0.75f || tr.flFraction < 0.8f)  // KWo - 19.06.2006
+			return g_vecZero;
 	}
-	return (vecGrenadeVel);
+	return vecGrenadeVel;
 }

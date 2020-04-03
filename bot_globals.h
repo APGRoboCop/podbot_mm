@@ -57,7 +57,7 @@ inline void UTIL_ClampAngle(float* fAngle)
 	if (*fAngle < -180.0f)
 		*fAngle += 360.0f * ((int)(-*fAngle / 360) + 1); // and not 0.5
 
-	if ((*fAngle >= 180.0f) || (*fAngle < -180.0f))
+	if (*fAngle >= 180.0f || *fAngle < -180.0f)
 		*fAngle = 0.0f; // heck, if we're still above the limit then something's REALLY fuckedup!
 	return;
 }
@@ -112,9 +112,9 @@ inline void UTIL_ClampVector(Vector* vecAngles)
 	else if (vecAngles->x < -89)
 		vecAngles->x = -89;
 
-	if ((vecAngles->x >= 180) || (vecAngles->x < -180))
+	if (vecAngles->x >= 180 || vecAngles->x < -180)
 		vecAngles->x = 0; // heck, if we're still above the limit then something's REALLY fuckedup!
-	if ((vecAngles->y >= 180) || (vecAngles->y < -180))
+	if (vecAngles->y >= 180 || vecAngles->y < -180)
 		vecAngles->y = 0; // heck, if we're still above the limit then something's REALLY fuckedup!
 	return;
 }
@@ -503,7 +503,7 @@ namespace Light
 		side = front < 0.0f;
 
 		// If they're both on the same side of the plane, don't bother to split just check the appropriate child
-		if ((back < 0.0f) == side)
+		if (back < 0.0f == side)
 			return RecursiveLightPoint <nodeType, surfaceType>(reinterpret_cast <nodeType*> (node->children[side]), start, end);
 
 		// calculate mid point
@@ -515,7 +515,7 @@ namespace Light
 			return true;   // hit something
 
 		 // Blow it off if it doesn't split the plane...
-		if ((back < 0.0f) == side)
+		if (back < 0.0f == side)
 			return false;   // didn't hit anything
 
 		 // check for impact on this node

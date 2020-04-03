@@ -110,14 +110,14 @@ inline bool IsConnectedWithWaypoint(int a, int b)       // KWo - 17.02.2008 (inl
 
 	int ix;
 
-	if ((a < 0) || (a >= g_iNumWaypoints) || (b < 0) || (b >= g_iNumWaypoints))  // KWo - 08.07.2006
-		return (FALSE);
+	if (a < 0 || a >= g_iNumWaypoints || b < 0 || b >= g_iNumWaypoints)  // KWo - 08.07.2006
+		return false;
 
 	for (ix = 0; ix < MAX_PATH_INDEX; ix++)
 		if (paths[a]->index[ix] == b)
-			return (TRUE);
+			return true;
 
-	return (FALSE);
+	return false;
 }
 
 inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inline again)
@@ -148,8 +148,8 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 	float fReachWpDelay = 5.0;
 
 	// checks what the time the bot needs to reach the waypoint
-	if ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints) // KWo - 26.07.2006
-		&& (pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+	if (pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints // KWo - 26.07.2006
+		&& pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 	{
 		float fDistance = (paths[pBot->prev_wpt_index[0]]->origin - paths[pBot->curr_wpt_index]->origin).Length();
 		if (fabs(pBot->f_move_speed) <= 0.0) // KWo - 13.04.2016
@@ -157,7 +157,7 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 			fReachWpDelay = 5.0 * fDistance / 240.0;
 		else
 			fReachWpDelay = 5.0 * fDistance / fabs(pBot->f_move_speed);
-		if ((paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) || (paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) || (pBot->pEdict->v.button & IN_DUCK))
+		if (paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH || paths[pBot->curr_wpt_index]->flags & W_FL_LADDER || pBot->pEdict->v.button & IN_DUCK)
 			fReachWpDelay *= 3.f;
 		if (fReachWpDelay < 3.0)
 			fReachWpDelay = 3.0;
@@ -180,7 +180,7 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 
 	// If time to get there expired get new one as well
 
-	else if ((pBot->f_wpt_timeset + fReachWpDelay < gpGlobals->time) && FNullEnt(pBot->pBotEnemy)) // KWo - 26.07.2006
+	else if (pBot->f_wpt_timeset + fReachWpDelay < gpGlobals->time && FNullEnt(pBot->pBotEnemy)) // KWo - 26.07.2006
 	{
 		// KWo - if the bot cannot reach the destination (current waypoint), the calculation of experience
 		// will store that data to prevent take this route so frequently in the future...
@@ -188,8 +188,8 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 		if (g_b_DebugTasks || g_b_DebugNavig)
 			ALERT(at_logged, "[DEBUG] GetValidWaypoint - Bot %s with task = %s didn't reach its waypoint %i during %f time.\n", pBot->name, g_TaskNames1[BotGetSafeTask(pBot)->iTask], pBot->curr_wpt_index, fReachWpDelay);
 
-		if ((g_iNumWaypoints > 0) && (!g_bWaypointsChanged)
-			&& (pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints)) // KWo - 16.06.2006
+		if (g_iNumWaypoints > 0 && !g_bWaypointsChanged
+			&& pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints) // KWo - 16.06.2006
 		{
 			int iValue;
 			int i;
@@ -197,7 +197,7 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 			short int path_index;
 			if (pBot->bot_team == TEAM_CS_TERRORIST)
 			{
-				iValue = (pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + pBot->curr_wpt_index)->uTeam0Damage;
+				iValue = (pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + pBot->curr_wpt_index)->uTeam0Damage;
 				iValue += 10; // KWo - 06.01.2008
 				if (iValue > MAX_DAMAGE_VAL)
 					iValue = MAX_DAMAGE_VAL;
@@ -208,14 +208,14 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 					g_iHighestDamageWpT = pBot->curr_wpt_index; // KWo - 05.01.2008
 				}
 
-				(pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + pBot->curr_wpt_index)->uTeam0Damage = (unsigned short)iValue;
+				(pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + pBot->curr_wpt_index)->uTeam0Damage = (unsigned short)iValue;
 				p = paths[pBot->curr_wpt_index];
 				for (i = 0; i < MAX_PATH_INDEX; i++)
 				{
-					if ((p->index[i] > -1) && (p->index[i] < MAX_WAYPOINTS))
+					if (p->index[i] > -1 && p->index[i] < MAX_WAYPOINTS)
 					{
 						path_index = p->index[i];
-						iValue = (pBotExperienceData + (path_index * g_iNumWaypoints) + path_index)->uTeam0Damage;
+						iValue = (pBotExperienceData + path_index * g_iNumWaypoints + path_index)->uTeam0Damage;
 						iValue += 1; // KWo - 06.01.2008
 						if (iValue > MAX_DAMAGE_VAL)
 							iValue = MAX_DAMAGE_VAL;
@@ -226,13 +226,13 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 							g_iHighestDamageWpT = path_index; // KWo - 05.01.2008
 						}
 
-						(pBotExperienceData + (path_index * g_iNumWaypoints) + path_index)->uTeam0Damage = (unsigned short)iValue;
+						(pBotExperienceData + path_index * g_iNumWaypoints + path_index)->uTeam0Damage = (unsigned short)iValue;
 					}
 				}
 			}
 			else if (pBot->bot_team == TEAM_CS_COUNTER)
 			{
-				iValue = (pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + pBot->curr_wpt_index)->uTeam1Damage;
+				iValue = (pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + pBot->curr_wpt_index)->uTeam1Damage;
 				iValue += 10; // KWo - 06.01.2008
 				if (iValue > MAX_DAMAGE_VAL)
 					iValue = MAX_DAMAGE_VAL;
@@ -243,14 +243,14 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 					g_iHighestDamageWpCT = pBot->curr_wpt_index; // KWo - 05.01.2008
 				}
 
-				(pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + pBot->curr_wpt_index)->uTeam1Damage = (unsigned short)iValue;
+				(pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + pBot->curr_wpt_index)->uTeam1Damage = (unsigned short)iValue;
 				p = paths[pBot->curr_wpt_index];
 				for (i = 0; i < MAX_PATH_INDEX; i++)
 				{
-					if ((p->index[i] > -1) && (p->index[i] < MAX_WAYPOINTS))
+					if (p->index[i] > -1 && p->index[i] < MAX_WAYPOINTS)
 					{
 						path_index = p->index[i];
-						iValue = (pBotExperienceData + (path_index * g_iNumWaypoints) + path_index)->uTeam1Damage;
+						iValue = (pBotExperienceData + path_index * g_iNumWaypoints + path_index)->uTeam1Damage;
 						iValue += 1; // KWo - 06.01.2008
 						if (iValue > MAX_DAMAGE_VAL)
 							iValue = MAX_DAMAGE_VAL;
@@ -261,7 +261,7 @@ inline void GetValidWaypoint(bot_t* pBot)               // KWo - 17.02.2008 (inl
 							g_iHighestDamageWpCT = path_index; // KWo - 05.01.2008
 						}
 
-						(pBotExperienceData + (path_index * g_iNumWaypoints) + path_index)->uTeam1Damage = (unsigned short)iValue;
+						(pBotExperienceData + path_index * g_iNumWaypoints + path_index)->uTeam1Damage = (unsigned short)iValue;
 					}
 				}
 			}
@@ -282,16 +282,16 @@ inline bool BotGoalIsValid(bot_t* pBot) // KWo - 17.02.2008 (inline again)
 	int iGoal = BotGetSafeTask(pBot)->iData;
 
 	if (iGoal == -1)
-		return (FALSE); // Not decided about a goal
+		return false; // Not decided about a goal
 
 	else if (iGoal == pBot->curr_wpt_index)
-		return (TRUE); // No Nodes needed
+		return true; // No Nodes needed
 
 	else if (pBot->pWaypointNodes == NULL)
-		return (FALSE); // No Path calculated
+		return false; // No Path calculated
 
-	if ((pBot->f_spawn_time + 10.0 < gpGlobals->time) && (g_i_botthink_index != g_iFrameCounter)) // KWo - 07.01.2008
-		return (TRUE);
+	if (pBot->f_spawn_time + 10.0 < gpGlobals->time && g_i_botthink_index != g_iFrameCounter) // KWo - 07.01.2008
+		return true;
 
 	// Got Path - check if still valid
 	PATHNODE* Node = pBot->pWaypointNodes;
@@ -300,9 +300,9 @@ inline bool BotGoalIsValid(bot_t* pBot) // KWo - 17.02.2008 (inline again)
 		Node = Node->NextNode;
 
 	if (Node->iIndex == iGoal)
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 #endif

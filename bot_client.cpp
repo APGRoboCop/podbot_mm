@@ -26,11 +26,11 @@ void BotClient_CS_VGUI(void* p, int bot_index)
 
 	if (state == 0)
 	{
-		if ((*(int*)p) == 2)  // is it a team select menu?
+		if (*(int*)p == 2)  // is it a team select menu?
 			bots[bot_index].start_action = MSG_CS_TEAM_SELECT;
-		else if ((*(int*)p) == 26)  // is it a Terrorist class selection menu?
+		else if (*(int*)p == 26)  // is it a Terrorist class selection menu?
 			bots[bot_index].start_action = MSG_CS_T_SELECT;
-		else if ((*(int*)p) == 27)  // is it a CT class selection menu?
+		else if (*(int*)p == 27)  // is it a CT class selection menu?
 			bots[bot_index].start_action = MSG_CS_CT_SELECT;
 	}
 }
@@ -105,11 +105,11 @@ void BotClient_CS_WeaponList(void* p, int bot_index)
 	if (state == 0)
 	{
 #ifdef _WIN32
-		strncpy_s(bot_weapon.szClassname, sizeof(bot_weapon.szClassname), (char*)p, sizeof(bot_weapon.szClassname) - 1);
+		strncpy_s(bot_weapon.szClassname, sizeof bot_weapon.szClassname, (char*)p, sizeof bot_weapon.szClassname - 1);
 #else
 		strncpy(bot_weapon.szClassname, (char*)p, sizeof(bot_weapon.szClassname));
 #endif
-		bot_weapon.szClassname[sizeof(bot_weapon.szClassname) - 1] = 0;
+		bot_weapon.szClassname[sizeof bot_weapon.szClassname - 1] = 0;
 	}
 	else if (state == 1)
 		bot_weapon.iAmmo1 = *(int*)p;  // ammo index 1
@@ -161,10 +161,10 @@ void BotClient_CS_CurrentWeapon(void* p, int bot_index)
   //      const char* bname = STRING(pPlayer->v.netname);
 		if (pBot->is_used) // KWo - 12.12.2006
 		{
-			if ((iId <= 31) && (iState == 1))
+			if (iId <= 31 && iState == 1)
 			{
 				// Ammo amount decreased ? Must have fired a bullet...
-				if ((iId == pBot->current_weapon.iId) && (pBot->current_weapon.iClip > iClip))
+				if (iId == pBot->current_weapon.iId && pBot->current_weapon.iClip > iClip)
 				{
 					// Time fired with in burst firing time ?
 					if (pBot->fTimeLastFired + 1.0f > gpGlobals->time)
@@ -172,8 +172,8 @@ void BotClient_CS_CurrentWeapon(void* p, int bot_index)
 
 					pBot->fTimeLastFired = gpGlobals->time; // Remember the last bullet time
 				}
-				if ((pBot->current_weapon.iId != iId) || (iClip != 0)
-					|| (pBot->current_weapon.iClip < 5)) // for some reaon sometimes iClip comes here as 0 (from 100)
+				if (pBot->current_weapon.iId != iId || iClip != 0
+					|| pBot->current_weapon.iClip < 5) // for some reaon sometimes iClip comes here as 0 (from 100)
 				{                                       // - don't use that value
 					pBot->current_weapon.iClip = iClip;
 					pBot->m_rgAmmoInClip[iId] = iClip;
@@ -215,10 +215,10 @@ void BotClient_CS_CurrentWeapon(void* p, int bot_index)
 		}
 		else // it's not a bot... KWo - 12.12.2006
 		{
-			if ((iId <= 31) && (iState == 1))
+			if (iId <= 31 && iState == 1)
 			{
-				if ((clients[bot_index].iCurrentWeaponId != iId) || (iClip != 0) // 15.08.2007
-					|| (clients[bot_index].iCurrentClip < 5)) // for some reaon sometimes iClip comes here as 0 (from 100)
+				if (clients[bot_index].iCurrentWeaponId != iId || iClip != 0 // 15.08.2007
+					|| clients[bot_index].iCurrentClip < 5) // for some reaon sometimes iClip comes here as 0 (from 100)
 				{                                       // - don't use that value
 					clients[bot_index].iCurrentClip = iClip;
 					if (iClip == 0) // KWo - 15.08.2007
@@ -237,7 +237,7 @@ void BotClient_CS_CurrentWeapon(void* p, int bot_index)
 			}
 		}
 
-		if (g_b_DebugCombat && (iId <= 31) && (iState == 1))
+		if (g_b_DebugCombat && iId <= 31 && iState == 1)
 		{
 			ALERT(at_logged, "[DEBUG] BotClient_CS_CurrentWeapon - Player %s, weapon = %s, WeaponState = %d, ammo in clip = %d. \n",
 				STRING(clients[bot_index].pEdict->v.netname), weapon_defs[iId].szClassname, iState, iClip);
@@ -276,7 +276,7 @@ void BotClient_CS_AmmoX(void* p, int bot_index)
 			iWeaponPrimID = cs_weapon_select[iWeaponPrimNum].iId; // KWo - 08.01.2007
 
 			// update the ammo counts for this weapon...
-			if ((iWeaponSecNum > 0) && (iWeaponSecNum < 7)) // KWo - 08.01.2007
+			if (iWeaponSecNum > 0 && iWeaponSecNum < 7) // KWo - 08.01.2007
 			{
 				if (index == weapon_defs[iWeaponSecID].iAmmo1)
 				{
@@ -287,7 +287,7 @@ void BotClient_CS_AmmoX(void* p, int bot_index)
 							pBot->name, weapon_defs[iWeaponSecID].szClassname, pBot->current_weapon.iAmmo2, index);
 				}
 			}
-			if ((iWeaponPrimNum > 6) && (iWeaponPrimNum < MAX_WEAPONS))
+			if (iWeaponPrimNum > 6 && iWeaponPrimNum < MAX_WEAPONS)
 			{
 				if (index == weapon_defs[iWeaponPrimID].iAmmo1)
 				{
@@ -334,9 +334,9 @@ void BotClient_CS_AmmoPickup(void* p, int bot_index)
   //      ammo_index = bots[bot_index].current_weapon.iId;
 
 		// update the ammo counts for this weapon (ONLY if bot knows its current weapon)...
-		if ((ammo_index >= 0) && (ammo_index < MAX_WEAPONS))
+		if (ammo_index >= 0 && ammo_index < MAX_WEAPONS)
 		{
-			if ((iWeaponSecNum > 0) && (iWeaponSecNum < 7)) // KWo - 08.01.2007
+			if (iWeaponSecNum > 0 && iWeaponSecNum < 7) // KWo - 08.01.2007
 			{
 				if (index == weapon_defs[iWeaponSecID].iAmmo1)
 				{
@@ -347,7 +347,7 @@ void BotClient_CS_AmmoPickup(void* p, int bot_index)
 							bots[bot_index].name, weapon_defs[iWeaponSecID].szClassname, bots[bot_index].current_weapon.iAmmo2, index);
 				}
 			}
-			if ((iWeaponPrimNum > 6) && (iWeaponPrimNum < MAX_WEAPONS))
+			if (iWeaponPrimNum > 6 && iWeaponPrimNum < MAX_WEAPONS)
 			{
 				if (index == weapon_defs[iWeaponPrimID].iAmmo1)
 				{
@@ -393,7 +393,7 @@ void BotClient_CS_Damage(void* p, int bot_index)
 	{
 		damage_origin.z = *(float*)p;
 
-		if ((damage_armor > 0) || (damage_taken > 0))
+		if (damage_armor > 0 || damage_taken > 0)
 		{
 			pBot->iLastDamageType = damage_bits;
 			pEnt = pEdict->v.dmg_inflictor;
@@ -402,15 +402,15 @@ void BotClient_CS_Damage(void* p, int bot_index)
 			enemy_attack = true;    // KWo - 28.07.2018
 			if (!FNullEnt(pEnt))
 			{
-				if ((pEnt->v.flags & FL_CLIENT) && (pEnt != pEdict)) // KWo - 28.08.2018
+				if (pEnt->v.flags & FL_CLIENT && pEnt != pEdict) // KWo - 28.08.2018
 				{
-					if ((UTIL_GetTeam(pEnt) == pBot->bot_team) && (!g_b_cv_ffa)) // KWo - 28.08.2018
+					if (UTIL_GetTeam(pEnt) == pBot->bot_team && !g_b_cv_ffa) // KWo - 28.08.2018
 						team_attack = true;
 					else
 						enemy_attack = true; // KWo - if ffa is enabled, then threat the teamnate as an enemy, too...
 				}
 
-				if ((team_attack) && (g_b_cv_ffrev)) // KWo/THE_STORM - 28.07.2018
+				if (team_attack && g_b_cv_ffrev) // KWo/THE_STORM - 28.07.2018
 				{
 					// FIXFIXFIXFIXFIXME: THIS IS BLATANTLY CHEATING!!!!
 					// KWo - No - it's when Your teamnate is attacking You, then the bot may consider You as an enemy
@@ -419,8 +419,8 @@ void BotClient_CS_Damage(void* p, int bot_index)
 					if (RANDOM_LONG(1, 100) < 10)
 					{
 						if (FNullEnt(pBot->pLastEnemy) && FNullEnt(pBot->pBotEnemy)
-							&& (pBot->f_bot_see_enemy_time + 3.0f < gpGlobals->time)
-							&& (pBot->f_blind_time < gpGlobals->time)) // KWo - 23.03.2008
+							&& pBot->f_bot_see_enemy_time + 3.0f < gpGlobals->time
+							&& pBot->f_blind_time < gpGlobals->time) // KWo - 23.03.2008
 						{
 							//                     pBot->iAimFlags |= AIM_ENEMY; // KWo - 27.08.2006
 							//                     pBot->iAimFlags |= AIM_LASTENEMY; // KWo - 27.08.2006
@@ -458,8 +458,8 @@ void BotClient_CS_Damage(void* p, int bot_index)
 					BotRemoveCertainTask(pBot, TASK_HIDE);
 
 					// FIXFIXFIXFIXFIXME: THIS IS BLATANTLY CHEATING!!!!
-					if ((FNullEnt(pBot->pBotEnemy)) && (pBot->f_bot_see_enemy_time + 1.0f < gpGlobals->time)
-						&& (pBot->f_blind_time < gpGlobals->time) /* && (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)
+					if (FNullEnt(pBot->pBotEnemy) && pBot->f_bot_see_enemy_time + 1.0f < gpGlobals->time
+						&& pBot->f_blind_time < gpGlobals->time /* && (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)
 						 && (pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time) */) // KWo - 08.04.2010
 					{
 						pBot->pLastEnemy = pEnt;
@@ -485,7 +485,7 @@ void BotClient_CS_Damage(void* p, int bot_index)
 				}
 			}
 
-			if ((!team_attack) && (pEnt != pEdict))  // KWo - 28.07.2018
+			if (!team_attack && pEnt != pEdict)  // KWo - 28.07.2018
 			{
 				BotCollectGoalExperience(pBot, damage_taken + damage_taken); // KWo - 28.07.2018 - moved now here...
 				BotCollectExperienceData(pEdict, pEnt, damage_armor + damage_taken);
@@ -520,7 +520,7 @@ void BotClient_CS_NVGToggle(void* p, int bot_index)
 	// This message gets sent when the night googles are on/off
 
 	if (state == 0)
-		bots[bot_index].bUsesNVG = ((*(char*)p) > 0);  // nvg on/off
+		bots[bot_index].bUsesNVG = *(char*)p > 0;  // nvg on/off
 }
 
 void BotClient_CS_DeathMsg(void* p, int bot_index)
@@ -545,7 +545,7 @@ void BotClient_CS_DeathMsg(void* p, int bot_index)
 		victim_index = *(int*)p; // ENTINDEX() of victim
 	else if (state == 2)
 	{
-		if ((killer_index != 0) && (victim_index != 0) && (killer_index != victim_index))
+		if (killer_index != 0 && victim_index != 0 && killer_index != victim_index)
 		{
 			killer_edict = INDEXENT(killer_index);
 			pBot = UTIL_GetBotPointer(killer_edict);
@@ -570,7 +570,7 @@ void BotClient_CS_DeathMsg(void* p, int bot_index)
 			victim_edict = INDEXENT(victim_index);
 			pBot = UTIL_GetBotPointer(victim_edict);
 
-			if ((victim_index > 0) && (victim_index <= gpGlobals->maxClients)) // KWo - 15.03.2010
+			if (victim_index > 0 && victim_index <= gpGlobals->maxClients) // KWo - 15.03.2010
 			{
 				clients[victim_index - 1].fDeathTime = gpGlobals->time + RANDOM_FLOAT(0.3f, 1.0f);
 				clients[victim_index - 1].fTimeSoundLasting = gpGlobals->time - 2.0f; // KWo - 16.04.2010
@@ -621,9 +621,9 @@ void BotClient_CS_DeathMsg(void* p, int bot_index)
 					*/
 
 					// that should simulate when the bot can see a dieing teamnate...
-					if ((pBot != NULL)
-						&& (killer_index > 0) && (killer_index <= gpGlobals->maxClients)
-						&& (killer_index != victim_index)) // 20.05.2010
+					if (pBot != NULL
+						&& killer_index > 0 && killer_index <= gpGlobals->maxClients
+						&& killer_index != victim_index) // 20.05.2010
 					{
 						teamnate_distance = (bots[index].pEdict->v.origin - victim_edict->v.origin).Length();
 						if (teamnate_distance < 500.0f)
@@ -655,7 +655,7 @@ void BotClient_CS_DeathMsg(void* p, int bot_index)
 						}
 					}
 
-					if ((bots[index].pHuntEnemy == victim_edict) && (bots[index].pHuntEnemy == NULL)) // KWo - 13.04.2010
+					if (bots[index].pHuntEnemy == victim_edict && bots[index].pHuntEnemy == NULL) // KWo - 13.04.2010
 					{
 						bots[index].pHuntEnemy = NULL;
 						bots[index].vecHuntEnemyOrigin = g_vecZero;
@@ -664,7 +664,7 @@ void BotClient_CS_DeathMsg(void* p, int bot_index)
 					// if the bot victim was a defuser, we need stop camping other CTs and defuse the bomb instead the victim...
 					if (killed_defuser) // KWo - 14.08.2008
 					{
-						if ((bots[index].bot_team == TEAM_CS_COUNTER) && bots[index].bDefendedBomb)
+						if (bots[index].bot_team == TEAM_CS_COUNTER && bots[index].bDefendedBomb)
 						{
 							bots[index].bDefendedBomb = FALSE;
 							BotResetTasks(&bots[index]);
@@ -691,7 +691,7 @@ void BotClient_CS_ScreenFade(void* p, int bot_index)
 	if (state == 2)         // KWo - 10.05.2007
 	{
 		f = *(short int*)p;
-		if (f & (1 << 2))
+		if (f & 1 << 2)
 			inf_fade = true;
 		else
 			inf_fade = false;
@@ -712,7 +712,7 @@ void BotClient_CS_ScreenFade(void* p, int bot_index)
 	{
 		unsigned char alpha = *(unsigned char*)p;
 
-		if ((r == 255) && (g == 255) && (b == 255) && (alpha > 180)) // KWo - 23.03.2008
+		if (r == 255 && g == 255 && b == 255 && alpha > 180) // KWo - 23.03.2008
 		{
 			pBot->pBotEnemy = NULL;
 			pBot->f_view_distance = 16; // KWo - 04.10.2009
@@ -784,11 +784,11 @@ void BotClient_CS_SayText(void* p, int bot_index)
 			{
 				pBot->SaytextBuffer.iEntityIndex = (int)ucEntIndex;
 #ifdef _WIN32
-				strncpy_s(pBot->SaytextBuffer.szSayText, sizeof(pBot->SaytextBuffer.szSayText), (char*)p, sizeof(pBot->SaytextBuffer.szSayText) - 1);
+				strncpy_s(pBot->SaytextBuffer.szSayText, sizeof pBot->SaytextBuffer.szSayText, (char*)p, sizeof pBot->SaytextBuffer.szSayText - 1);
 #else
 				strncpy(pBot->SaytextBuffer.szSayText, (char*)p, sizeof(pBot->SaytextBuffer.szSayText));
 #endif
-				pBot->SaytextBuffer.szSayText[sizeof(pBot->SaytextBuffer.szSayText) - 1] = 0;
+				pBot->SaytextBuffer.szSayText[sizeof pBot->SaytextBuffer.szSayText - 1] = 0;
 				pBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pBot->SaytextBuffer.fChatDelay;
 			}
 		}
@@ -809,11 +809,11 @@ void BotClient_CS_SayText(void* p, int bot_index)
 			{
 				pBot->SaytextBuffer.iEntityIndex = (int)ucEntIndex;
 #ifdef _WIN32
-				strncpy_s(pBot->SaytextBuffer.szSayText, sizeof(pBot->SaytextBuffer.szSayText), (char*)p, sizeof(pBot->SaytextBuffer.szSayText) - 1);
+				strncpy_s(pBot->SaytextBuffer.szSayText, sizeof pBot->SaytextBuffer.szSayText, (char*)p, sizeof pBot->SaytextBuffer.szSayText - 1);
 #else
 				strncpy(pBot->SaytextBuffer.szSayText, (char*)p, sizeof(pBot->SaytextBuffer.szSayText));
 #endif
-				pBot->SaytextBuffer.szSayText[sizeof(pBot->SaytextBuffer.szSayText) - 1] = 0;
+				pBot->SaytextBuffer.szSayText[sizeof pBot->SaytextBuffer.szSayText - 1] = 0;
 				pBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pBot->SaytextBuffer.fChatDelay;
 			}
 		}
@@ -832,7 +832,7 @@ void BotClient_CS_HLTV(void* p, int bot_index)
 	else if (state == 1)
 	{
 		// new round in CS 1.6
-		if ((players == 0) && (*(int*)p == 0))
+		if (players == 0 && *(int*)p == 0)
 			UTIL_RoundStart();
 	}
 }
@@ -847,7 +847,7 @@ void BotClient_CS_BombDrop(void* p, int bot_index)
 	pBot = &bots[bot_index];
 
 	// is the bot receiving this message alive and T ?
-	if (pBot->is_used && !pBot->bDead && (pBot->bot_team == TEAM_CS_TERRORIST))
+	if (pBot->is_used && !pBot->bDead && pBot->bot_team == TEAM_CS_TERRORIST)
 	{
 		BotRemoveCertainTask(pBot, TASK_CAMP);
 		DeleteSearchNodes(pBot); // make all Ts reevaluate their paths immediately
@@ -877,7 +877,7 @@ void BotClient_CS_BombPickup(void* p, int bot_index)
 	static bot_t* pBot;
 	pBot = &bots[bot_index];
 
-	if (pBot->is_used && !pBot->bDead && (pBot->bot_team == TEAM_CS_TERRORIST))  // KWo - 14.04.2006
+	if (pBot->is_used && !pBot->bDead && pBot->bot_team == TEAM_CS_TERRORIST)  // KWo - 14.04.2006
 	{
 		DeleteSearchNodes(pBot); // make all Ts reevaluate their paths immediately
 		BotResetTasks(pBot); // barbarian, but fits the job perfectly.
@@ -893,7 +893,7 @@ void BotClient_CS_TextMsgAll(void* p, int bot_index)
 	static bot_t* pBot;
 
 	// Check if it's the "Bomb Planted" Message
-	if ((state == 1) && (strcmp("#Bomb_Planted", (char*)p) == 0))
+	if (state == 1 && strcmp("#Bomb_Planted", (char*)p) == 0)
 	{
 		g_bBombPlanted = g_bBombSayString = TRUE;
 		g_fTimeBombPlanted = gpGlobals->time;
@@ -902,7 +902,7 @@ void BotClient_CS_TextMsgAll(void* p, int bot_index)
 		{
 			pBot = &bots[i];
 
-			if (pBot->is_used && !pBot->bDead && (pBot->bot_team == TEAM_CS_COUNTER))
+			if (pBot->is_used && !pBot->bDead && pBot->bot_team == TEAM_CS_COUNTER)
 			{
 				DeleteSearchNodes(pBot); // make all CTs reevaluate their paths immediately
 				BotResetTasks(pBot); // barbarian, but fits the job perfectly.
@@ -912,7 +912,7 @@ void BotClient_CS_TextMsgAll(void* p, int bot_index)
 		}
 	}
 	// Check if it's the "Game Commencing " Message  KWo - 09.02.2006
-	if ((state == 1) && (strcmp("#Game_Commencing", (char*)p) == 0))
+	if (state == 1 && strcmp("#Game_Commencing", (char*)p) == 0)
 	{
 		UTIL_GameStarted();
 	}
@@ -932,7 +932,7 @@ void BotClient_CS_TextMsg1(void* p, int bot_index)
 
 void BotClient_CS_TeamScore(void* p, int bot_index)
 {
-	if ( /*(state == 1) && */ (strcmp("TERRORIST", (char*)p) == 0))
+	if ( /*(state == 1) && */ strcmp("TERRORIST", (char*)p) == 0)
 		UTIL_RoundEnd();
 }
 
@@ -982,25 +982,25 @@ void Client_CS_TeamInfo(void* p, int/* iPlayerIndex*/)
 		iPlayerIndex = *(int*)p - 1;
 		break;
 	case 1:
-		if ((strcmp((char*)p, "UNASSIGNED") == 0) && (iPlayerIndex >= 0) && (iPlayerIndex < gpGlobals->maxClients))
+		if (strcmp((char*)p, "UNASSIGNED") == 0 && iPlayerIndex >= 0 && iPlayerIndex < gpGlobals->maxClients)
 		{
 			clients[iPlayerIndex].iTeam = TEAM_CS_UNASSIGNED;
 			if (bots[iPlayerIndex].is_used)
 				bots[iPlayerIndex].bot_team = TEAM_CS_UNASSIGNED;
 		}
-		else if ((strcmp((char*)p, "TERRORIST") == 0) && (iPlayerIndex >= 0) && (iPlayerIndex < gpGlobals->maxClients))
+		else if (strcmp((char*)p, "TERRORIST") == 0 && iPlayerIndex >= 0 && iPlayerIndex < gpGlobals->maxClients)
 		{
 			clients[iPlayerIndex].iTeam = TEAM_CS_TERRORIST;
 			if (bots[iPlayerIndex].is_used)
 				bots[iPlayerIndex].bot_team = TEAM_CS_TERRORIST;
 		}
-		else if ((strcmp((char*)p, "CT") == 0) && (iPlayerIndex >= 0) && (iPlayerIndex < gpGlobals->maxClients))
+		else if (strcmp((char*)p, "CT") == 0 && iPlayerIndex >= 0 && iPlayerIndex < gpGlobals->maxClients)
 		{
 			clients[iPlayerIndex].iTeam = TEAM_CS_COUNTER;
 			if (bots[iPlayerIndex].is_used)
 				bots[iPlayerIndex].bot_team = TEAM_CS_COUNTER;
 		}
-		else if ((strcmp((char*)p, "SPECTATOR") == 0) && (iPlayerIndex >= 0) && (iPlayerIndex < gpGlobals->maxClients))
+		else if (strcmp((char*)p, "SPECTATOR") == 0 && iPlayerIndex >= 0 && iPlayerIndex < gpGlobals->maxClients)
 		{
 			clients[iPlayerIndex].iTeam = TEAM_CS_SPECTATOR;
 			if (bots[iPlayerIndex].is_used)

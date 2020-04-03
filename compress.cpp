@@ -195,7 +195,7 @@ int Encode(char* filename, unsigned char* header, int headersize, unsigned char*
 	pOut = fopen(filename, "wb");
 #endif
 	if (pOut == NULL)
-		return (-1); // bail
+		return -1; // bail
 
 	 // Write Header first
 	fwrite(header, headersize, 1, pOut);
@@ -213,14 +213,14 @@ int Encode(char* filename, unsigned char* header, int headersize, unsigned char*
 	for (i = s; i < r; i++)
 		text_buf[i] = ' '; // Clear the buffer with any character that will appear often.
 
-	for (len = 0; (len < F) && (bufptr < bufsize); len++)
+	for (len = 0; len < F && bufptr < bufsize; len++)
 	{
 		c = buffer[bufptr++];
 		text_buf[r + len] = c; // Read F bytes into the last F bytes of the buffer
 	}
 
 	if ((textsize = len) == 0)
-		return (-1); // text of size zero
+		return -1; // text of size zero
 
 	 // Insert the F strings, each of which begins with one or more 'space' characters.
 	 // Note the order in which these strings are inserted. This way, degenerate trees
@@ -247,7 +247,7 @@ int Encode(char* filename, unsigned char* header, int headersize, unsigned char*
 		{
 			// Send position and length pair. Note match_length > THRESHOLD.
 			code_buf[code_buf_ptr++] = (unsigned char)match_position;
-			code_buf[code_buf_ptr++] = (unsigned char)(((match_position >> 4) & 0xf0) | (match_length - (THRESHOLD + 1)));
+			code_buf[code_buf_ptr++] = (unsigned char)(match_position >> 4 & 0xf0 | match_length - (THRESHOLD + 1));
 		}
 
 		if ((mask <<= 1) == 0)
@@ -263,7 +263,7 @@ int Encode(char* filename, unsigned char* header, int headersize, unsigned char*
 
 		last_match_length = match_length;
 
-		for (i = 0; (i < last_match_length) && (bufptr < bufsize); i++)
+		for (i = 0; i < last_match_length && bufptr < bufsize; i++)
 		{
 			c = buffer[bufptr++];
 			DeleteNode(s);     // Delete old strings and
@@ -275,8 +275,8 @@ int Encode(char* filename, unsigned char* header, int headersize, unsigned char*
 				text_buf[s + N] = c;
 
 			// Since this is a ring buffer, increment the position modulo N.
-			s = (s + 1) & (N - 1);
-			r = (r + 1) & (N - 1);
+			s = s + 1 & N - 1;
+			r = r + 1 & N - 1;
 			InsertNode(r); // Register the string in text_buf[r..r+F-1]
 		}
 
@@ -285,8 +285,8 @@ int Encode(char* filename, unsigned char* header, int headersize, unsigned char*
 			// After the end of text, no need to read, but buffer may not be empty.
 			DeleteNode(s);
 
-			s = (s + 1) & (N - 1);
-			r = (r + 1) & (N - 1);
+			s = s + 1 & N - 1;
+			r = r + 1 & N - 1;
 
 			if (--len)
 				InsertNode(r);
@@ -303,7 +303,7 @@ int Encode(char* filename, unsigned char* header, int headersize, unsigned char*
 
 	fclose(pOut);
 
-	return (codesize);
+	return codesize;
 }
 
 int Decode(char* filename, int headersize, unsigned char* buffer, int bufsize)
@@ -321,7 +321,7 @@ int Decode(char* filename, int headersize, unsigned char* buffer, int bufsize)
 	pIn = fopen(filename, "rb");
 #endif
 	if (pIn == NULL)
-		return (-1); // bail
+		return -1; // bail
 
 	 // Skip Header
 	fseek(pIn, headersize, SEEK_SET);
@@ -349,10 +349,10 @@ int Decode(char* filename, int headersize, unsigned char* buffer, int bufsize)
 			buffer[bufptr++] = (unsigned char)c;
 
 			if (bufptr > bufsize)
-				return (-1); // check for overflow
+				return -1; // check for overflow
 
 			text_buf[r++] = (unsigned char)c;
-			r &= (N - 1);
+			r &= N - 1;
 		}
 		else
 		{
@@ -361,24 +361,24 @@ int Decode(char* filename, int headersize, unsigned char* buffer, int bufsize)
 			if ((j = getc(pIn)) == EOF)
 				break;
 
-			i |= ((j & 0xf0) << 4);
+			i |= (j & 0xf0) << 4;
 			j = (j & 0x0f) + THRESHOLD;
 
 			for (k = 0; k <= j; k++)
 			{
-				c = text_buf[(i + k) & (N - 1)];
+				c = text_buf[i + k & N - 1];
 				buffer[bufptr++] = (unsigned char)c;
 
 				if (bufptr > bufsize)
-					return (-1); // check for overflow
+					return -1; // check for overflow
 
 				text_buf[r++] = (unsigned char)c;
-				r &= (N - 1);
+				r &= N - 1;
 			}
 		}
 	}
 
 	fclose(pIn);
 
-	return (bufptr); // return uncompressed size
+	return bufptr; // return uncompressed size
 }

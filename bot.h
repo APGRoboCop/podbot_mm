@@ -41,42 +41,42 @@ inline struct bottask_s* clampdesire(bottask_t* t1, float fMin, float fMax)
 	else if (t1->fDesire > fMax)
 		t1->fDesire = fMax;
 
-	return (t1);
+	return t1;
 }
 
 inline struct bottask_s* maxdesire(bottask_t* t1, bottask_t* t2)
 {
 	if (t1->fDesire > t2->fDesire)
-		return (t1);
+		return t1;
 
-	return (t2);
+	return t2;
 }
 
 inline bottask_s* subsumedesire(bottask_t* t1, bottask_t* t2)
 {
 	if (t1->fDesire > 0)
-		return (t1);
+		return t1;
 
-	return (t2);
+	return t2;
 }
 
 inline bottask_s* thresholddesire(bottask_t* t1, float t, float d)
 {
 	if (t1->fDesire >= t)
-		return (t1);
+		return t1;
 	else
 	{
 		t1->fDesire = d;
-		return (t1);
+		return t1;
 	}
 }
 
 inline float hysteresisdesire(float x, float min, float max, float oldval)
 {
-	if ((x <= min) || (x >= max))
+	if (x <= min || x >= max)
 		oldval = x;
 
-	return (oldval);
+	return oldval;
 }
 
 // define Console/CFG Commands
@@ -192,10 +192,10 @@ enum
 
 enum
 {
-	PROBE_JUMP = (1 << 0), // Probe Jump when colliding
-	PROBE_DUCK = (1 << 1), // Probe Duck when colliding
-	PROBE_STRAFE = (1 << 2), // Probe Strafing when colliding
-	PROBE_GOBACK = (1 << 3) // Probe Go Back when colliding // KWo - 25.06.2006
+	PROBE_JUMP = 1 << 0, // Probe Jump when colliding
+	PROBE_DUCK = 1 << 1, // Probe Duck when colliding
+	PROBE_STRAFE = 1 << 2, // Probe Strafing when colliding
+	PROBE_GOBACK = 1 << 3 // Probe Go Back when colliding // KWo - 25.06.2006
 };
 
 // game start messages for CS...
@@ -210,15 +210,15 @@ enum
 // Debug flag levels...
 enum
 {
-	DEBUG_FL_TASKS = (1 << 0),
-	DEBUG_FL_NAVIGATION = (1 << 1),
-	DEBUG_FL_STUCK = (1 << 2),
-	DEBUG_FL_SENSING = (1 << 3),
-	DEBUG_FL_COMBAT = (1 << 4),
-	DEBUG_FL_ENTITIES = (1 << 5),
-	DEBUG_FL_CHAT = (1 << 6),
-	DEBUG_FL_WPEDIT = (1 << 7),
-	DEBUG_FL_ALLBOTS = (1 << 8)
+	DEBUG_FL_TASKS = 1 << 0,
+	DEBUG_FL_NAVIGATION = 1 << 1,
+	DEBUG_FL_STUCK = 1 << 2,
+	DEBUG_FL_SENSING = 1 << 3,
+	DEBUG_FL_COMBAT = 1 << 4,
+	DEBUG_FL_ENTITIES = 1 << 5,
+	DEBUG_FL_CHAT = 1 << 6,
+	DEBUG_FL_WPEDIT = 1 << 7,
+	DEBUG_FL_ALLBOTS = 1 << 8
 };
 
 #define MSG_CS_MOTD	8  // KWo 11.02.2006
@@ -270,26 +270,26 @@ enum
 // Sensing States
 enum
 {
-	STATE_SEEINGENEMY = (1 << 0), // Seeing an Enemy
-	STATE_HEARINGENEMY = (1 << 1), // Hearing an Enemy
-	STATE_PICKUPITEM = (1 << 2), // Pickup Item Nearby
-	STATE_THROWHEGREN = (1 << 3), // Could throw HE Grenade
-	STATE_THROWFLASHBANG = (1 << 4), // Could throw Flashbang
-	STATE_THROWSMOKEGREN = (1 << 5), // Could throw SmokeGrenade
-	STATE_SUSPECTENEMY = (1 << 6) // Suspect Enemy behind Obstacle
+	STATE_SEEINGENEMY = 1 << 0, // Seeing an Enemy
+	STATE_HEARINGENEMY = 1 << 1, // Hearing an Enemy
+	STATE_PICKUPITEM = 1 << 2, // Pickup Item Nearby
+	STATE_THROWHEGREN = 1 << 3, // Could throw HE Grenade
+	STATE_THROWFLASHBANG = 1 << 4, // Could throw Flashbang
+	STATE_THROWSMOKEGREN = 1 << 5, // Could throw SmokeGrenade
+	STATE_SUSPECTENEMY = 1 << 6 // Suspect Enemy behind Obstacle
 };
 
 // Positions to aim at
 enum
 {
-	AIM_DEST = (1 << 0), // Aim at Nav Point
-	AIM_CAMP = (1 << 1), // Aim at Camp Vector
-	AIM_PREDICTPATH = (1 << 2), // Aim at predicted Path
-	AIM_LASTENEMY = (1 << 3), // Aim at Last Enemy
-	AIM_ENTITY = (1 << 4), // Aim at Entity like Buttons,Hostages
-	AIM_ENEMY = (1 << 5), // Aim at Enemy
-	AIM_GRENADE = (1 << 6), // Aim for Grenade Throw
-	AIM_OVERRIDE = (1 << 7) // Overrides all others (blinded)
+	AIM_DEST = 1 << 0, // Aim at Nav Point
+	AIM_CAMP = 1 << 1, // Aim at Camp Vector
+	AIM_PREDICTPATH = 1 << 2, // Aim at predicted Path
+	AIM_LASTENEMY = 1 << 3, // Aim at Last Enemy
+	AIM_ENTITY = 1 << 4, // Aim at Entity like Buttons,Hostages
+	AIM_ENEMY = 1 << 5, // Aim at Enemy
+	AIM_GRENADE = 1 << 6, // Aim for Grenade Throw
+	AIM_OVERRIDE = 1 << 7 // Overrides all others (blinded)
 };
 
 // Tasks to do
@@ -350,9 +350,9 @@ enum
 // Enemy Body Parts Seen
 enum
 {
-	HEAD_VISIBLE = (1 << 0),
-	WAIST_VISIBLE = (1 << 1),
-	CUSTOM_VISIBLE = (1 << 2)
+	HEAD_VISIBLE = 1 << 0,
+	WAIST_VISIBLE = 1 << 1,
+	CUSTOM_VISIBLE = 1 << 2
 };
 
 #define MAX_HOSTAGES 8
@@ -491,9 +491,9 @@ typedef struct
 
 enum clientflags
 {
-	CLIENT_USED = (1 << 0),
-	CLIENT_ALIVE = (1 << 1),
-	CLIENT_ADMIN = (1 << 2),
+	CLIENT_USED = 1 << 0,
+	CLIENT_ALIVE = 1 << 1,
+	CLIENT_ADMIN = 1 << 2,
 };
 
 // Records some Player Stats each Frame and holds sound events playing

@@ -25,13 +25,13 @@
 
 enum
 {
-	MAP_AS = (1 << 0),
-	MAP_CS = (1 << 1),
-	MAP_DE = (1 << 2),
-	MAP_AWP = (1 << 3),  // KWo - 18.03.2006
-	MAP_AIM = (1 << 4),  // KWo - 18.03.2006
-	MAP_FY = (1 << 5),  // KWo - 18.03.2006
-	MAP_ES = (1 << 6)  // KWo - 18.03.2006
+	MAP_AS = 1 << 0,
+	MAP_CS = 1 << 1,
+	MAP_DE = 1 << 2,
+	MAP_AWP = 1 << 3,  // KWo - 18.03.2006
+	MAP_AIM = 1 << 4,  // KWo - 18.03.2006
+	MAP_FY = 1 << 5,  // KWo - 18.03.2006
+	MAP_ES = 1 << 6  // KWo - 18.03.2006
 };
 
 // #define MAX_WAYPOINTS 1024
@@ -39,17 +39,17 @@ enum
 // defines for waypoint flags field (32 bits are available)
 enum
 {
-	W_FL_USE_BUTTON = (1 << 0), // use a nearby button (lifts, doors, etc.)
-	W_FL_LIFT = (1 << 1), // wait for lift to be down before approaching this waypoint
-	W_FL_CROUCH = (1 << 2), // must crouch to reach this waypoint
-	W_FL_CROSSING = (1 << 3),   // a target waypoint
-	W_FL_GOAL = (1 << 4), // mission goal point (bomb, hostage etc.)
-	W_FL_LADDER = (1 << 5), // waypoint is on ladder
-	W_FL_RESCUE = (1 << 6), // waypoint is a Hostage Rescue Point
-	W_FL_CAMP = (1 << 7), // waypoint is a Camping Point
-	W_FL_NOHOSTAGE = (1 << 8),   // only use this waypoint if no hostage
-	W_FL_TERRORIST = (1 << 29), // It's a specific Terrorist Point
-	W_FL_COUNTER = (1 << 30) // It's a specific Counter Terrorist Point
+	W_FL_USE_BUTTON = 1 << 0, // use a nearby button (lifts, doors, etc.)
+	W_FL_LIFT = 1 << 1, // wait for lift to be down before approaching this waypoint
+	W_FL_CROUCH = 1 << 2, // must crouch to reach this waypoint
+	W_FL_CROSSING = 1 << 3,   // a target waypoint
+	W_FL_GOAL = 1 << 4, // mission goal point (bomb, hostage etc.)
+	W_FL_LADDER = 1 << 5, // waypoint is on ladder
+	W_FL_RESCUE = 1 << 6, // waypoint is a Hostage Rescue Point
+	W_FL_CAMP = 1 << 7, // waypoint is a Camping Point
+	W_FL_NOHOSTAGE = 1 << 8,   // only use this waypoint if no hostage
+	W_FL_TERRORIST = 1 << 29, // It's a specific Terrorist Point
+	W_FL_COUNTER = 1 << 30 // It's a specific Counter Terrorist Point
 };
 
 enum

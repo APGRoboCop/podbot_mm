@@ -75,7 +75,7 @@ void pfnClientCommand(edict_t* pEdict, char* szFmt, ...)
 	static char string[1024];
 
 	va_start(argptr, szFmt);
-	vsnprintf_s(string, sizeof(string), szFmt, argptr);
+	vsnprintf_s(string, sizeof string, szFmt, argptr);
 	va_end(argptr);
 
 	/*   FILE *fpc = fopen ("ForcedClientCommand.txt", "a"); fprintf (fpc, "Forced Client Command on %s, \"%s\"\n", STRING (pEdict->v.netname), string); fclose (fpc);
@@ -106,7 +106,7 @@ static inline void CallbackLightStyle(const unsigned char style, char* const val
 		return;
 	}
 
-	const unsigned short maximumCopyAmount(sizeof(cl_lightstyle[style].map) - sizeof('\0'));
+	const unsigned short maximumCopyAmount(sizeof cl_lightstyle[style].map - sizeof'\0');
 #ifdef _WIN32
 	strncpy_s(cl_lightstyle[style].map, maximumCopyAmount + 1, value, maximumCopyAmount);
 #else
@@ -128,7 +128,7 @@ static void pfnLightStyle(int style, char* value)
 // KWo - 20.02.2008 - the idea taken from jk-botti (ghost_of_evilspy)
 int FAST_GET_USER_MSG_ID(plid_t plindex, int& value, const char* name, int* size)
 {
-	return(value ? value : (value = GET_USER_MSG_ID(plindex, name, size)));
+	return value ? value : value = GET_USER_MSG_ID(plindex, name, size);
 }
 
 void pfnMessageBegin(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed)
@@ -146,8 +146,8 @@ void pfnMessageBegin(int msg_dest, int msg_type, const float* pOrigin, edict_t* 
 	{
 		index = ENTINDEX(ed) - 1;
 
-		if (((index >= 0) && (index < gpGlobals->maxClients)
-			&& ((bots[index].pEdict == ed))) || (clients[index].pEdict == ed)) // KWo - 12.12.2006
+		if (index >= 0 && index < gpGlobals->maxClients
+			&& bots[index].pEdict == ed || clients[index].pEdict == ed) // KWo - 12.12.2006
 		{
 			if (msg_type == FAST_GET_USER_MSG_ID(PLID, CurWeapon, "CurWeapon", NULL)) // KWo - 20.02.2008
 			{
@@ -166,7 +166,7 @@ void pfnMessageBegin(int msg_dest, int msg_type, const float* pOrigin, edict_t* 
 			}
 		}
 		// is this message for a bot?
-		if ((index >= 0) && (index < gpGlobals->maxClients) && (bots[index].pEdict == ed))
+		if (index >= 0 && index < gpGlobals->maxClients && bots[index].pEdict == ed)
 		{
 			botMsgIndex = index; // index of bot receiving message
 
@@ -206,7 +206,7 @@ void pfnMessageBegin(int msg_dest, int msg_type, const float* pOrigin, edict_t* 
 
 	// round restart in CS 1.6
 
-	if (!g_bIsOldCS15 && (msg_dest == MSG_SPEC) && (msg_type == FAST_GET_USER_MSG_ID(PLID, HLTV, "HLTV", NULL))) // KWo - 20.02.2008
+	if (!g_bIsOldCS15 && msg_dest == MSG_SPEC && msg_type == FAST_GET_USER_MSG_ID(PLID, HLTV, "HLTV", NULL)) // KWo - 20.02.2008
 		botMsgFunction = BotClient_CS_HLTV;
 
 	else if (msg_dest == MSG_ALL)
@@ -233,7 +233,7 @@ void pfnMessageBegin(int msg_dest, int msg_type, const float* pOrigin, edict_t* 
 				{
 					BotCreateTab[tab_index].bNeedsCreation = TRUE;
 #ifdef _WIN32
-					strncpy_s(BotCreateTab[tab_index].bot_name, sizeof(BotCreateTab[tab_index].bot_name), bots[index].name, sizeof(BotCreateTab[tab_index].bot_name) - 1);
+					strncpy_s(BotCreateTab[tab_index].bot_name, sizeof BotCreateTab[tab_index].bot_name, bots[index].name, sizeof BotCreateTab[tab_index].bot_name - 1);
 #else
 					strncpy(BotCreateTab[tab_index].bot_name, bots[index].name, sizeof(BotCreateTab[tab_index].bot_name));
 #endif
@@ -262,8 +262,8 @@ void pfnMessageBegin(int msg_dest, int msg_type, const float* pOrigin, edict_t* 
 
 void pfnMessageEnd(void)
 {
-	if ((g_i_cv_latencybot == 2)
-		&& (botMsgFunction == BotClient_CS_DeathMsg)) // KWo - 04.03.2010
+	if (g_i_cv_latencybot == 2
+		&& botMsgFunction == BotClient_CS_DeathMsg) // KWo - 04.03.2010
 		g_bDeathMessageSent = TRUE;
 
 	botMsgFunction = NULL;
@@ -433,7 +433,7 @@ void pfnSetClientMaxspeed(const edict_t* pEdict, float fNewMaxspeed)
 
 unsigned int pfnGetPlayerWONId(edict_t* e)
 {
-	if ((e->v.flags & FL_FAKECLIENT) || (bots[ENTINDEX(e) - 1].is_used))
+	if (e->v.flags & FL_FAKECLIENT || bots[ENTINDEX(e) - 1].is_used)
 		RETURN_META_VALUE(MRES_SUPERCEDE, 0);
 
 	RETURN_META_VALUE(MRES_IGNORED, 0);
@@ -441,7 +441,7 @@ unsigned int pfnGetPlayerWONId(edict_t* e)
 
 const char* pfnGetPlayerAuthId(edict_t* e)
 {
-	if ((e->v.flags & FL_FAKECLIENT) || (bots[ENTINDEX(e) - 1].is_used))
+	if (e->v.flags & FL_FAKECLIENT || bots[ENTINDEX(e) - 1].is_used)
 		RETURN_META_VALUE(MRES_SUPERCEDE, "BOT");
 
 	RETURN_META_VALUE(MRES_IGNORED, NULL);
@@ -494,7 +494,7 @@ void pfnChangeLevel(char* s1, char* s2)
 		{
 			BotCreateTab[tab_index].bNeedsCreation = TRUE;
 #ifdef _WIN32
-			strncpy_s(BotCreateTab[tab_index].bot_name, sizeof(BotCreateTab[tab_index].bot_name), bots[index].name, sizeof(BotCreateTab[tab_index].bot_name) - 1);
+			strncpy_s(BotCreateTab[tab_index].bot_name, sizeof BotCreateTab[tab_index].bot_name, bots[index].name, sizeof BotCreateTab[tab_index].bot_name - 1);
 #else
 			strncpy(BotCreateTab[tab_index].bot_name, bots[index].name, sizeof(BotCreateTab[tab_index].bot_name));
 #endif
@@ -512,7 +512,7 @@ void C_MessageEnd_Post(void) // KWo - 05.03.2010
 	static edict_t* pPlayer;
 	static int i, player_index, sending;
 
-	if ((g_i_cv_latencybot == 2)
+	if (g_i_cv_latencybot == 2
 		&& g_bDeathMessageSent)
 	{
 		g_bDeathMessageSent = FALSE;
@@ -524,10 +524,10 @@ void C_MessageEnd_Post(void) // KWo - 05.03.2010
 				continue;
 			if (!(pPlayer->v.flags & FL_CLIENT))
 				continue;
-			if ((pPlayer->v.flags & FL_FAKECLIENT) || (bots[player_index].is_used))
+			if (pPlayer->v.flags & FL_FAKECLIENT || bots[player_index].is_used)
 				continue;
 
-			if ((pPlayer->v.button & IN_SCORE) || (pPlayer->v.oldbuttons & IN_SCORE))
+			if (pPlayer->v.button & IN_SCORE || pPlayer->v.oldbuttons & IN_SCORE)
 			{
 				sending = 0;
 				for (i = 0; i < gpGlobals->maxClients; i++)
@@ -541,21 +541,21 @@ void C_MessageEnd_Post(void) // KWo - 05.03.2010
 						{
 							// Start a new message
 							MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_PINGS, NULL, pPlayer);
-							WRITE_BYTE((bots[i].iOffsetPing[0] * 64) + (1 + 2 * (i)));
+							WRITE_BYTE(bots[i].iOffsetPing[0] * 64 + (1 + 2 * i));
 							WRITE_SHORT(bots[i].iArgPing[0]);
 							sending++;
 						}
 						case 1:
 						{
 							// Append additional data
-							WRITE_BYTE((bots[i].iOffsetPing[1] * 128) + (2 + 4 * (i)));
+							WRITE_BYTE(bots[i].iOffsetPing[1] * 128 + (2 + 4 * i));
 							WRITE_SHORT(bots[i].iArgPing[1]);
 							sending++;
 						}
 						case 2:
 						{
 							// Append additional data and end message
-							WRITE_BYTE((4 + 8 * (i)));
+							WRITE_BYTE(4 + 8 * i);
 							WRITE_SHORT(bots[i].iArgPing[2]);
 							WRITE_BYTE(0);
 							MESSAGE_END();
@@ -639,7 +639,7 @@ C_DLLEXPORT int GetEngineFunctions(enginefuncs_t* pengfuncsFromEngine, int* inte
 	meta_engfuncs.pfnGetPlayerAuthId = pfnGetPlayerAuthId;
 
 	memcpy(pengfuncsFromEngine, &meta_engfuncs, sizeof(enginefuncs_t));
-	return (TRUE);
+	return TRUE;
 }
 
 enginefuncs_t meta_engfuncs_post; // KWo - 19.05.2006
@@ -651,5 +651,5 @@ C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t* pengfuncsFromEngine, int*
  //   meta_engfuncs_post.pfnSetModel = pfnSetModel_Post; // KWo - 20.01.2008
  //   meta_engfuncs_post.pfnRegUserMsg = pfnRegUserMsg_Post;
 	memcpy(pengfuncsFromEngine, &meta_engfuncs_post, sizeof(enginefuncs_t));
-	return (TRUE);
+	return TRUE;
 }

@@ -29,7 +29,7 @@ int WaypointFindNearestToMove(edict_t* pEnt, Vector vOrigin)
 	for (i = 0; i < g_iNumWaypoints; i++)
 	{
 		fDistance = (paths[i]->origin - vOrigin).Length();
-		if ((fDistance < fMinDistance) && (fabs(paths[i]->origin.z - vOrigin.z) < 40.0f)) // KWo - 14.08.2008
+		if (fDistance < fMinDistance && fabs(paths[i]->origin.z - vOrigin.z) < 40.0f) // KWo - 14.08.2008
 		{
 			TRACE_LINE(vOrigin, paths[i]->origin, ignore_monsters, pEnt, &tr); // KWo - 17.04.2008
 			if (tr.flFraction >= (g_vecBomb == vOrigin) ? 0.85f : 0.95f) // KWo - 05.09.2008
@@ -40,7 +40,7 @@ int WaypointFindNearestToMove(edict_t* pEnt, Vector vOrigin)
 		}
 	}
 	if (index > -1)
-		return (index); // return visible WP index KWo - 19.04.2006
+		return index; // return visible WP index KWo - 19.04.2006
 
 	index = 0;
 
@@ -55,7 +55,7 @@ int WaypointFindNearestToMove(edict_t* pEnt, Vector vOrigin)
 			fMinDistance = fDistance;
 		}
 	}
-	return (index);
+	return index;
 }
 
 // Returns all Waypoints within Radius from Position
@@ -89,7 +89,7 @@ void WaypointFindInRadius(Vector vecPos, float fRadius, int* pTab, int* iCount)
 float GetTravelTime(float fMaxSpeed, Vector vecSource, Vector vecPosition)
 {
 	float fDistance = (vecPosition - vecSource).Length2D();
-	return (fDistance / fMaxSpeed);
+	return fDistance / fMaxSpeed;
 }
 
 // Returns bool value if the waypoint is reachable by an entity (for example by host)
@@ -102,24 +102,24 @@ bool WaypointReachableByEnt(Vector v_src, Vector v_dest, edict_t* pEntity) // KW
 	if (distance < 400) // KWo - 29.07.2006
 	{
 		// are we in water ?
-		if ((pEntity->v.waterlevel == 2) || (pEntity->v.waterlevel == 3))
+		if (pEntity->v.waterlevel == 2 || pEntity->v.waterlevel == 3)
 		{
 			// is dest waypoint higher than src? (62 is max jump height)
 			if (v_dest.z > v_src.z + 62.0f)
-				return (FALSE); // can't reach this one
+				return false; // can't reach this one
 
 		  // is dest waypoint lower than src?
 			if (v_dest.z < v_src.z - 100.0f)
-				return (FALSE); // can't reach this one
+				return false; // can't reach this one
 		}
 		// check if this waypoint is "visible"...
 		TRACE_LINE(v_src, v_dest, ignore_monsters, pEntity, &tr);
 
 		// if waypoint is visible from current position (even behind head)...
 		if (tr.flFraction >= 1.0f)
-			return (TRUE);
+			return true;
 	}
-	return (FALSE);
+	return false;
 }
 
 // Returns bool value if the waypoint is reachable for a bot
@@ -133,8 +133,8 @@ bool WaypointReachable(bot_t* pBot, int WP_Index) // KWo - 30.07.2006
 	edict_t* pEntity = pBot->pEdict;
 	bool b_WP_IsLadder;
 
-	if ((WP_Index < 0) || (WP_Index >= g_iNumWaypoints)) // KWo - 30.07.2006
-		return (FALSE); // can't reach this one
+	if (WP_Index < 0 || WP_Index >= g_iNumWaypoints) // KWo - 30.07.2006
+		return false; // can't reach this one
 
 	b_WP_IsLadder = false;
 	if (paths[WP_Index]->flags & W_FL_LADDER)
@@ -152,30 +152,30 @@ bool WaypointReachable(bot_t* pBot, int WP_Index) // KWo - 30.07.2006
 		if (pEntity->v.waterlevel < 2) // KWo - in water shouldn't be a problem to reach a WP, so check except of the water
 		{
 			// is dest waypoint higher than src? (62 is max jump height)
-			if ((v_dest.z > v_src.z + 62.0f) && (!(b_WP_IsLadder) || (distance2D > 16.0f))) // KWo - 30.07.2006 added a check for a ladder ;)
-				return (FALSE); // can't reach this one
+			if (v_dest.z > v_src.z + 62.0f && (!b_WP_IsLadder || distance2D > 16.0f)) // KWo - 30.07.2006 added a check for a ladder ;)
+				return false; // can't reach this one
 
 		  // is dest waypoint lower than src?
-			if ((v_dest.z < v_src.z - 100.0f) && (!(b_WP_IsLadder) || (distance2D > 16.0f))) // KWo - 30.07.2006 added a check for a ladder ;)
-				return (FALSE); // can't reach this one
+			if (v_dest.z < v_src.z - 100.0f && (!b_WP_IsLadder || distance2D > 16.0f)) // KWo - 30.07.2006 added a check for a ladder ;)
+				return false; // can't reach this one
 		}
 		// check if this waypoint is "visible"...
 		TRACE_LINE(v_src, v_dest, ignore_monsters, pEntity, &tr);
 
 		// if waypoint is visible from current position (even behind head)...
 		if (tr.flFraction >= 1.0f)
-			return (TRUE);
+			return true;
 	}
-	return (FALSE);
+	return false;
 }
 
 // checks if the waypoint is visible
 bool WaypointIsVisible(int iSourceIndex, int iDestIndex)
 {
 	unsigned char byRes = g_rgbyVisLUT[iSourceIndex][iDestIndex >> 2];
-	byRes >>= (iDestIndex % 4) << 1;
+	byRes >>= iDestIndex % 4 << 1;
 
-	return (!((byRes & 3) == 3));
+	return !((byRes & 3) == 3);
 }
 
 // deletes all nodes of the way the bot should've to pass
@@ -186,7 +186,7 @@ void DeleteSearchNodes(bot_t* pBot)
 	while (pBot->pWayNodesStart != NULL)
 	{
 		NextNode = pBot->pWayNodesStart->NextNode;
-		delete (pBot->pWayNodesStart);
+		delete pBot->pWayNodesStart;
 		pBot->pWayNodesStart = NextNode;
 
 		pBot->i_PathDeep--; // KWo - 30.08.2006 - stack tests
@@ -205,7 +205,7 @@ void DeleteSearchNodes(bot_t* pBot)
 // returns the "standerd" distance between 2 waypoints
 int GetPathDistance(int iSourceWaypoint, int iDestWaypoint)
 {
-	return (*(g_pFloydDistanceMatrix + (iSourceWaypoint * g_iNumWaypoints) + iDestWaypoint));
+	return *(g_pFloydDistanceMatrix + iSourceWaypoint * g_iNumWaypoints + iDestWaypoint);
 }
 
 // called when the bot has to find some closest waypoint
@@ -223,7 +223,7 @@ void BotChangeWptIndex(bot_t* pBot, int iWptIndex)
 	// Get current Waypoint Flags
 	// FIXME: Would make more sense to store it each time
 	// in the Bot struct when a Bot gets a new wpt instead doing this here
-	if ((iWptIndex >= 0) && (iWptIndex < g_iNumWaypoints)) // 17.04.2016
+	if (iWptIndex >= 0 && iWptIndex < g_iNumWaypoints) // 17.04.2016
 	{
 		pBot->iWPTFlags = paths[pBot->curr_wpt_index]->flags;
 		pBot->wpt_origin = paths[iWptIndex]->origin;
@@ -260,7 +260,7 @@ int GetAimingWaypoint(bot_t* pBot, Vector vecTargetPos, int iCount) // KWo - use
 
 	while (iDestIndex != iSourceIndex)
 	{
-		iDestIndex = *(g_pFloydPathMatrix + (iDestIndex * g_iNumWaypoints) + iSourceIndex);
+		iDestIndex = *(g_pFloydPathMatrix + iDestIndex * g_iNumWaypoints + iSourceIndex);
 
 		if (iDestIndex < 0)
 			break;
@@ -284,7 +284,7 @@ int GetAimingWaypoint(bot_t* pBot, Vector vecTargetPos, int iCount) // KWo - use
 		pStartNode = pNode;
 	}
 
-	return (iBestIndex);
+	return iBestIndex;
 }
 
 PATHNODE* FindShortestPath(int iSourceIndex, int iDestIndex, bool* bValid)
@@ -305,10 +305,10 @@ PATHNODE* FindShortestPath(int iSourceIndex, int iDestIndex, bool* bValid)
 
 	while (iSourceIndex != iDestIndex)
 	{
-		iSourceIndex = *(g_pFloydPathMatrix + (iSourceIndex * g_iNumWaypoints) + iDestIndex);
+		iSourceIndex = *(g_pFloydPathMatrix + iSourceIndex * g_iNumWaypoints + iDestIndex);
 
 		if (iSourceIndex < 0)
-			return (StartNode);
+			return StartNode;
 
 		Node->NextNode = new PATHNODE;
 		Node = Node->NextNode;
@@ -322,7 +322,7 @@ PATHNODE* FindShortestPath(int iSourceIndex, int iDestIndex, bool* bValid)
 
 	*bValid = TRUE;
 
-	return (StartNode);
+	return StartNode;
 }
 
 // Test function to view the calculated A* Path
@@ -331,7 +331,7 @@ void TestAPath(int iTeam, int iWithHostage, int iSourceIndex, int iDestIndex, un
 	PATHNODE* root;
 	PATHNODE* path = NULL;  // KWo - to remove warning uninitialised
 	PATHNODE* p;
-	bool bWithHostage = (iWithHostage > 0);
+	bool bWithHostage = iWithHostage > 0;
 	g_iSearchGoalIndex = iDestIndex;
 
 	// allocate and setup the root node
@@ -395,7 +395,7 @@ void TestAPath(int iTeam, int iWithHostage, int iSourceIndex, int iDestIndex, un
 		vecSource = paths[p->iIndex]->origin;
 		p = (PATHNODE*)p->NextNode;
 
-		if ((p != NULL) && !FNullEnt(pHostEdict))
+		if (p != NULL && !FNullEnt(pHostEdict))
 		{
 			vecDest = paths[p->iIndex]->origin;
 			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, pHostEdict);
@@ -414,7 +414,7 @@ void TestAPath(int iTeam, int iWithHostage, int iSourceIndex, int iDestIndex, un
 	while (path != NULL)
 	{
 		p = (PATHNODE*)path->NextNode;
-		delete (path);
+		delete path;
 		path = p;
 	}
 	return;
@@ -427,10 +427,10 @@ PATHNODE* FindLeastCostPath(bot_t* pBot, int iSourceIndex, int iDestIndex)
 	unsigned char byPathType = 0; // KWo - 22.02.2007
 	int iApproach; // KWo - 24.02.2007
 
-	if ((iDestIndex > g_iNumWaypoints - 1) || (iDestIndex < 0))
-		return (NULL);
-	else if ((iSourceIndex > g_iNumWaypoints - 1) || (iSourceIndex < 0))
-		return (NULL);
+	if (iDestIndex > g_iNumWaypoints - 1 || iDestIndex < 0)
+		return NULL;
+	else if (iSourceIndex > g_iNumWaypoints - 1 || iSourceIndex < 0)
+		return NULL;
 
 	g_bPathWasCalculated = TRUE; // KWo 24.03.2007
 
@@ -452,17 +452,17 @@ PATHNODE* FindLeastCostPath(bot_t* pBot, int iSourceIndex, int iDestIndex)
 	iApproach = (int)(pBot->pEdict->v.health * pBot->fAgressionLevel); // KWo - 24.02.2007
 	if (iApproach < 34)
 		byPathType = 2;
-	else if ((iApproach >= 34) && (iApproach < 66))
+	else if (iApproach >= 34 && iApproach < 66)
 		byPathType = 1;
 	else if (iApproach >= 66)
 		byPathType = 0;
 
 	if (pBot->bot_team == TEAM_CS_COUNTER)  // KWo - 06.07.2008
 	{
-		if ((g_bBombPlanted) && (g_iAliveTs == 0))
+		if (g_bBombPlanted && g_iAliveTs == 0)
 			byPathType = 0;
 		else
-			byPathType = (unsigned char)(RANDOM_LONG(0, 1));
+			byPathType = (unsigned char)RANDOM_LONG(0, 1);
 	}
 	if ((paths[iDestIndex]->origin - paths[iSourceIndex]->origin).Length() < 600.0f)  // KWo - 22.02.2007
 		byPathType = 0;
@@ -545,7 +545,7 @@ PATHNODE* FindLeastCostPath(bot_t* pBot, int iSourceIndex, int iDestIndex)
 		}
 	}
 	// otherwise, we had a successful search
-	return (path);
+	return path;
 }
 
 // This is a general A* function, so the user defines all of the
@@ -644,7 +644,7 @@ PATHNODE* AStarSearch(PATHNODE* root, int (*gcalc) (PATHNODE*), int (*hcalc) (PA
 			while (openList != NULL)
 			{
 				p = (PATHNODE*)openList->NextNode;
-				delete (openList);
+				delete openList;
 				openList = p;
 
 				bots[g_i_botthink_index].i_PathDeep--; // KWo - 30.08.2006 - stack tests
@@ -656,7 +656,7 @@ PATHNODE* AStarSearch(PATHNODE* root, int (*gcalc) (PATHNODE*), int (*hcalc) (PA
 			while (closedList != NULL)
 			{
 				p = (PATHNODE*)closedList->NextNode;
-				delete (closedList);
+				delete closedList;
 				closedList = p;
 
 				bots[g_i_botthink_index].i_PathDeep--; // KWo - 30.08.2006 - stack tests
@@ -665,7 +665,7 @@ PATHNODE* AStarSearch(PATHNODE* root, int (*gcalc) (PATHNODE*), int (*hcalc) (PA
 			}
 
 			// now return the path
-			return (path);
+			return path;
 		}
 
 		// now expand the current node
@@ -712,7 +712,7 @@ PATHNODE* AStarSearch(PATHNODE* root, int (*gcalc) (PATHNODE*), int (*hcalc) (PA
 						if (p->f <= curChild->f)
 						{
 							// if the f value of the older node is lower, delete the new child
-							delete (curChild);
+							delete curChild;
 							curChild = NULL;
 
 							bots[g_i_botthink_index].i_PathDeep--; // KWo - 30.08.2006 - stack tests
@@ -736,7 +736,7 @@ PATHNODE* AStarSearch(PATHNODE* root, int (*gcalc) (PATHNODE*), int (*hcalc) (PA
 							if (p == closedList)
 								closedList = (PATHNODE*)p->NextNode;
 
-							delete (p);
+							delete p;
 
 							bots[g_i_botthink_index].i_PathDeep--; // KWo - 30.08.2006 - stack tests
 							if (bots[g_i_botthink_index].i_PathDeep < -999999) // KWo - 30.08.2006 - stack tests
@@ -763,7 +763,7 @@ PATHNODE* AStarSearch(PATHNODE* root, int (*gcalc) (PATHNODE*), int (*hcalc) (PA
 						if (p->f <= curChild->f)
 						{
 							// child is a longer path to the same place so delete it
-							delete (curChild);
+							delete curChild;
 							curChild = NULL;
 
 							bots[g_i_botthink_index].i_PathDeep--; // KWo - 30.08.2006 - stack tests
@@ -852,7 +852,7 @@ PATHNODE* AStarSearch(PATHNODE* root, int (*gcalc) (PATHNODE*), int (*hcalc) (PA
 	while (closedList != NULL)
 	{
 		p = (PATHNODE*)closedList->NextNode;
-		delete (closedList);
+		delete closedList;
 
 		bots[g_i_botthink_index].i_PathDeep--; // KWo - 30.08.2006 - stack tests
 		if (bots[g_i_botthink_index].i_PathDeep < -999999) // KWo - 30.08.2006 - stack tests
@@ -861,7 +861,7 @@ PATHNODE* AStarSearch(PATHNODE* root, int (*gcalc) (PATHNODE*), int (*hcalc) (PA
 		closedList = p;
 	}
 
-	return (NULL);
+	return NULL;
 }
 
 // Least Kills and Number of Nodes to Goal for a Team
@@ -870,14 +870,14 @@ int gfunctionKillsDistT(PATHNODE* p)
 	int i;
 
 	if (p == NULL)
-		return (-1);
+		return -1;
 
 	int iThisIndex = p->iIndex;
 	int IPrevIndex = -1;  // KWo - 09.04.2006
 	if (p->prev != NULL)  // KWo - 09.04.2006
 		IPrevIndex = p->prev->iIndex;
 
-	int iCost = (pBotExperienceData + (iThisIndex * g_iNumWaypoints) + iThisIndex)->uTeam0Damage;	// KWo 14.01.2006
+	int iCost = (pBotExperienceData + iThisIndex * g_iNumWaypoints + iThisIndex)->uTeam0Damage;	// KWo 14.01.2006
 	int iNeighbour;
 
 	for (i = 0; i < MAX_PATH_INDEX; i++)
@@ -885,18 +885,18 @@ int gfunctionKillsDistT(PATHNODE* p)
 		iNeighbour = paths[iThisIndex]->index[i];
 
 		if (iNeighbour != -1)
-			iCost += (int)((pBotExperienceData + (iNeighbour * g_iNumWaypoints) + iNeighbour)->uTeam0Damage * 0.3);	// KWo it was float , but to remove warning should be int
+			iCost += (int)((pBotExperienceData + iNeighbour * g_iNumWaypoints + iNeighbour)->uTeam0Damage * 0.3);	// KWo it was float , but to remove warning should be int
 	}
 
 	if (paths[iThisIndex]->flags & W_FL_CROUCH)
 		iCost *= 2;
 
-	if ((IPrevIndex < 0) || (IPrevIndex > g_iNumWaypoints) || (IPrevIndex == iThisIndex)) // KWo - 09.04.2006
-		return (iCost * (int)((g_f_cv_dangerfactor * 20 / (2 * (int)g_iHighestDamageT))));	// KWo - 25.01.2010
+	if (IPrevIndex < 0 || IPrevIndex > g_iNumWaypoints || IPrevIndex == iThisIndex) // KWo - 09.04.2006
+		return iCost * (int)(g_f_cv_dangerfactor * 20 / (2 * (int)g_iHighestDamageT));	// KWo - 25.01.2010
 
 	iCost = GetPathDistance(IPrevIndex, iThisIndex) + (int)(iCost * 10 * g_f_cv_dangerfactor); // KWo - 25.01.2010
 
-	return (iCost);
+	return iCost;
 }
 
 int gfunctionKillsDistCT(PATHNODE* p)
@@ -904,14 +904,14 @@ int gfunctionKillsDistCT(PATHNODE* p)
 	int i;
 
 	if (p == NULL)
-		return (-1);
+		return -1;
 
 	int iThisIndex = p->iIndex;
 	int IPrevIndex = -1;  // KWo - 09.04.2006
 	if (p->prev != NULL)  // KWo - 09.04.2006
 		IPrevIndex = p->prev->iIndex;
 
-	int iCost = (pBotExperienceData + (iThisIndex * g_iNumWaypoints) + iThisIndex)->uTeam1Damage;	// KWo 14.01.2006
+	int iCost = (pBotExperienceData + iThisIndex * g_iNumWaypoints + iThisIndex)->uTeam1Damage;	// KWo 14.01.2006
 	int iNeighbour;
 
 	for (i = 0; i < MAX_PATH_INDEX; i++)
@@ -919,18 +919,18 @@ int gfunctionKillsDistCT(PATHNODE* p)
 		iNeighbour = paths[iThisIndex]->index[i];
 
 		if (iNeighbour != -1)
-			iCost += (int)((pBotExperienceData + (iNeighbour * g_iNumWaypoints) + iNeighbour)->uTeam1Damage * 0.3);	// KWo - it was float , but should be int to remove warning
+			iCost += (int)((pBotExperienceData + iNeighbour * g_iNumWaypoints + iNeighbour)->uTeam1Damage * 0.3);	// KWo - it was float , but should be int to remove warning
 	}
 
 	if (paths[iThisIndex]->flags & W_FL_CROUCH)
 		iCost *= 2;
 
-	if ((IPrevIndex < 0) || (IPrevIndex > g_iNumWaypoints) || (IPrevIndex == iThisIndex)) // KWo - 09.04.2006
-		return (iCost * (int)((g_f_cv_dangerfactor * 20 / (2 * (int)g_iHighestDamageCT))));	// KWo - 25.01.2010
+	if (IPrevIndex < 0 || IPrevIndex > g_iNumWaypoints || IPrevIndex == iThisIndex) // KWo - 09.04.2006
+		return iCost * (int)(g_f_cv_dangerfactor * 20 / (2 * (int)g_iHighestDamageCT));	// KWo - 25.01.2010
 
 	iCost = GetPathDistance(IPrevIndex, iThisIndex) + (int)(iCost * 10 * g_f_cv_dangerfactor); // KWo - 25.01.2010
 
-	return (iCost);
+	return iCost;
 }
 
 int gfunctionKillsDistCTWithHostage(PATHNODE* p)
@@ -938,7 +938,7 @@ int gfunctionKillsDistCTWithHostage(PATHNODE* p)
 	int i;
 
 	if (p == NULL)
-		return (-1);
+		return -1;
 
 	int iThisIndex = p->iIndex;
 	int IPrevIndex = -1;  // KWo - 09.04.2006
@@ -946,9 +946,9 @@ int gfunctionKillsDistCTWithHostage(PATHNODE* p)
 		IPrevIndex = p->prev->iIndex;
 
 	if (paths[iThisIndex]->flags & W_FL_NOHOSTAGE)
-		return (-1);
+		return -1;
 
-	int iCost = (pBotExperienceData + (iThisIndex * g_iNumWaypoints) + iThisIndex)->uTeam1Damage;	// KWo 14.01.2006
+	int iCost = (pBotExperienceData + iThisIndex * g_iNumWaypoints + iThisIndex)->uTeam1Damage;	// KWo 14.01.2006
 	int iNeighbour;
 
 	for (i = 0; i < MAX_PATH_INDEX; i++)
@@ -956,18 +956,18 @@ int gfunctionKillsDistCTWithHostage(PATHNODE* p)
 		iNeighbour = paths[iThisIndex]->index[i];
 
 		if (iNeighbour != -1)
-			iCost += (int)((pBotExperienceData + (iNeighbour * g_iNumWaypoints) + iNeighbour)->uTeam1Damage * 0.3);	// KWo - it was float , but should be int to remove warning
+			iCost += (int)((pBotExperienceData + iNeighbour * g_iNumWaypoints + iNeighbour)->uTeam1Damage * 0.3);	// KWo - it was float , but should be int to remove warning
 	}
 
 	if (paths[iThisIndex]->flags & W_FL_CROUCH)
 		iCost *= 2;
 
-	if ((IPrevIndex < 0) || (IPrevIndex > g_iNumWaypoints) || (IPrevIndex == iThisIndex)) // KWo - 09.04.2006
-		return (iCost * (int)((10 * g_f_cv_dangerfactor / (int)g_iHighestDamageCT)));	// KWo - 25.01.2010
+	if (IPrevIndex < 0 || IPrevIndex > g_iNumWaypoints || IPrevIndex == iThisIndex) // KWo - 09.04.2006
+		return iCost * (int)(10 * g_f_cv_dangerfactor / (int)g_iHighestDamageCT);	// KWo - 25.01.2010
 
 	iCost = GetPathDistance(IPrevIndex, iThisIndex) + (int)(iCost * 10 * g_f_cv_dangerfactor); // KWo - 25.01.2010
 
-	return (iCost);
+	return iCost;
 }
 
 // Least Kills to Goal for a Team
@@ -976,11 +976,11 @@ int gfunctionKillsT(PATHNODE* p)
 	int i;
 
 	if (p == NULL)
-		return (-1);
+		return -1;
 
 	int iThisIndex = p->iIndex;
 
-	int iCost = (pBotExperienceData + (iThisIndex * g_iNumWaypoints) + iThisIndex)->uTeam0Damage;
+	int iCost = (pBotExperienceData + iThisIndex * g_iNumWaypoints + iThisIndex)->uTeam0Damage;
 	int iNeighbour;
 
 	for (i = 0; i < MAX_PATH_INDEX; i++)
@@ -988,12 +988,12 @@ int gfunctionKillsT(PATHNODE* p)
 		iNeighbour = paths[iThisIndex]->index[i];
 
 		if (iNeighbour != -1)
-			iCost += (int)((pBotExperienceData + (iNeighbour * g_iNumWaypoints) + iNeighbour)->uTeam0Damage * 0.3);	// KWo - it was float, but should be int to remove warning
+			iCost += (int)((pBotExperienceData + iNeighbour * g_iNumWaypoints + iNeighbour)->uTeam0Damage * 0.3);	// KWo - it was float, but should be int to remove warning
 	}
 
 	if (paths[iThisIndex]->flags & W_FL_CROUCH)
 		iCost *= 2;
-	return (iCost * (int)((10 * g_f_cv_dangerfactor)));	// KWo - 25.01.2010
+	return iCost * (int)(10 * g_f_cv_dangerfactor);	// KWo - 25.01.2010
 }
 
 int gfunctionKillsCT(PATHNODE* p)
@@ -1001,10 +1001,10 @@ int gfunctionKillsCT(PATHNODE* p)
 	int i;
 
 	if (p == NULL)
-		return (-1);
+		return -1;
 
 	int iThisIndex = p->iIndex;
-	int iCost = (pBotExperienceData + (iThisIndex * g_iNumWaypoints) + iThisIndex)->uTeam1Damage;
+	int iCost = (pBotExperienceData + iThisIndex * g_iNumWaypoints + iThisIndex)->uTeam1Damage;
 	int iNeighbour;
 
 	for (i = 0; i < MAX_PATH_INDEX; i++)
@@ -1012,13 +1012,13 @@ int gfunctionKillsCT(PATHNODE* p)
 		iNeighbour = paths[iThisIndex]->index[i];
 
 		if (iNeighbour != -1)
-			iCost += (int)((pBotExperienceData + (iNeighbour * g_iNumWaypoints) + iNeighbour)->uTeam1Damage * 0.3);	// KWo - it was float, but should be int to remove warning
+			iCost += (int)((pBotExperienceData + iNeighbour * g_iNumWaypoints + iNeighbour)->uTeam1Damage * 0.3);	// KWo - it was float, but should be int to remove warning
 	}
 
 	if (paths[iThisIndex]->flags & W_FL_CROUCH)
 		iCost *= 2;
 
-	return (iCost * (int)((10 * g_f_cv_dangerfactor)));	// KWo - 25.01.2010
+	return iCost * (int)(10 * g_f_cv_dangerfactor);	// KWo - 25.01.2010
 }
 
 int gfunctionKillsCTWithHostage(PATHNODE* p)
@@ -1026,14 +1026,14 @@ int gfunctionKillsCTWithHostage(PATHNODE* p)
 	int i;
 
 	if (p == NULL)
-		return (-1);
+		return -1;
 
 	int iThisIndex = p->iIndex;
 
 	if (paths[iThisIndex]->flags & W_FL_NOHOSTAGE)
-		return (-1);
+		return -1;
 
-	int iCost = (pBotExperienceData + (iThisIndex * g_iNumWaypoints) + iThisIndex)->uTeam1Damage;
+	int iCost = (pBotExperienceData + iThisIndex * g_iNumWaypoints + iThisIndex)->uTeam1Damage;
 	int iNeighbour;
 
 	for (i = 0; i < MAX_PATH_INDEX; i++)
@@ -1041,21 +1041,21 @@ int gfunctionKillsCTWithHostage(PATHNODE* p)
 		iNeighbour = paths[iThisIndex]->index[i];
 
 		if (iNeighbour != -1)
-			iCost += (int)((pBotExperienceData + (iNeighbour * g_iNumWaypoints) + iNeighbour)->uTeam1Damage * 0.3);	// KWo - it was float , but should be int to remove warning
+			iCost += (int)((pBotExperienceData + iNeighbour * g_iNumWaypoints + iNeighbour)->uTeam1Damage * 0.3);	// KWo - it was float , but should be int to remove warning
 	}
 
 	if (paths[iThisIndex]->flags & W_FL_CROUCH)
 		iCost *= 2;
-	return (iCost * (int)((10 * g_f_cv_dangerfactor)));	// KWo - 25.01.2010
+	return iCost * (int)(10 * g_f_cv_dangerfactor);	// KWo - 25.01.2010
 }
 
 // No heurist (greedy) !!
 int hfunctionNone(PATHNODE* p)
 {
 	if (p == NULL)
-		return (-1);
+		return -1;
 
-	return (0);
+	return 0;
 }
 
 // Square Distance Heuristic
@@ -1065,7 +1065,7 @@ int hfunctionSquareDist(PATHNODE* p)
 	int deltaY = abs((int)paths[g_iSearchGoalIndex]->origin.y - (int)paths[p->iIndex]->origin.y);
 	int deltaZ = abs((int)paths[g_iSearchGoalIndex]->origin.z - (int)paths[p->iIndex]->origin.z);
 
-	return (deltaX + deltaY + deltaZ);
+	return deltaX + deltaY + deltaZ;
 }
 
 // Square Distance Heuristic with Hostages
@@ -1075,17 +1075,17 @@ int hfunctionSquareDistWithHostage(PATHNODE* p)
 	int deltaY = abs((int)paths[g_iSearchGoalIndex]->origin.y - (int)paths[p->iIndex]->origin.y);
 	int deltaZ = abs((int)paths[g_iSearchGoalIndex]->origin.z - (int)paths[p->iIndex]->origin.z);
 	if (paths[p->iIndex]->flags & W_FL_NOHOSTAGE)
-		return (8192);
-	return (deltaX + deltaY + deltaZ);
+		return 8192;
+	return deltaX + deltaY + deltaZ;
 }
 
 // define the goalNode function
 int goal(PATHNODE* p)
 {
 	if (p->iIndex == g_iSearchGoalIndex)
-		return (1);
+		return 1;
 
-	return (0);
+	return 0;
 }
 
 // define the children function
@@ -1114,20 +1114,20 @@ PATHNODE* makeChildren(PATHNODE* parent)
 		}
 	}
 
-	return (q);
+	return q;
 }
 
 // Test for node equality
 int nodeEqual(PATHNODE* a, PATHNODE* b)
 {
-	if ((a == NULL) && (b == NULL))
-		return (1);
+	if (a == NULL && b == NULL)
+		return 1;
 	else if (a == NULL)
-		return (0);
+		return 0;
 	else if (b == NULL)
-		return (0);
+		return 0;
 
-	return (a->iIndex == b->iIndex);
+	return a->iIndex == b->iIndex;
 }
 
 bool BotFindWaypoint(bot_t* pBot)
@@ -1168,7 +1168,7 @@ bool BotFindWaypoint(bot_t* pBot)
 		if (WaypointReachable(pBot, i)) // KWo - 30.07.2006
 		{
 			// Don't use duck Waypoints if Bot got a hostage
-			if (bHasHostage && (paths[i]->flags & W_FL_NOHOSTAGE))
+			if (bHasHostage && paths[i]->flags & W_FL_NOHOSTAGE)
 				continue;
 
 			bWaypointInUse = FALSE;
@@ -1180,15 +1180,15 @@ bool BotFindWaypoint(bot_t* pBot)
 				pOtherBot = &bots[c];
 
 				if (pOtherBot->is_used && !pOtherBot->bDead
-					&& (pOtherBot != pBot) && (pOtherBot->curr_wpt_index == i))
+					&& pOtherBot != pBot && pOtherBot->curr_wpt_index == i)
 				{
 					covered_wpt = i;
 					bWaypointInUse = TRUE;
 					break;
 				}
-				if ((clients[c].iFlags & CLIENT_USED) && (clients[c].iFlags & CLIENT_ALIVE) // KWo - 15.01.2008
-					&& ((clients[c].iTeam == pBot->bot_team) && (!g_b_cv_ffa))
-					&& (clients[c].pEdict != pBot->pEdict))
+				if (clients[c].iFlags & CLIENT_USED && clients[c].iFlags & CLIENT_ALIVE // KWo - 15.01.2008
+					&& (clients[c].iTeam == pBot->bot_team && !g_b_cv_ffa)
+					&& clients[c].pEdict != pBot->pEdict)
 				{
 					if ((clients[c].pEdict->v.origin - v_WPOrigin).Length() < 50.0f)
 					{
@@ -1253,7 +1253,7 @@ bool BotFindWaypoint(bot_t* pBot)
 		ALERT(at_logged, "[DEBUG] BotFindWaypoint - Bot %s found a new waypoint %i and changes wpt index.\n", pBot->name, select_index);
 
 	BotChangeWptIndex(pBot, select_index);
-	return (TRUE);
+	return true;
 }
 
 void CTBombPointClear(int iIndex)
@@ -1264,7 +1264,7 @@ void CTBombPointClear(int iIndex)
 
 	for (i = 0; i < MAXNUMBOMBSPOTS; i++)
 	{
-		if ((g_rgiBombSpotsVisited[i] == -1) && (paths[iIndex]->flags & W_FL_GOAL)) // KWo - 05.09.2008
+		if (g_rgiBombSpotsVisited[i] == -1 && paths[iIndex]->flags & W_FL_GOAL) // KWo - 05.09.2008
 		{
 			g_rgiBombSpotsVisited[i] = iIndex;
 			return;
@@ -1284,13 +1284,13 @@ bool WasBombPointVisited(int iIndex)
 	for (i = 0; i < MAXNUMBOMBSPOTS; i++)
 	{
 		if (g_rgiBombSpotsVisited[i] == -1)
-			return (FALSE);
+			return false;
 
 		else if (g_rgiBombSpotsVisited[i] == iIndex)
-			return (TRUE);
+			return true;
 	}
 
-	return (FALSE);
+	return false;
 }
 
 Vector GetBombPosition(void)
@@ -1303,7 +1303,7 @@ Vector GetBombPosition(void)
 	while (!FNullEnt(pent = FIND_ENTITY_BY_STRING(pent, "classname", "grenade")))
 	{
 		if (FStrEq(STRING(pent->v.model), "models/w_c4.mdl")
-			|| (pent->v.dmg >= 100)) // KWo - 11.04.2008
+			|| pent->v.dmg >= 100) // KWo - 11.04.2008
 		{
 			vecBomb = pent->v.origin;
 			break;
@@ -1311,7 +1311,7 @@ Vector GetBombPosition(void)
 	}
 
 	assert(vecBomb != g_vecZero);
-	return (vecBomb);
+	return vecBomb;
 }
 
 bool BotHearsBomb(Vector vecBotPos)
@@ -1322,9 +1322,9 @@ bool BotHearsBomb(Vector vecBotPos)
 		g_vecBomb = GetBombPosition();
 
 	if ((vecBotPos - g_vecBomb).Length() < BOMBMAXHEARDISTANCE)
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 int BotChooseBombWaypoint(bot_t* pBot)
@@ -1355,7 +1355,7 @@ int BotChooseBombWaypoint(bot_t* pBot)
 	{
 		act_distance = (paths[g_rgiGoalWaypoints[i]]->origin - vecPosition).Length();
 
-		if ((act_distance < min_distance) && ((bHearsBomb) || (!bHearsBomb && (act_distance > BOMBMAXHEARDISTANCE)))) // KWo 13.11.2006
+		if (act_distance < min_distance && (bHearsBomb || !bHearsBomb && act_distance > BOMBMAXHEARDISTANCE)) // KWo 13.11.2006
 		{
 			min_distance = act_distance;
 			iGoal = g_rgiGoalWaypoints[i];
@@ -1380,7 +1380,7 @@ int BotChooseBombWaypoint(bot_t* pBot)
 			break;
 	}
 
-	return (iGoal);
+	return iGoal;
 }
 
 int BotFindDefendWaypoint(bot_t* pBot, Vector vecPosition)
@@ -1440,7 +1440,7 @@ int BotFindDefendWaypoint(bot_t* pBot, Vector vecPosition)
 	for (i = 0; i < g_iNumWaypoints; i++)
 	{
 		// Exclude Ladder, Goal, Rescue & current Waypoints
-		if ((paths[i]->flags & W_FL_LADDER) || (i == iSourceIndex) || !WaypointIsVisible(i, iPosIndex))
+		if (paths[i]->flags & W_FL_LADDER || i == iSourceIndex || !WaypointIsVisible(i, iPosIndex))
 			continue;
 
 		// Use the 'real' Pathfinding Distances
@@ -1457,10 +1457,10 @@ int BotFindDefendWaypoint(bot_t* pBot, Vector vecPosition)
 
 			for (j = 0; j < gpGlobals->maxClients; j++) // KWo - 07.07.2008
 			{
-				if ((bots[j].is_used) && (clients[j].iFlags & CLIENT_ALIVE) && (pBot->bot_team == bots[j].bot_team)
-					&& (bots[j].pEdict != pBot->pEdict))
+				if (bots[j].is_used && clients[j].iFlags & CLIENT_ALIVE && pBot->bot_team == bots[j].bot_team
+					&& bots[j].pEdict != pBot->pEdict)
 				{
-					if ((BotGetSafeTask(&bots[j])->iData == i) || (bots[j].curr_wpt_index == i))
+					if (BotGetSafeTask(&bots[j])->iData == i || bots[j].curr_wpt_index == i)
 					{
 						bSkipUsed = true;
 						break;
@@ -1490,16 +1490,16 @@ int BotFindDefendWaypoint(bot_t* pBot, Vector vecPosition)
 		{
 			if (pBot->bot_team == TEAM_CS_TERRORIST)
 			{
-				iExp = (pBotExperienceData + (wpt_index[i] * g_iNumWaypoints) + wpt_index[i])->uTeam0Damage;
-				iExp = (iExp * 100) / g_iHighestDamageT; // KWo - 09.04.2006
+				iExp = (pBotExperienceData + wpt_index[i] * g_iNumWaypoints + wpt_index[i])->uTeam0Damage;
+				iExp = iExp * 100 / g_iHighestDamageT; // KWo - 09.04.2006
 				min_distance[i] = iExp / 8192;
 				min_distance[i] += iExp;
 				iExp >>= 1;
 			}
 			else
 			{
-				iExp = (pBotExperienceData + (wpt_index[i] * g_iNumWaypoints) + wpt_index[i])->uTeam1Damage;
-				iExp = (iExp * 100) / g_iHighestDamageCT; // KWo - 09.04.2006
+				iExp = (pBotExperienceData + wpt_index[i] * g_iNumWaypoints + wpt_index[i])->uTeam1Damage;
+				iExp = iExp * 100 / g_iHighestDamageCT; // KWo - 09.04.2006
 				min_distance[i] = iExp / 8192;
 				min_distance[i] += iExp;
 				iExp >>= 1;
@@ -1517,7 +1517,7 @@ int BotFindDefendWaypoint(bot_t* pBot, Vector vecPosition)
 			index1 = wpt_index[i];
 			index2 = wpt_index[i + 1];
 
-			if ((index1 != -1) && (index2 != -1))
+			if (index1 != -1 && index2 != -1)
 			{
 				if (min_distance[i] > min_distance[i + 1])
 				{
@@ -1536,11 +1536,11 @@ int BotFindDefendWaypoint(bot_t* pBot, Vector vecPosition)
 	for (i = 0; i < 8; i++)
 	{
 		if (wpt_index[i] != -1)
-			return (wpt_index[i]);
+			return wpt_index[i];
 	}
 
 	// Worst case: If no waypoint was found, just use a random one
-	return (RANDOM_LONG(0, g_iNumWaypoints - 1));
+	return RANDOM_LONG(0, g_iNumWaypoints - 1);
 }
 
 int BotFindCoverWaypoint(bot_t* pBot, float maxdistance)
@@ -1645,7 +1645,7 @@ int BotFindCoverWaypoint(bot_t* pBot, float maxdistance)
 	for (i = 0; i < g_iNumWaypoints; i++)
 	{
 		// Exclude Ladder, current Waypoints
-		if ((paths[i]->flags & W_FL_LADDER) || (i == iSourceIndex) || WaypointIsVisible(iEnemyWPT, i))
+		if (paths[i]->flags & W_FL_LADDER || i == iSourceIndex || WaypointIsVisible(iEnemyWPT, i))
 			continue;
 
 		// Now check neighbour Waypoints for Visibility
@@ -1692,9 +1692,9 @@ int BotFindCoverWaypoint(bot_t* pBot, float maxdistance)
 		{
 			if (wpt_index[i] != -1)
 			{
-				iExp = (pBotExperienceData + (wpt_index[i] * g_iNumWaypoints) + wpt_index[i])->uTeam0Damage;
-				iExp = (iExp * 100) / g_iHighestDamageT; // KWo - 09.04.2006
-				min_distance[i] = (iExp * 100) / 8192;
+				iExp = (pBotExperienceData + wpt_index[i] * g_iNumWaypoints + wpt_index[i])->uTeam0Damage;
+				iExp = iExp * 100 / g_iHighestDamageT; // KWo - 09.04.2006
+				min_distance[i] = iExp * 100 / 8192;
 				min_distance[i] += iExp;
 				iExp >>= 1;
 			}
@@ -1706,9 +1706,9 @@ int BotFindCoverWaypoint(bot_t* pBot, float maxdistance)
 		{
 			if (wpt_index[i] != -1)
 			{
-				iExp = (pBotExperienceData + (wpt_index[i] * g_iNumWaypoints) + wpt_index[i])->uTeam1Damage;
-				iExp = (iExp * 100) / g_iHighestDamageCT; // KWo - 09.04.2006
-				min_distance[i] = (iExp * 100) / 8192;
+				iExp = (pBotExperienceData + wpt_index[i] * g_iNumWaypoints + wpt_index[i])->uTeam1Damage;
+				iExp = iExp * 100 / g_iHighestDamageCT; // KWo - 09.04.2006
+				min_distance[i] = iExp * 100 / 8192;
 				min_distance[i] += iExp;
 				iExp >>= 1;
 			}
@@ -1724,7 +1724,7 @@ int BotFindCoverWaypoint(bot_t* pBot, float maxdistance)
 			index1 = wpt_index[i];
 			index2 = wpt_index[i + 1];
 
-			if ((index1 != -1) && (index2 != -1))
+			if (index1 != -1 && index2 != -1)
 			{
 				if (min_distance[i] > min_distance[i + 1])
 				{
@@ -1750,16 +1750,16 @@ int BotFindCoverWaypoint(bot_t* pBot, float maxdistance)
 
 			UTIL_TraceLine(v_source, v_dest, ignore_monsters, ignore_glass, pEdict, &tr);
 			if (tr.flFraction < 1.0f)
-				return (wpt_index[i]);
+				return wpt_index[i];
 		}
 	}
 
 	// If all are seen by the enemy, take the first one
 	if (wpt_index[0] != -1)
-		return (wpt_index[0]);
+		return wpt_index[0];
 
 	// Worst case: if no waypoint was found, just use a random one
-	return (RANDOM_LONG(0, g_iNumWaypoints - 1));
+	return RANDOM_LONG(0, g_iNumWaypoints - 1);
 }
 
 bool GetBestNextWaypoint(bot_t* pBot)
@@ -1781,16 +1781,16 @@ bool GetBestNextWaypoint(bot_t* pBot)
 	static int num;
 	static Vector vecWPOrigin;
 
-	if ((g_iDebugGoalIndex != -1) && (pBot->curr_wpt_index == g_iDebugGoalIndex)) // KWo - 08.01.2008
-		return(TRUE);
+	if (g_iDebugGoalIndex != -1 && pBot->curr_wpt_index == g_iDebugGoalIndex) // KWo - 08.01.2008
+		return true;
 
 	// Get waypoints used by other Bots
 	for (c = 0; c < gpGlobals->maxClients; c++)
 	{
 		pOtherBot = &bots[c];
 		iUsedWaypoints[c] = -1;
-		if (pOtherBot->is_used && !pOtherBot->bDead && (pOtherBot != pBot)
-			&& (!g_b_cv_ffa) && (pBot->bot_team == pOtherBot->bot_team)) // KWo - 16.12.2007
+		if (pOtherBot->is_used && !pOtherBot->bDead && pOtherBot != pBot
+			&& !g_b_cv_ffa && pBot->bot_team == pOtherBot->bot_team) // KWo - 16.12.2007
 
 			iUsedWaypoints[c] = pOtherBot->curr_wpt_index;
 	}
@@ -1839,7 +1839,7 @@ bool GetBestNextWaypoint(bot_t* pBot)
 		if (iCurrentWaypointIndex == BotGetSafeTask(pBot)->iData)   // KWo - 19.01.2012
 		{
 			BotGetSafeTask(pBot)->iData = pBot->curr_wpt_index;
-			return (FALSE);
+			return false;
 		}
 
 		iNextWaypointIndex = pBot->pWaypointNodes->NextNode->iIndex;
@@ -1874,8 +1874,8 @@ bool GetBestNextWaypoint(bot_t* pBot)
 				if (bWaypointNodePrevReachable && bWaypointNodeNextReachable) // KWo - 02.11.2009
 				{
 					// Don't use ladder waypoints as alternative - if is placed higher or lower than the bot's origin
-					if ((paths[num]->flags & W_FL_LADDER)
-						&& (fabs(paths[num]->origin.z - pBot->pEdict->v.origin.z) > 60.0f)) // KWo - 05.04.2016
+					if (paths[num]->flags & W_FL_LADDER
+						&& fabs(paths[num]->origin.z - pBot->pEdict->v.origin.z) > 60.0f) // KWo - 05.04.2016
 					{
 						iCount++;
 						continue;
@@ -1892,9 +1892,9 @@ bool GetBestNextWaypoint(bot_t* pBot)
 							bWaypointInUse = TRUE;
 							break;
 						}
-						if ((clients[c].iFlags & CLIENT_USED) && (clients[c].iFlags & CLIENT_ALIVE) // KWo - 07.01.2008
-							&& ((clients[c].iTeam == pBot->bot_team) && (!g_b_cv_ffa))
-							&& (clients[c].pEdict != pBot->pEdict))
+						if (clients[c].iFlags & CLIENT_USED && clients[c].iFlags & CLIENT_ALIVE // KWo - 07.01.2008
+							&& (clients[c].iTeam == pBot->bot_team && !g_b_cv_ffa)
+							&& clients[c].pEdict != pBot->pEdict)
 						{
 							if ((clients[c].pEdict->v.origin - vecWPOrigin).Length() < 50.0f)
 							{
@@ -1908,7 +1908,7 @@ bool GetBestNextWaypoint(bot_t* pBot)
 					if (!bWaypointInUse)
 					{
 						pBot->pWaypointNodes->iIndex = num;
-						return (TRUE);
+						return true;
 					}
 				}
 			}
@@ -1916,7 +1916,7 @@ bool GetBestNextWaypoint(bot_t* pBot)
 		}
 	}
 
-	return (FALSE);
+	return false;
 }
 
 bool BotHeadTowardWaypoint(bot_t* pBot)
@@ -1938,16 +1938,16 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 	// Check if old waypoints is still reliable
 	GetValidWaypoint(pBot);
 
-	if ((paths[pBot->curr_wpt_index]->flags & W_FL_USE_BUTTON) && (g_iNumButtons > 0)
-		&& (pBot->fButtonPushTime < gpGlobals->time) && (pBot->vecEntity == pBot->dest_origin) && (pBot->bButtonPushDecided))
-		return (FALSE);
+	if (paths[pBot->curr_wpt_index]->flags & W_FL_USE_BUTTON && g_iNumButtons > 0
+		&& pBot->fButtonPushTime < gpGlobals->time && pBot->vecEntity == pBot->dest_origin && pBot->bButtonPushDecided)
+		return false;
 
 	// No Waypoints from pathfinding ?
 	if (pBot->pWaypointNodes == NULL)
 	{
 		if (g_b_DebugNavig)
 			ALERT(at_logged, "[DEBUG] BotHeadTowardWaypoint - Bot %s has no waypoint from pathfinding.\n", pBot->name);
-		return (FALSE);
+		return false;
 	}
 
 	if (g_b_DebugNavig)
@@ -1965,8 +1965,8 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 	if (pBot->pWaypointNodes != NULL)
 	{
 		// If in between a route, postprocess the waypoint (find better alternatives)
-		if ((pBot->pWaypointNodes != pBot->pWayNodesStart)
-			&& (pBot->pWaypointNodes->NextNode != NULL))      // KWo - 04.04.2012
+		if (pBot->pWaypointNodes != pBot->pWayNodesStart
+			&& pBot->pWaypointNodes->NextNode != NULL)      // KWo - 04.04.2012
 		{
 			if (g_b_DebugNavig)
 				ALERT(at_logged, "[DEBUG] BotHeadTowardWaypoint - Bot %s checks the next alternative waypoint.\n", pBot->name);
@@ -1975,22 +1975,22 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 			if (BotGetSafeTask(pBot)->iData == pBot->curr_wpt_index) // KWo - 19.01.2012
 			{
 				pBot->pWaypointNodes = pBot->pWaypointNodes->prev;
-				return (FALSE);
+				return false;
 			}
 
 			if (pBot->pWaypointNodes->NextNode != NULL)              // KWo - 19.01.2012
 			{
 				pBot->fMinSpeed = pEdict->v.maxspeed;
-				if ((BotGetSafeTask(pBot)->iTask == TASK_NORMAL) && !g_bBombPlanted
-					&& !BotHasHostage(pBot) && !(pBot->pEdict->v.weapons & (1 << CS_WEAPON_C4))) // KWo - 18.03.2010
+				if (BotGetSafeTask(pBot)->iTask == TASK_NORMAL && !g_bBombPlanted
+					&& !BotHasHostage(pBot) && !(pBot->pEdict->v.weapons & 1 << CS_WEAPON_C4)) // KWo - 18.03.2010
 				{
 					pBot->iCampButtons = 0;
 					iWaypoint = pBot->pWaypointNodes->NextNode->iIndex;
 
 					if (pBot->bot_team == TEAM_CS_TERRORIST)
-						fKills = (pBotExperienceData + (iWaypoint * g_iNumWaypoints) + iWaypoint)->uTeam0Damage / g_iHighestDamageT; // KWo - 15.03.2010
+						fKills = (pBotExperienceData + iWaypoint * g_iNumWaypoints + iWaypoint)->uTeam0Damage / g_iHighestDamageT; // KWo - 15.03.2010
 					else
-						fKills = (pBotExperienceData + (iWaypoint * g_iNumWaypoints) + iWaypoint)->uTeam1Damage / g_iHighestDamageCT; // KWo - 15.03.2010
+						fKills = (pBotExperienceData + iWaypoint * g_iNumWaypoints + iWaypoint)->uTeam1Damage / g_iHighestDamageCT; // KWo - 15.03.2010
 
 					switch (pBot->bot_personality) // KWo - 19.02.2008 moved here
 					{
@@ -2001,9 +2001,9 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 						fKills *= 0.5f;
 					}
 
-					if ((fKills > 0.15f) && (g_fTimeRoundMid > gpGlobals->time)
-						&& (BotHasCampWeapon(pBot)) && (pBot->current_weapon.iAmmo1 > 0)
-						&& (!pBot->bIsChickenOrZombie)) // KWo - 18.01.2011
+					if (fKills > 0.15f && g_fTimeRoundMid > gpGlobals->time
+						&& BotHasCampWeapon(pBot) && pBot->current_weapon.iAmmo1 > 0
+						&& !pBot->bIsChickenOrZombie) // KWo - 18.01.2011
 					{
 						/*
 										  // KWo - 19.02.2008 - now fKills is already a value below 1.0...
@@ -2012,9 +2012,9 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 										  g_cKillHistory used only to reduce the remembered values of damages after few rounds...
 						*/
 
-						if ((pBot->fBaseAgressionLevel < fKills) && (BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION)
-							&& (pBot->fTimeCamping + 20.0f < gpGlobals->time)
-							&& (g_fTimeRoundMid > gpGlobals->time)) // 23.03.2008
+						if (pBot->fBaseAgressionLevel < fKills && BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION
+							&& pBot->fTimeCamping + 20.0f < gpGlobals->time
+							&& g_fTimeRoundMid > gpGlobals->time) // 23.03.2008
 						{
 							fTime = pBot->fFearLevel * (g_fTimeRoundMid - gpGlobals->time) * 0.5f;
 							if (fTime > g_f_cv_maxcamptime) // KWo - 23.03.2008
@@ -2052,8 +2052,8 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 						}
 					}
 					else if (g_bBotsCanPause && !pBot->bOnLadder
-						&& !pBot->bInWater && (pBot->curr_travel_flags == 0)
-						&& (pEdict->v.flags & FL_ONGROUND))
+						&& !pBot->bInWater && pBot->curr_travel_flags == 0
+						&& pEdict->v.flags & FL_ONGROUND)
 					{
 						if (fKills >= pBot->fBaseAgressionLevel)
 						{
@@ -2116,8 +2116,8 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 				{
 					for (i = 0; i < MAX_PATH_INDEX; i++)
 					{
-						if ((paths[pBot->pWaypointNodes->iIndex]->index[i] == pBot->pWaypointNodes->NextNode->iIndex)
-							&& (paths[pBot->pWaypointNodes->iIndex]->connectflag[i] & C_FL_JUMP))
+						if (paths[pBot->pWaypointNodes->iIndex]->index[i] == pBot->pWaypointNodes->NextNode->iIndex
+							&& paths[pBot->pWaypointNodes->iIndex]->connectflag[i] & C_FL_JUMP)
 						{
 							bWill_jump = TRUE;
 							v_src = paths[pBot->pWaypointNodes->iIndex]->origin;
@@ -2130,11 +2130,11 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 
 				// is there a jump waypoint right ahead and do we need to draw out the knife ?
 				if (bWill_jump
-					&& ((((fJump_distance > 220.0f) && (v_dest.z - 10.0f > v_src.z))
-						|| ((v_dest.z - 32.0f > v_src.z) && (fJump_distance > 150.0f))
+					&& ((fJump_distance > 220.0f && v_dest.z - 10.0f > v_src.z
+						|| v_dest.z - 32.0f > v_src.z && fJump_distance > 150.0f
 						/*  || (((v_dest - v_src).Length2D () < 50.0f) && (fJump_distance > 60.0f)) */)
 						&& FNullEnt(pBot->pBotEnemy)
-						&& (pBot->current_weapon.iId != CS_WEAPON_KNIFE))) // KWo - 08.04.2010
+						&& pBot->current_weapon.iId != CS_WEAPON_KNIFE)) // KWo - 08.04.2010
 					SelectWeaponByName(pBot, "weapon_knife"); // draw out the knife if needed
 			}
 
@@ -2195,7 +2195,7 @@ bool BotHeadTowardWaypoint(bot_t* pBot)
 
 	pBot->f_wpt_timeset = gpGlobals->time;
 
-	return (TRUE);
+	return true;
 }
 
 bool BotCantMoveForward(bot_t* pBot, Vector vNormal)  // KWo - 13.07.2006
@@ -2216,16 +2216,16 @@ bool BotCantMoveForward(bot_t* pBot, Vector vNormal)  // KWo - 13.07.2006
 	TRACE_HULL(v_src, v_forward, dont_ignore_monsters, head_hull, pEdict, &tr); // KWo - 13.01.2008
 
 	// check if the trace hit something...
-	if ((tr.flFraction < 1.0f) && (!FNullEnt(tr.pHit)))
+	if (tr.flFraction < 1.0f && !FNullEnt(tr.pHit))
 	{
-		if ((strncmp("func_door", STRING(tr.pHit->v.classname), 9) == 0)
-			|| ((pBot->bot_team == TEAM_CS_COUNTER) && (FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
-			return (FALSE);
+		if (strncmp("func_door", STRING(tr.pHit->v.classname), 9) == 0
+			|| pBot->bot_team == TEAM_CS_COUNTER && FStrEq("hostage_entity", STRING(tr.pHit->v.classname))) // KWo - 13.01.2008
+			return false;
 
 		if (g_b_DebugStuck)
 			ALERT(at_logged, "[DEBUG] Bot %s can't move forward - its head may hit someting.\n", pBot->name);
 
-		return (TRUE); // bot's head will hit something
+		return true; // bot's head will hit something
 	}
 
 	// bot's head is clear, check at shoulder level...
@@ -2241,13 +2241,13 @@ bool BotCantMoveForward(bot_t* pBot, Vector vNormal)  // KWo - 13.07.2006
 	TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 	// check if the trace hit something...
-	if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-		&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+	if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+		&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 	{
 		if (g_b_DebugStuck)
 			ALERT(at_logged, "[DEBUG] Bot %s can't move forward - its shoulder may hit something on the right.\n", pBot->name);
 
-		return (TRUE); // bot's body will hit something
+		return true; // bot's body will hit something
 	}
 
 	// bot's head is clear, check at shoulder level...
@@ -2258,13 +2258,13 @@ bool BotCantMoveForward(bot_t* pBot, Vector vNormal)  // KWo - 13.07.2006
 	TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 	// check if the trace hit something...
-	if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-		&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+	if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+		&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 	{
 		if (g_b_DebugStuck)
 			ALERT(at_logged, "[DEBUG] Bot %s can't move forward - its shoulder may hit something on the left.\n", pBot->name);
 
-		return (TRUE); // bot's body will hit something
+		return true; // bot's body will hit something
 	}
 
 	// Now check below Waist
@@ -2277,13 +2277,13 @@ bool BotCantMoveForward(bot_t* pBot, Vector vNormal)  // KWo - 13.07.2006
 		TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 		// check if the trace hit something...
-		if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-			&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+		if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+			&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 		{
 			if (g_b_DebugStuck)
 				ALERT(at_logged, "[DEBUG] Bot %s can't move forward - its body may hit something centrally (1).\n", pBot->name);
 
-			return (TRUE); // bot's body will hit something
+			return true; // bot's body will hit something
 		}
 
 		v_src = pEdict->v.origin + Vector(0, 0, -19 + 19);
@@ -2292,13 +2292,13 @@ bool BotCantMoveForward(bot_t* pBot, Vector vNormal)  // KWo - 13.07.2006
 		TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 		// check if the trace hit something...
-		if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-			&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+		if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+			&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 		{
 			if (g_b_DebugStuck)
 				ALERT(at_logged, "[DEBUG] Bot %s can't move forward - its body may hit something centrally (2).\n", pBot->name);
 
-			return (TRUE); // bot's body will hit something
+			return true; // bot's body will hit something
 		}
 	}
 	else
@@ -2311,13 +2311,13 @@ bool BotCantMoveForward(bot_t* pBot, Vector vNormal)  // KWo - 13.07.2006
 		TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 		// check if the trace hit something...
-		if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-			&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+		if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+			&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 		{
 			if (g_b_DebugStuck)
 				ALERT(at_logged, "[DEBUG] Bot %s can't move forward - its waits may hit something on the right.\n", pBot->name);
 
-			return (TRUE); // bot's body will hit something
+			return true; // bot's body will hit something
 		}
 
 		// Trace from the left Waist to the right forward Waist Pos
@@ -2327,17 +2327,17 @@ bool BotCantMoveForward(bot_t* pBot, Vector vNormal)  // KWo - 13.07.2006
 		TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 		// check if the trace hit something...
-		if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-			&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+		if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+			&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 		{
 			if (g_b_DebugStuck)
 				ALERT(at_logged, "[DEBUG] Bot %s can't move forward - its waits may hit something on the left.\n", pBot->name);
 
-			return (TRUE); // bot's body will hit something
+			return true; // bot's body will hit something
 		}
 	}
 
-	return (FALSE); // bot can move forward, return (FALSE)
+	return false; // bot can move forward, return (FALSE)
 }
 
 bool BotCantMoveBack(bot_t* pBot, Vector vNormal)  // KWo - 16.09.2006
@@ -2352,22 +2352,22 @@ bool BotCantMoveBack(bot_t* pBot, Vector vNormal)  // KWo - 16.09.2006
 	// first do a trace from the bot's eyes forward...
 
 	v_src = GetGunPosition(pEdict); // EyePosition ()
-	v_back = v_src + (-vNormal) * 24;
+	v_back = v_src + -vNormal * 24;
 
 	// trace from the bot's eyes straight forward...
 	TRACE_HULL(v_src, v_back, dont_ignore_monsters, head_hull, pEdict, &tr);  // KWo - 13.01.2008
 
 	// check if the trace hit something...
-	if ((tr.flFraction < 1.0f) && (!FNullEnt(tr.pHit)))
+	if (tr.flFraction < 1.0f && !FNullEnt(tr.pHit))
 	{
-		if ((strncmp("func_door", STRING(tr.pHit->v.classname), 9) == 0)
-			|| ((pBot->bot_team == TEAM_CS_COUNTER) && (FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
-			return (FALSE);
+		if (strncmp("func_door", STRING(tr.pHit->v.classname), 9) == 0
+			|| pBot->bot_team == TEAM_CS_COUNTER && FStrEq("hostage_entity", STRING(tr.pHit->v.classname))) // KWo - 13.01.2008
+			return false;
 
 		if (g_b_DebugStuck)
 			ALERT(at_logged, "[DEBUG] Bot %s can't move back - its head may hit someting.\n", pBot->name);
 
-		return (TRUE); // bot's head will hit something
+		return true; // bot's head will hit something
 	}
 
 	// bot's head is clear, check at shoulder level...
@@ -2378,105 +2378,105 @@ bool BotCantMoveBack(bot_t* pBot, Vector vNormal)  // KWo - 16.09.2006
 	MAKE_VECTORS(v_center);
 
 	v_src = GetGunPosition(pEdict) + Vector(0, 0, -16) + gpGlobals->v_right * -16;
-	v_back = GetGunPosition(pEdict) + Vector(0, 0, -16) + gpGlobals->v_right * 16 + (-vNormal) * 24;
+	v_back = GetGunPosition(pEdict) + Vector(0, 0, -16) + gpGlobals->v_right * 16 + -vNormal * 24;
 
 	TRACE_LINE(v_src, v_back, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 	// check if the trace hit something...
-	if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-		&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+	if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+		&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 	{
 		if (g_b_DebugStuck)
 			ALERT(at_logged, "[DEBUG] Bot %s can't move back - its shoulder may hit something on the right.\n", pBot->name);
 
-		return (TRUE); // bot's body will hit something
+		return true; // bot's body will hit something
 	}
 	// bot's head is clear, check at shoulder level...
 	// trace from the bot's shoulder right diagonal back to the left shoulder...
 	v_src = GetGunPosition(pEdict) + Vector(0, 0, -16) + gpGlobals->v_right * 16;
-	v_back = GetGunPosition(pEdict) + Vector(0, 0, -16) + gpGlobals->v_right * -16 + (-vNormal) * 24;
+	v_back = GetGunPosition(pEdict) + Vector(0, 0, -16) + gpGlobals->v_right * -16 + -vNormal * 24;
 
 	TRACE_LINE(v_src, v_back, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 	// check if the trace hit something...
-	if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-		&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+	if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+		&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 	{
 		if (g_b_DebugStuck)
 			ALERT(at_logged, "[DEBUG] Bot %s can't move back - its shoulder may hit something on the left.\n", pBot->name);
 
-		return (TRUE); // bot's body will hit something
+		return true; // bot's body will hit something
 	}
 
 	// Now check below Waist
 	if (pEdict->v.flags & FL_DUCKING)
 	{
 		v_src = pEdict->v.origin + Vector(0, 0, -19 + 19);
-		v_back = v_src + Vector(0, 0, 10) + (-vNormal) * 24;
+		v_back = v_src + Vector(0, 0, 10) + -vNormal * 24;
 
 		TRACE_LINE(v_src, v_back, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 		// check if the trace hit something...
-		if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-			&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+		if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+			&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 		{
 			if (g_b_DebugStuck)
 				ALERT(at_logged, "[DEBUG] Bot %s can't move back - its body may hit something centrally(1).\n", pBot->name);
 
-			return (TRUE); // bot's body will hit something
+			return true; // bot's body will hit something
 		}
 
 		v_src = pEdict->v.origin + Vector(0, 0, -19 + 19);
-		v_back = v_src + (-vNormal) * 24;
+		v_back = v_src + -vNormal * 24;
 
 		TRACE_LINE(v_src, v_back, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 		// check if the trace hit something...
-		if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-			&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+		if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+			&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 		{
 			if (g_b_DebugStuck)
 				ALERT(at_logged, "[DEBUG] Bot %s can't move back - its body may hit something centrally(2).\n", pBot->name);
 
-			return (TRUE); // bot's body will hit something
+			return true; // bot's body will hit something
 		}
 	}
 	else
 	{
 		// Trace from the left Waist to the right back Waist Pos
 		v_src = pEdict->v.origin + Vector(0, 0, -17) + gpGlobals->v_right * -16;
-		v_back = pEdict->v.origin + Vector(0, 0, -17) + gpGlobals->v_right * 16 + (-vNormal) * 24;
+		v_back = pEdict->v.origin + Vector(0, 0, -17) + gpGlobals->v_right * 16 + -vNormal * 24;
 
 		// trace from the bot's waist straight back...
 		TRACE_LINE(v_src, v_back, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 		// check if the trace hit something...
-		if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-			&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+		if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+			&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 		{
 			if (g_b_DebugStuck)
 				ALERT(at_logged, "[DEBUG] Bot %s can't move back - its waits may hit something on the right.\n", pBot->name);
 
-			return (TRUE); // bot's body will hit something
+			return true; // bot's body will hit something
 		}
 		// Trace from the left Waist to the right forward Waist Pos
 		v_src = pEdict->v.origin + Vector(0, 0, -17) + gpGlobals->v_right * 16;
-		v_back = pEdict->v.origin + Vector(0, 0, -17) + gpGlobals->v_right * -16 + (-vNormal) * 24;
+		v_back = pEdict->v.origin + Vector(0, 0, -17) + gpGlobals->v_right * -16 + -vNormal * 24;
 
 		TRACE_LINE(v_src, v_back, dont_ignore_monsters, pEdict, &tr); // KWo - 13.01.2008
 
 		// check if the trace hit something...
-		if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
-			&& ((pBot->bot_team == TEAM_CS_TERRORIST) || !(FStrEq("hostage_entity", STRING(tr.pHit->v.classname))))) // KWo - 13.01.2008
+		if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0
+			&& (pBot->bot_team == TEAM_CS_TERRORIST || !FStrEq("hostage_entity", STRING(tr.pHit->v.classname)))) // KWo - 13.01.2008
 		{
 			if (g_b_DebugStuck)
 				ALERT(at_logged, "[DEBUG] Bot %s can't move back - its waits may hit something on the left.\n", pBot->name);
 
-			return (TRUE); // bot's body will hit something
+			return true; // bot's body will hit something
 		}
 	}
 
-	return (FALSE); // bot can move back, return (FALSE)
+	return false; // bot can move back, return (FALSE)
 }
 
 bool BotCanStrafeLeft(bot_t* pBot, TraceResult* tr)
@@ -2497,8 +2497,8 @@ bool BotCanStrafeLeft(bot_t* pBot, TraceResult* tr)
 	TRACE_LINE(v_src, v_left, ignore_monsters, pEdict, tr);
 
 	// check if the trace hit something...
-	if ((tr->flFraction < 1.0f) && !(FStrEq("hostage_entity", STRING(tr->pHit->v.classname)))) // KWo - 14.08.2006
-		return (FALSE); // bot's body will hit something
+	if (tr->flFraction < 1.0f && !FStrEq("hostage_entity", STRING(tr->pHit->v.classname))) // KWo - 14.08.2006
+		return false; // bot's body will hit something
 
 	v_src = v_left; // KWo - 09.07.2006
 	v_left = v_left + gpGlobals->v_forward * 40;
@@ -2507,10 +2507,10 @@ bool BotCanStrafeLeft(bot_t* pBot, TraceResult* tr)
 	TRACE_LINE(v_src, v_left, ignore_monsters, pEdict, tr);
 
 	// check if the trace hit something...
-	if ((tr->flFraction < 1.0f) && !(FStrEq("hostage_entity", STRING(tr->pHit->v.classname)))) // KWo - 14.08.2006
-		return (FALSE); // bot's body will hit something
+	if (tr->flFraction < 1.0f && !FStrEq("hostage_entity", STRING(tr->pHit->v.classname))) // KWo - 14.08.2006
+		return false; // bot's body will hit something
 
-	return (TRUE);
+	return true;
 }
 
 bool BotCanStrafeRight(bot_t* pBot, TraceResult* tr)
@@ -2531,8 +2531,8 @@ bool BotCanStrafeRight(bot_t* pBot, TraceResult* tr)
 	TRACE_LINE(v_src, v_right, ignore_monsters, pEdict, tr);
 
 	// check if the trace hit something...
-	if ((tr->flFraction < 1.0f) && !(FStrEq("hostage_entity", STRING(tr->pHit->v.classname))))
-		return (FALSE); // bot's body will hit something
+	if (tr->flFraction < 1.0f && !FStrEq("hostage_entity", STRING(tr->pHit->v.classname)))
+		return false; // bot's body will hit something
 
 	v_src = v_right; // KWo - 09.07.2006
 	v_right = v_right + gpGlobals->v_forward * 40;
@@ -2541,10 +2541,10 @@ bool BotCanStrafeRight(bot_t* pBot, TraceResult* tr)
 	TRACE_LINE(v_src, v_right, ignore_monsters, pEdict, tr);
 
 	// check if the trace hit something...
-	if ((tr->flFraction < 1.0f) && !(FStrEq("hostage_entity", STRING(tr->pHit->v.classname))))
-		return (FALSE); // bot's body will hit something
+	if (tr->flFraction < 1.0f && !FStrEq("hostage_entity", STRING(tr->pHit->v.classname)))
+		return false; // bot's body will hit something
 
-	return (TRUE);
+	return true;
 }
 
 bool BotCanJumpUp(bot_t* pBot, Vector vNormal)
@@ -2559,7 +2559,7 @@ bool BotCanJumpUp(bot_t* pBot, Vector vNormal)
 
 	// Can't jump if not on ground and not on ladder/swimming
 	if (!(pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND)) && (pBot->bOnLadder || !pBot->bInWater))
-		return (FALSE);
+		return false;
 
 	// convert current view angle to vectors for TraceLine math...
 
@@ -2588,7 +2588,7 @@ bool BotCanJumpUp(bot_t* pBot, Vector vNormal)
 		TRACE_LINE(v_source, v_dest, ignore_monsters, pEdict, &tr);
 
 		if (tr.flFraction < 1.0f)
-			return (FALSE);
+			return false;
 	}
 
 	// now check same height to one side of the bot...
@@ -2610,10 +2610,10 @@ bool BotCanJumpUp(bot_t* pBot, Vector vNormal)
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
 	// now check same height on the other side of the bot...
-	v_source = pEdict->v.origin + (-gpGlobals->v_right * 16) + Vector(0, 0, -36 + 45);
+	v_source = pEdict->v.origin + -gpGlobals->v_right * 16 + Vector(0, 0, -36 + 45);
 	v_dest = v_source + vNormal * 32;
 
 	// trace a line forward at maximum jump height...
@@ -2631,9 +2631,9 @@ bool BotCanJumpUp(bot_t* pBot, Vector vNormal)
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
-	return (TRUE);
+	return true;
 
 	// Here we check if a Duck Jump would work...
 CheckDuckJump:
@@ -2647,7 +2647,7 @@ CheckDuckJump:
 	TRACE_LINE(v_source, v_dest, ignore_monsters, pEdict, &tr);
 
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 	else
 	{
 		// now trace from jump height upward to check for obstructions...
@@ -2658,7 +2658,7 @@ CheckDuckJump:
 
 		// if trace hit something, check duckjump
 		if (tr.flFraction < 1.0f)
-			return (FALSE);
+			return false;
 	}
 
 	// now check same height to one side of the bot...
@@ -2670,7 +2670,7 @@ CheckDuckJump:
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
 	// now trace from jump height upward to check for obstructions...
 	v_source = v_dest;
@@ -2680,10 +2680,10 @@ CheckDuckJump:
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
 	// now check same height on the other side of the bot...
-	v_source = pEdict->v.origin + (-gpGlobals->v_right * 16) + Vector(0, 0, -36 + 63);
+	v_source = pEdict->v.origin + -gpGlobals->v_right * 16 + Vector(0, 0, -36 + 63);
 	v_dest = v_source + vNormal * 32;
 
 	// trace a line forward at maximum jump height...
@@ -2691,7 +2691,7 @@ CheckDuckJump:
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
 	// now trace from jump height upward to check for obstructions...
 	v_source = v_dest;
@@ -2701,9 +2701,9 @@ CheckDuckJump:
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
-	return (TRUE);
+	return true;
 }
 
 bool BotCanDuckUnder(bot_t* pBot, Vector vNormal)
@@ -2737,7 +2737,7 @@ bool BotCanDuckUnder(bot_t* pBot, Vector vNormal)
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
 	// now check same height to one side of the bot...
 	v_source = v_baseheight + gpGlobals->v_right * 16;
@@ -2748,10 +2748,10 @@ bool BotCanDuckUnder(bot_t* pBot, Vector vNormal)
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
 	// now check same height on the other side of the bot...
-	v_source = v_baseheight + (-gpGlobals->v_right * 16);
+	v_source = v_baseheight + -gpGlobals->v_right * 16;
 	v_dest = v_source + vNormal * 32;
 
 	// trace a line forward at duck height...
@@ -2759,9 +2759,9 @@ bool BotCanDuckUnder(bot_t* pBot, Vector vNormal)
 
 	// if trace hit something, return (FALSE)
 	if (tr.flFraction < 1.0f)
-		return (FALSE);
+		return false;
 
-	return (TRUE);
+	return true;
 }
 
 bool BotIsBlockedLeft(bot_t* pBot)
@@ -2780,15 +2780,15 @@ bool BotIsBlockedLeft(bot_t* pBot)
 	// do a trace to the left...
 
 	v_src = pEdict->v.origin;
-	v_left = v_src + (gpGlobals->v_forward * iDirection) + (gpGlobals->v_right * -48); // 48 units to the left
+	v_left = v_src + gpGlobals->v_forward * iDirection + gpGlobals->v_right * -48; // 48 units to the left
 
 	TRACE_LINE(v_src, v_left, ignore_monsters, pEdict, &tr);
 
 	// check if the trace hit something...
-	if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0))
-		return (TRUE);
+	if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotIsBlockedRight(bot_t* pBot)
@@ -2806,15 +2806,15 @@ bool BotIsBlockedRight(bot_t* pBot)
 	// do a trace to the left...
 
 	v_src = pEdict->v.origin;
-	v_left = v_src + (gpGlobals->v_forward * iDirection) + (gpGlobals->v_right * 48); // 48 units to the right
+	v_left = v_src + gpGlobals->v_forward * iDirection + gpGlobals->v_right * 48; // 48 units to the right
 
 	TRACE_LINE(v_src, v_left, ignore_monsters, pEdict, &tr);
 
 	// check if the trace hit something...
-	if ((tr.flFraction < 1.0f) && (strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0))
-		return (TRUE);
+	if (tr.flFraction < 1.0f && strncmp("func_door", STRING(tr.pHit->v.classname), 9) != 0)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotCheckWallOnLeft(bot_t* pBot)
@@ -2828,15 +2828,15 @@ bool BotCheckWallOnLeft(bot_t* pBot)
 	// do a trace to the left...
 
 	v_src = pEdict->v.origin;
-	v_left = v_src + (-gpGlobals->v_right * 40); // 40 units to the left
+	v_left = v_src + -gpGlobals->v_right * 40; // 40 units to the left
 
 	TRACE_LINE(v_src, v_left, ignore_monsters, pEdict, &tr);
 
 	// check if the trace hit something...
 	if (tr.flFraction < 1.0f)
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotCheckWallOnRight(bot_t* pBot)
@@ -2856,9 +2856,9 @@ bool BotCheckWallOnRight(bot_t* pBot)
 
 	// check if the trace hit something...
 	if (tr.flFraction < 1.0f)
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 void BotSetStrafeSpeed(bot_t* pBot, float fStrafeSpeed) // KWo - 25.07.2006
@@ -2879,7 +2879,7 @@ void BotSetStrafeSpeed(bot_t* pBot, float fStrafeSpeed) // KWo - 25.07.2006
 	if (fStrafeSpeed > 0.0f)
 		vecDestination = pEdict->v.origin + 30.0f * vecRight;
 	else
-		vecDestination = pEdict->v.origin + (-30.0f) * vecRight;
+		vecDestination = pEdict->v.origin + -30.0f * vecRight;
 
 	if (!IsDeadlyDrop(pBot, vecDestination))
 	{
@@ -2958,7 +2958,7 @@ void BotGetCampDirection(bot_t* pBot, Vector* vecDest)
 			}
 		}
 
-		if ((iLookAtWaypoint != -1) && (iLookAtWaypoint < g_iNumWaypoints))
+		if (iLookAtWaypoint != -1 && iLookAtWaypoint < g_iNumWaypoints)
 			*vecDest = paths[iLookAtWaypoint]->origin + pEdict->v.view_ofs;  // KWo - 14.08.2007
 	}
 }
@@ -2974,7 +2974,7 @@ void UpdateGlobalExperienceData(void)
 	int iClip;
 
 	// No waypoints, no experience used or waypoints edited OR being edited ?
-	if ((g_iNumWaypoints < 1) || g_bWaypointsChanged || /* g_bWaypointOn || */ (g_iUpdGlExpState == 0))
+	if (g_iNumWaypoints < 1 || g_bWaypointsChanged || /* g_bWaypointOn || */ g_iUpdGlExpState == 0)
 	{
 		g_bRecalcKills = FALSE;
 		g_iUpdGlExpState = 0;
@@ -2995,12 +2995,12 @@ void UpdateGlobalExperienceData(void)
 			{
 				if (i == j)
 				{
-					if ((pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam0Damage >= MAX_DAMAGE_VAL)  // KWo - 09.04.2006
+					if ((pBotExperienceData + i * g_iNumWaypoints + j)->uTeam0Damage >= MAX_DAMAGE_VAL)  // KWo - 09.04.2006
 						g_bRecalcKills = TRUE;
 					continue;
 				}
 
-				act_damage = (pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam0Damage;
+				act_damage = (pBotExperienceData + i * g_iNumWaypoints + j)->uTeam0Damage;
 
 				if (act_damage > max_damage)
 				{
@@ -3012,7 +3012,7 @@ void UpdateGlobalExperienceData(void)
 			if (max_damage >= MAX_DAMAGE_VAL)  // KWo - 23.01.2006
 				g_bRecalcKills = TRUE;
 
-			(pBotExperienceData + (i * g_iNumWaypoints) + i)->iTeam0_danger_index = (short)iBestIndex;
+			(pBotExperienceData + i * g_iNumWaypoints + i)->iTeam0_danger_index = (short)iBestIndex;
 		}
 		g_iUpdGlExpState++;
 		break;
@@ -3028,12 +3028,12 @@ void UpdateGlobalExperienceData(void)
 			{
 				if (i == j)
 				{
-					if ((pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam1Damage >= MAX_DAMAGE_VAL)  // KWo - 09.04.2006
+					if ((pBotExperienceData + i * g_iNumWaypoints + j)->uTeam1Damage >= MAX_DAMAGE_VAL)  // KWo - 09.04.2006
 						g_bRecalcKills = TRUE;
 					continue;
 				}
 
-				act_damage = (pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam1Damage;
+				act_damage = (pBotExperienceData + i * g_iNumWaypoints + j)->uTeam1Damage;
 
 				if (act_damage > max_damage)
 				{
@@ -3045,7 +3045,7 @@ void UpdateGlobalExperienceData(void)
 			if (max_damage >= MAX_DAMAGE_VAL)
 				g_bRecalcKills = TRUE;
 
-			(pBotExperienceData + (i * g_iNumWaypoints) + i)->iTeam1_danger_index = (short)iBestIndex;
+			(pBotExperienceData + i * g_iNumWaypoints + i)->iTeam1_danger_index = (short)iBestIndex;
 		}
 		g_iUpdGlExpState++;
 		break;
@@ -3058,21 +3058,21 @@ void UpdateGlobalExperienceData(void)
 			{
 				for (j = 0; j < g_iNumWaypoints; j++)
 				{
-					iClip = (pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam0Damage;
+					iClip = (pBotExperienceData + i * g_iNumWaypoints + j)->uTeam0Damage;
 					iClip -= (int)(MAX_DAMAGE_VAL * 0.5f);	// KWo - to remove warning
 
 					if (iClip < 0)
 						iClip = 0;
 
-					(pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam0Damage = (unsigned short)iClip;
+					(pBotExperienceData + i * g_iNumWaypoints + j)->uTeam0Damage = (unsigned short)iClip;
 
-					iClip = (pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam1Damage;
+					iClip = (pBotExperienceData + i * g_iNumWaypoints + j)->uTeam1Damage;
 					iClip -= (int)(MAX_DAMAGE_VAL * 0.5f);	// KWo - to remove warning
 
 					if (iClip < 0)
 						iClip = 0;
 
-					(pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam1Damage = (unsigned short)iClip;
+					(pBotExperienceData + i * g_iNumWaypoints + j)->uTeam1Damage = (unsigned short)iClip;
 				}
 			}
 			// 	KWo - 09.04.2006
@@ -3096,8 +3096,8 @@ void UpdateGlobalExperienceData(void)
 		{
 			for (i = 0; i < g_iNumWaypoints; i++)
 			{
-				(pBotExperienceData + (i * g_iNumWaypoints) + i)->uTeam0Damage /= (unsigned short)(gpGlobals->maxClients * 0.5f); // KWo - to remove warning
-				(pBotExperienceData + (i * g_iNumWaypoints) + i)->uTeam1Damage /= (unsigned short)(gpGlobals->maxClients * 0.5f); // KWo - to remove warning
+				(pBotExperienceData + i * g_iNumWaypoints + i)->uTeam0Damage /= (unsigned short)(gpGlobals->maxClients * 0.5f); // KWo - to remove warning
+				(pBotExperienceData + i * g_iNumWaypoints + i)->uTeam1Damage /= (unsigned short)(gpGlobals->maxClients * 0.5f); // KWo - to remove warning
 			}
 			// KWo - 09.04.2006
 			g_iHighestDamageT /= (unsigned short)(gpGlobals->maxClients * 0.5f);
@@ -3127,8 +3127,8 @@ void BotCollectGoalExperience(bot_t* pBot, int iDamage)
 
 	int iWPTValue;
 
-	if ((g_iNumWaypoints < 1) || g_bWaypointsChanged || (BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER)
-		|| (pBot->chosengoal_index < 0) || (pBot->chosengoal_index >= g_iNumWaypoints) || (pBot->prev_goal_index < 0)) // KWo - 30.06.2006
+	if (g_iNumWaypoints < 1 || g_bWaypointsChanged || BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER
+		|| pBot->chosengoal_index < 0 || pBot->chosengoal_index >= g_iNumWaypoints || pBot->prev_goal_index < 0) // KWo - 30.06.2006
 		return;
 
 	// Only rate Goal Waypoint if Bot died because of the damage
@@ -3138,21 +3138,21 @@ void BotCollectGoalExperience(bot_t* pBot, int iDamage)
 	{
 		if (pBot->bot_team == TEAM_CS_TERRORIST)
 		{
-			iWPTValue = (int)((pBotExperienceData + (pBot->chosengoal_index * g_iNumWaypoints) + pBot->prev_goal_index)->wTeam0Value - (pBot->pEdict->v.health * 0.05));
+			iWPTValue = (int)((pBotExperienceData + pBot->chosengoal_index * g_iNumWaypoints + pBot->prev_goal_index)->wTeam0Value - pBot->pEdict->v.health * 0.05);
 			if (iWPTValue < -MAX_GOAL_VAL)
 				iWPTValue = -MAX_GOAL_VAL;
 			else if (iWPTValue > MAX_GOAL_VAL)
 				iWPTValue = MAX_GOAL_VAL;
-			(pBotExperienceData + (pBot->chosengoal_index * g_iNumWaypoints) + pBot->prev_goal_index)->wTeam0Value = (signed short)iWPTValue;
+			(pBotExperienceData + pBot->chosengoal_index * g_iNumWaypoints + pBot->prev_goal_index)->wTeam0Value = (signed short)iWPTValue;
 		}
 		else
 		{
-			iWPTValue = (int)((pBotExperienceData + (pBot->chosengoal_index * g_iNumWaypoints) + pBot->prev_goal_index)->wTeam1Value - (pBot->pEdict->v.health * 0.05));
+			iWPTValue = (int)((pBotExperienceData + pBot->chosengoal_index * g_iNumWaypoints + pBot->prev_goal_index)->wTeam1Value - pBot->pEdict->v.health * 0.05);
 			if (iWPTValue < -MAX_GOAL_VAL)
 				iWPTValue = -MAX_GOAL_VAL;
 			else if (iWPTValue > MAX_GOAL_VAL)
 				iWPTValue = MAX_GOAL_VAL;
-			(pBotExperienceData + (pBot->chosengoal_index * g_iNumWaypoints) + pBot->prev_goal_index)->wTeam1Value = (signed short)iWPTValue;
+			(pBotExperienceData + pBot->chosengoal_index * g_iNumWaypoints + pBot->prev_goal_index)->wTeam1Value = (signed short)iWPTValue;
 		}
 	}
 }
@@ -3169,7 +3169,7 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 	int iVictimTeam = UTIL_GetTeam(pVictimEdict);
 	int iAttackerTeam = UTIL_GetTeam(pAttackerEdict);
 
-	if ((iVictimTeam == iAttackerTeam) && !g_b_cv_ffa) // KWo - 25.01.2010
+	if (iVictimTeam == iAttackerTeam && !g_b_cv_ffa) // KWo - 25.01.2010
 		return;
 
 	float distance;
@@ -3193,8 +3193,8 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 	if (pBot != NULL)
 	{
 		pBot->f_goal_value -= (float)iDamage;
-		if ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints)
-			&& (pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints)) // KWo - 26.01.2010
+		if (pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints
+			&& pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints) // KWo - 26.01.2010
 		{
 			VictimIndex = pBot->curr_wpt_index;
 			min_distance_victim = (paths[pBot->curr_wpt_index]->origin - pVictimEdict->v.origin).Length();
@@ -3216,8 +3216,8 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 	if (pBot != NULL)
 	{
 		pBot->f_goal_value += (float)iDamage;
-		if ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints)
-			&& (pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))  // KWo - 26.01.2010
+		if (pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints
+			&& pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)  // KWo - 26.01.2010
 		{
 			AttackerIndex = pBot->curr_wpt_index;
 			min_distance_attacker = (paths[pBot->curr_wpt_index]->origin - pVictimEdict->v.origin).Length();
@@ -3235,7 +3235,7 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 		}
 	}
 
-	if ((VictimIndex == 0) && (AttackerIndex == 0)) // KWo - 26.01.2010
+	if (VictimIndex == 0 && AttackerIndex == 0) // KWo - 26.01.2010
 	{
 		// Find Nearest Waypoint to Attacker/Victim
 		for (i = 0; i < g_iNumWaypoints; i++)
@@ -3289,7 +3289,7 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 		short int path_index;
 		if (iVictimTeam == TEAM_CS_TERRORIST)
 		{
-			iValue = (pBotExperienceData + (VictimIndex * g_iNumWaypoints) + VictimIndex)->uTeam0Damage;
+			iValue = (pBotExperienceData + VictimIndex * g_iNumWaypoints + VictimIndex)->uTeam0Damage;
 			iValue += (int)((float)iDamage * 1.0f); // KWo 09.04.2006
 			if (iValue > MAX_DAMAGE_VAL)
 			{
@@ -3305,14 +3305,14 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 				g_iHighestDamageWpT = VictimIndex; // KWo - 05.01.2008
 			}
 
-			(pBotExperienceData + (VictimIndex * g_iNumWaypoints) + VictimIndex)->uTeam0Damage = (unsigned short)iValue;
+			(pBotExperienceData + VictimIndex * g_iNumWaypoints + VictimIndex)->uTeam0Damage = (unsigned short)iValue;
 			p = paths[VictimIndex];
 			for (i = 0; i < MAX_PATH_INDEX; i++)
 			{
-				if ((p->index[i] > -1) && (p->index[i] < MAX_WAYPOINTS))
+				if (p->index[i] > -1 && p->index[i] < MAX_WAYPOINTS)
 				{
 					path_index = p->index[i];
-					iValue = (pBotExperienceData + (path_index * g_iNumWaypoints) + path_index)->uTeam0Damage;
+					iValue = (pBotExperienceData + path_index * g_iNumWaypoints + path_index)->uTeam0Damage;
 					iValue += (int)((float)iDamage * 0.1); // KWo - 09.04.2006
 					if (iValue > MAX_DAMAGE_VAL)
 					{
@@ -3328,13 +3328,13 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 						g_iHighestDamageWpT = path_index; // KWo - 05.01.2008
 					}
 
-					(pBotExperienceData + (path_index * g_iNumWaypoints) + path_index)->uTeam0Damage = (unsigned short)iValue;
+					(pBotExperienceData + path_index * g_iNumWaypoints + path_index)->uTeam0Damage = (unsigned short)iValue;
 				}
 			}
 		}
 		else
 		{
-			iValue = (pBotExperienceData + (VictimIndex * g_iNumWaypoints) + VictimIndex)->uTeam1Damage;
+			iValue = (pBotExperienceData + VictimIndex * g_iNumWaypoints + VictimIndex)->uTeam1Damage;
 			iValue += (int)((float)iDamage * 1.0f); // KWo - 09.04.2006
 			if (iValue > MAX_DAMAGE_VAL)
 			{
@@ -3350,14 +3350,14 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 				g_iHighestDamageWpCT = VictimIndex; // KWo - 05.01.2008
 			}
 
-			(pBotExperienceData + (VictimIndex * g_iNumWaypoints) + VictimIndex)->uTeam1Damage = (unsigned short)iValue;
+			(pBotExperienceData + VictimIndex * g_iNumWaypoints + VictimIndex)->uTeam1Damage = (unsigned short)iValue;
 			p = paths[VictimIndex];
 			for (i = 0; i < MAX_PATH_INDEX; i++)
 			{
-				if ((p->index[i] > -1) && (p->index[i] < MAX_WAYPOINTS))
+				if (p->index[i] > -1 && p->index[i] < MAX_WAYPOINTS)
 				{
 					path_index = p->index[i];
-					iValue = (pBotExperienceData + (path_index * g_iNumWaypoints) + path_index)->uTeam1Damage;
+					iValue = (pBotExperienceData + path_index * g_iNumWaypoints + path_index)->uTeam1Damage;
 					iValue += (int)((float)iDamage * 0.1f);  // KWo - 09.04.2006
 					if (iValue > MAX_DAMAGE_VAL)
 					{
@@ -3373,7 +3373,7 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 						g_iHighestDamageWpCT = path_index; // KWo - 05.01.2008
 					}
 
-					(pBotExperienceData + (path_index * g_iNumWaypoints) + path_index)->uTeam1Damage = (unsigned short)iValue;
+					(pBotExperienceData + path_index * g_iNumWaypoints + path_index)->uTeam1Damage = (unsigned short)iValue;
 				}
 			}
 		}
@@ -3386,10 +3386,10 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 	if (iVictimTeam == TEAM_CS_TERRORIST)
 	{
 		iDangerIndexT = (pBotExperienceData + VictimIndex * g_iNumWaypoints + VictimIndex)->iTeam0_danger_index; // KWo - 25.01.2010
-		if ((iDangerIndexT > -1) && (iDangerIndexT < g_iNumWaypoints))
-			iDamageDITeamT = (pBotExperienceData + (VictimIndex * g_iNumWaypoints) + iDangerIndexT)->uTeam0Damage;   // KWo - 25.01.2010
+		if (iDangerIndexT > -1 && iDangerIndexT < g_iNumWaypoints)
+			iDamageDITeamT = (pBotExperienceData + VictimIndex * g_iNumWaypoints + iDangerIndexT)->uTeam0Damage;   // KWo - 25.01.2010
 
-		iValue = (pBotExperienceData + (VictimIndex * g_iNumWaypoints) + AttackerIndex)->uTeam0Damage; // KWo - 25.01.2010
+		iValue = (pBotExperienceData + VictimIndex * g_iNumWaypoints + AttackerIndex)->uTeam0Damage; // KWo - 25.01.2010
 		iValue += (int)((float)iDamage * 1.0f);	// KWo - to remove warning
 
 		if (iValue >= iDamageDITeamT) // KWo - 25.01.2010
@@ -3398,8 +3398,8 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 			iDamageDITeamT = iValue;
 			if (iDamageDITeamT > MAX_DAMAGE_VAL)
 				iDamageDITeamT = MAX_DAMAGE_VAL;
-			(pBotExperienceData + (VictimIndex * g_iNumWaypoints) + iDangerIndexT)->uTeam0Damage = (unsigned short)iDamageDITeamT;
-			(pBotExperienceData + (VictimIndex * g_iNumWaypoints) + VictimIndex)->iTeam0_danger_index = iDangerIndexT;
+			(pBotExperienceData + VictimIndex * g_iNumWaypoints + iDangerIndexT)->uTeam0Damage = (unsigned short)iDamageDITeamT;
+			(pBotExperienceData + VictimIndex * g_iNumWaypoints + VictimIndex)->iTeam0_danger_index = iDangerIndexT;
 		}
 
 		if (iValue > MAX_DAMAGE_VAL)
@@ -3410,15 +3410,15 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 				g_iUpdGlExpState = 1;
 		}
 
-		(pBotExperienceData + (VictimIndex * g_iNumWaypoints) + AttackerIndex)->uTeam0Damage = (unsigned short)iValue;
+		(pBotExperienceData + VictimIndex * g_iNumWaypoints + AttackerIndex)->uTeam0Damage = (unsigned short)iValue;
 	}
 	else
 	{
 		iDangerIndexCT = (pBotExperienceData + VictimIndex * g_iNumWaypoints + VictimIndex)->iTeam1_danger_index;   // KWo - 25.01.2010
-		if ((iDangerIndexCT > -1) && (iDangerIndexCT < g_iNumWaypoints))  // KWo - 25.01.2010
-			iDamageDITeamCT = (pBotExperienceData + (VictimIndex * g_iNumWaypoints) + iDangerIndexCT)->uTeam1Damage;
+		if (iDangerIndexCT > -1 && iDangerIndexCT < g_iNumWaypoints)  // KWo - 25.01.2010
+			iDamageDITeamCT = (pBotExperienceData + VictimIndex * g_iNumWaypoints + iDangerIndexCT)->uTeam1Damage;
 
-		iValue = (pBotExperienceData + (VictimIndex * g_iNumWaypoints) + AttackerIndex)->uTeam1Damage;
+		iValue = (pBotExperienceData + VictimIndex * g_iNumWaypoints + AttackerIndex)->uTeam1Damage;
 		iValue += (int)((float)iDamage * 1.0f);	// KWo - to remove warning
 
 		if (iValue >= iDamageDITeamCT)   // KWo - 25.01.2010
@@ -3427,8 +3427,8 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 			iDamageDITeamCT = iValue;
 			if (iDamageDITeamCT > MAX_DAMAGE_VAL)
 				iDamageDITeamCT = MAX_DAMAGE_VAL;
-			(pBotExperienceData + (VictimIndex * g_iNumWaypoints) + iDangerIndexCT)->uTeam1Damage = (unsigned short)iDamageDITeamCT;
-			(pBotExperienceData + (VictimIndex * g_iNumWaypoints) + VictimIndex)->iTeam1_danger_index = iDangerIndexCT;
+			(pBotExperienceData + VictimIndex * g_iNumWaypoints + iDangerIndexCT)->uTeam1Damage = (unsigned short)iDamageDITeamCT;
+			(pBotExperienceData + VictimIndex * g_iNumWaypoints + VictimIndex)->iTeam1_danger_index = iDangerIndexCT;
 		}
 
 		if (iValue > MAX_DAMAGE_VAL)
@@ -3439,7 +3439,7 @@ void BotCollectExperienceData(edict_t* pVictimEdict, edict_t* pAttackerEdict, in
 				g_iUpdGlExpState = 1;
 		}
 
-		(pBotExperienceData + (VictimIndex * g_iNumWaypoints) + AttackerIndex)->uTeam1Damage = (unsigned short)iValue;
+		(pBotExperienceData + VictimIndex * g_iNumWaypoints + AttackerIndex)->uTeam1Damage = (unsigned short)iValue;
 	}
 
 	return;
@@ -3497,16 +3497,16 @@ bool BotDoWaypointNav(bot_t* pBot)
 
 	pEdict = pBot->pEdict;
 	iAmountLooped = 0;
-	bPreviousWP_OK = ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints));
+	bPreviousWP_OK = pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints;
 	if (pBot->curr_wpt_index == -1)
 		GetValidWaypoint(pBot); // check if we need to find a waypoint...
 
-	if (((pBot->f_timeHitDoor < gpGlobals->time)
-		|| ((pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_GOBACK)
-			&& (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFELEFT)
-			&& (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFERIGHT))
-		|| (pBot->f_probe_time + 0.1 < gpGlobals->time))
-		&& (pBot->f_timeDoorOpen <= gpGlobals->time) && (pBot->fButtonPushTime - 1.95 <= gpGlobals->time)) // KWo - 30.12.2009
+	if ((pBot->f_timeHitDoor < gpGlobals->time
+		|| pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_GOBACK
+		&& pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFELEFT
+		&& pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFERIGHT
+		|| pBot->f_probe_time + 0.1 < gpGlobals->time)
+		&& pBot->f_timeDoorOpen <= gpGlobals->time && pBot->fButtonPushTime - 1.95 <= gpGlobals->time) // KWo - 30.12.2009
 	{
 		pBot->dest_origin = pBot->wpt_origin;
 
@@ -3515,7 +3515,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 			ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s sets the dest origin as WP origin.\n", pBot->name);
 		}
 	}
-	else if (bPreviousWP_OK && (pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_GOBACK)) // KWo - 14.08.2006
+	else if (bPreviousWP_OK && pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_GOBACK) // KWo - 14.08.2006
 		pBot->dest_origin = paths[pBot->prev_wpt_index[0]]->origin;
 
 	wpt_distance = (pEdict->v.origin - pBot->wpt_origin).Length();
@@ -3528,24 +3528,24 @@ bool BotDoWaypointNav(bot_t* pBot)
 
 	// Initialize the radius for a special waypoint type, where the wpt
 	// is considered to be reached
-	if ((!(paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) && (pEdict->v.flags & FL_DUCKING))
-		|| (paths[pBot->curr_wpt_index]->flags & W_FL_GOAL)) // KWo - 15.02.2008
+	if (!(paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) && pEdict->v.flags & FL_DUCKING
+		|| paths[pBot->curr_wpt_index]->flags & W_FL_GOAL) // KWo - 15.02.2008
 		fDesiredDistance = 25.0f;
 	else if (pBot->bOnLadder)
 		fDesiredDistance = 15.0f;
 	else if (paths[pBot->curr_wpt_index]->flags & W_FL_USE_BUTTON) // KWo - 09.07.2006
 	{
-		if (!(pBot->bNewButtonNoticed)) // KWo - 14.07.2006
+		if (!pBot->bNewButtonNoticed) // KWo - 14.07.2006
 			pBot->fButtonNoticedTime = gpGlobals->time;
 		fOwnLightLevel = UTIL_IlluminationOf(pEdict); // KWo - 29.03.2008
-		iButtonPushProp = ((fOwnLightLevel < 10.0f) ? 10 : 40);
-		if ((RANDOM_LONG(0, 100) > iButtonPushProp) && !(pBot->bNewButtonNoticed)) // KWo - 29.03.2008
+		iButtonPushProp = fOwnLightLevel < 10.0f ? 10 : 40;
+		if (RANDOM_LONG(0, 100) > iButtonPushProp && !pBot->bNewButtonNoticed) // KWo - 29.03.2008
 		{
 			pBot->bButtonPushDecided = true;
 		}
 		pBot->bNewButtonNoticed = true;
 
-		if ((pBot->bButtonPushDecided) && (pBot->fButtonPushTime < gpGlobals->time))
+		if (pBot->bButtonPushDecided && pBot->fButtonPushTime < gpGlobals->time)
 			fDesiredDistance = 0.0f;
 		else
 			fDesiredDistance = 64.0f;
@@ -3564,11 +3564,11 @@ bool BotDoWaypointNav(bot_t* pBot)
 
 	cCollStateIndex = pBot->cCollideMoves[(int)pBot->cCollStateIndex];   // KWo - 09.01.2008
 	if (!(paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) && pBot->bBotNeedsObviateObstacle
-		&& (pBot->cCollisionState == COLLISION_PROBING)                         // KWo - 14.02.2008
-		&& ((cCollStateIndex == COLLISION_STRAFELEFT)
-			|| (cCollStateIndex == COLLISION_STRAFERIGHT)
-			|| (cCollStateIndex == COLLISION_JUMP))
-		&& (fDesiredDistance < 64.0f))
+		&& pBot->cCollisionState == COLLISION_PROBING                         // KWo - 14.02.2008
+		&& (cCollStateIndex == COLLISION_STRAFELEFT
+			|| cCollStateIndex == COLLISION_STRAFERIGHT
+			|| cCollStateIndex == COLLISION_JUMP)
+		&& fDesiredDistance < 64.0f)
 		fDesiredDistance = 64.0f;
 
 	// This waypoint has additional Travel Flags - care about them
@@ -3582,7 +3582,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 			// If Bot's on ground or on ladder we're free to jump.
 			// Yes, I'm cheating here by setting the correct velocity for the jump. Pressing
 			// the jump button gives the illusion of the Bot actual jumping
-			if ((pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND)) || pBot->bOnLadder)
+			if (pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND) || pBot->bOnLadder)
 			{
 				pEdict->v.velocity = pBot->vecDesiredVelocity;
 				pEdict->v.button |= IN_JUMP;
@@ -3597,8 +3597,8 @@ bool BotDoWaypointNav(bot_t* pBot)
 		else
 		{
 			// if bot was doing a knife-jump, switch back to normal weapon
-			if (!(g_b_cv_jasonmode) && (pBot->current_weapon.iId == CS_WEAPON_KNIFE)  // KWo - 06.04.2006
-				&& (pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND)))
+			if (!g_b_cv_jasonmode && pBot->current_weapon.iId == CS_WEAPON_KNIFE  // KWo - 06.04.2006
+				&& pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND))
 				BotSelectBestWeapon(pBot);
 		}
 	}
@@ -3611,14 +3611,14 @@ bool BotDoWaypointNav(bot_t* pBot)
 		{
 			if (pBot->pWaypointNodes->NextNode != NULL)
 			{
-				if ((paths[pBot->pWaypointNodes->NextNode->iIndex]->flags & W_FL_LADDER) || pBot->bOnLadder)
+				if (paths[pBot->pWaypointNodes->NextNode->iIndex]->flags & W_FL_LADDER || pBot->bOnLadder)
 					fDesiredDistance = 17.0f;
 			}
 		}
 
 		if (bPreviousWP_OK)  // KWo - 14.04.2016
 			if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER)
-				&& (fabs(pBot->wpt_origin.z - pEdict->v.origin.z) > 5.0f))
+				&& fabs(pBot->wpt_origin.z - pEdict->v.origin.z) > 5.0f)
 				pBot->wpt_origin.z += pEdict->v.origin.z - pBot->wpt_origin.z;
 		/*
 				 if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER)
@@ -3636,8 +3636,8 @@ bool BotDoWaypointNav(bot_t* pBot)
 			if (!(clients[i].iFlags & CLIENT_USED)
 				|| !(clients[i].iFlags & CLIENT_ALIVE)
 				/*             || (clients[i].pEdict->v.movetype != MOVETYPE_FLY) */
-				|| (clients[i].pEdict == NULL)
-				|| (clients[i].pEdict == pEdict))
+				|| clients[i].pEdict == NULL
+				|| clients[i].pEdict == pEdict)
 				continue;
 
 			vBotOrigin = pEdict->v.origin;
@@ -3650,7 +3650,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 
 			if ((vPlayerOrigin - vWptLadder).Length() < 40.0f) // more than likely someone is already using our ladder...
 			{
-				if (((clients[i].iTeam != pBot->bot_team) || (g_b_cv_ffa)) && (!g_bIgnoreEnemies)) // KWo - 16.12.2007
+				if ((clients[i].iTeam != pBot->bot_team || g_b_cv_ffa) && !g_bIgnoreEnemies) // KWo - 16.12.2007
 				{
 					vecOrg = GetGunPosition(pEdict);
 					TRACE_LINE(vecOrg, clients[i].pEdict->v.origin, dont_ignore_monsters, pEdict, &tr);
@@ -3673,32 +3673,32 @@ bool BotDoWaypointNav(bot_t* pBot)
 					//                  vecOrg = paths[pBot->prev_wpt_index[0]]->origin;
 					//               else
 					vecOrg = GetGunPosition(pEdict);
-					TRACE_HULL(vecOrg, paths[pBot->curr_wpt_index]->origin, dont_ignore_monsters, (pEdict->v.flags & FL_DUCKING) ? head_hull : human_hull, pEdict, &tr);
-					if ((tr.pHit == clients[i].pEdict) && (fabs(pEdict->v.origin.z - clients[i].pEdict->v.origin.z) > 15.0f)  // someone is above or below us
+					TRACE_HULL(vecOrg, paths[pBot->curr_wpt_index]->origin, dont_ignore_monsters, pEdict->v.flags & FL_DUCKING ? head_hull : human_hull, pEdict, &tr);
+					if (tr.pHit == clients[i].pEdict && fabs(pEdict->v.origin.z - clients[i].pEdict->v.origin.z) > 15.0f  // someone is above or below us
 						/* && (clients[i].pEdict->v.movetype == MOVETYPE_FLY) */)    // and is using the ladder already  KWo - 05.01.2008
 					{
-						if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+						if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 						{
 							if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER))
 							{
 								bFoundGround = true;
 								iPreviousWpt = pBot->prev_wpt_index[0]; // KWo - 05.01.2008
 							}
-							else if ((pBot->prev_wpt_index[1] >= 0) && (pBot->prev_wpt_index[1] < g_iNumWaypoints))
+							else if (pBot->prev_wpt_index[1] >= 0 && pBot->prev_wpt_index[1] < g_iNumWaypoints)
 							{
 								if (!(paths[pBot->prev_wpt_index[1]]->flags & W_FL_LADDER))
 								{
 									bFoundGround = true;
 									iPreviousWpt = pBot->prev_wpt_index[1]; // KWo - 05.01.2008
 								}
-								else if ((pBot->prev_wpt_index[2] >= 0) && (pBot->prev_wpt_index[2] < g_iNumWaypoints))
+								else if (pBot->prev_wpt_index[2] >= 0 && pBot->prev_wpt_index[2] < g_iNumWaypoints)
 								{
 									if (!(paths[pBot->prev_wpt_index[2]]->flags & W_FL_LADDER))
 									{
 										bFoundGround = true;
 										iPreviousWpt = pBot->prev_wpt_index[2]; // KWo - 05.01.2008
 									}
-									else if ((pBot->prev_wpt_index[3] >= 0) && (pBot->prev_wpt_index[3] < g_iNumWaypoints))
+									else if (pBot->prev_wpt_index[3] >= 0 && pBot->prev_wpt_index[3] < g_iNumWaypoints)
 									{
 										if (!(paths[pBot->prev_wpt_index[3]]->flags & W_FL_LADDER))
 										{
@@ -3711,7 +3711,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 						}
 						if (bFoundGround) // KWo - 05.01.2008
 						{
-							if ((BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION) || (BotGetSafeTask(pBot)->fDesire != TASKPRI_PLANTBOMB))
+							if (BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION || BotGetSafeTask(pBot)->fDesire != TASKPRI_PLANTBOMB)
 							{
 								if (g_b_DebugNavig)
 									ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s forced to go away from the ladder - WPTindex = %i, out index = %i...\n",
@@ -3742,9 +3742,9 @@ bool BotDoWaypointNav(bot_t* pBot)
 
 		TRACE_LINE(pEdict->v.origin, paths[pBot->curr_wpt_index]->origin, ignore_monsters, pEdict, &tr2); // KWo - 14.10.2006
 
-		if ((tr2.flFraction < 1.0f) && (FStrEq(STRING(tr2.pHit->v.classname), "func_door")) // KWo - 18.11.2006
-			&& ((pBot->iLiftUsageState == LIFT_NO_NEARBY) || (pBot->iLiftUsageState == LIFT_WAITING_FOR) || (pBot->iLiftUsageState == LIFT_LOOKING_BUTTON_OUTSIDE))
-			&& (pEdict->v.groundentity != tr2.pHit))
+		if (tr2.flFraction < 1.0f && FStrEq(STRING(tr2.pHit->v.classname), "func_door") // KWo - 18.11.2006
+			&& (pBot->iLiftUsageState == LIFT_NO_NEARBY || pBot->iLiftUsageState == LIFT_WAITING_FOR || pBot->iLiftUsageState == LIFT_LOOKING_BUTTON_OUTSIDE)
+			&& pEdict->v.groundentity != tr2.pHit)
 		{
 			if (pBot->iLiftUsageState == LIFT_NO_NEARBY)
 			{
@@ -3759,12 +3759,12 @@ bool BotDoWaypointNav(bot_t* pBot)
 			ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is near WP with lift flag - WP index %i, state = %i.\n",
 				pBot->name, pBot->curr_wpt_index, pBot->iLiftUsageState);
 
-		if ((tr.flFraction < 1.0f) && (EntHitIndex > 32) && (pBot->pWaypointNodes != NULL)
-			&& ((FStrEq(szClassname, "func_door")) || (FStrEq(szClassname, "func_plat"))
-				|| (FStrEq(szClassname, "func_train"))) && !bLiftExistDoorClosed) // KWo - 14.10.2006
+		if (tr.flFraction < 1.0f && EntHitIndex > 32 && pBot->pWaypointNodes != NULL
+			&& (FStrEq(szClassname, "func_door") || FStrEq(szClassname, "func_plat")
+				|| FStrEq(szClassname, "func_train")) && !bLiftExistDoorClosed) // KWo - 14.10.2006
 		{
-			if (((pBot->iLiftUsageState == LIFT_NO_NEARBY) || (pBot->iLiftUsageState == LIFT_WAITING_FOR)
-				|| (pBot->iLiftUsageState == LIFT_LOOKING_BUTTON_OUTSIDE)) && (tr.pHit->v.velocity.z == 0))
+			if ((pBot->iLiftUsageState == LIFT_NO_NEARBY || pBot->iLiftUsageState == LIFT_WAITING_FOR
+				|| pBot->iLiftUsageState == LIFT_LOOKING_BUTTON_OUTSIDE) && tr.pHit->v.velocity.z == 0)
 			{
 				if (fabs(pEdict->v.origin.z - tr.vecEndPos.z) < 70.0f)
 				{
@@ -3789,20 +3789,20 @@ bool BotDoWaypointNav(bot_t* pBot)
 		// No lift found at waypoint
 		else if (pBot->pWaypointNodes != NULL)
 		{
-			if (((pBot->iLiftUsageState == LIFT_NO_NEARBY)
-				|| (pBot->iLiftUsageState == LIFT_WAITING_FOR)) && (pBot->pWaypointNodes->NextNode != NULL))
+			if ((pBot->iLiftUsageState == LIFT_NO_NEARBY
+				|| pBot->iLiftUsageState == LIFT_WAITING_FOR) && pBot->pWaypointNodes->NextNode != NULL)
 			{
 				iTempIndex = pBot->pWaypointNodes->NextNode->iIndex;
-				if ((iTempIndex >= 0) && (iTempIndex < g_iNumWaypoints))
+				if (iTempIndex >= 0 && iTempIndex < g_iNumWaypoints)
 				{
 					if (paths[iTempIndex]->flags & W_FL_LIFT)
 					{
 						TRACE_LINE(paths[pBot->curr_wpt_index]->origin, paths[iTempIndex]->origin, ignore_monsters, pEdict, &tr);
 						const char* szClassname1 = STRING(tr.pHit->v.classname); // KWo - 14.08.2007
 						EntHitIndex = ENTINDEX(tr.pHit);
-						if (!FNullEnt(tr.pHit) && (EntHitIndex > 32) && (tr.flFraction < 1.0f)
-							&& ((FStrEq(szClassname1, "func_door")) || (FStrEq(szClassname1, "func_plat"))
-								|| (FStrEq(szClassname1, "func_train")))) // KWo - 14.10.2006
+						if (!FNullEnt(tr.pHit) && EntHitIndex > 32 && tr.flFraction < 1.0f
+							&& (FStrEq(szClassname1, "func_door") || FStrEq(szClassname1, "func_plat")
+								|| FStrEq(szClassname1, "func_train"))) // KWo - 14.10.2006
 						{
 							pBot->pLift = tr.pHit;
 						}
@@ -3824,12 +3824,12 @@ bool BotDoWaypointNav(bot_t* pBot)
 				// if some bot is following a bot going into lift - he should take the same lift to go
 				for (i = 0; i < gpGlobals->maxClients; i++)
 				{
-					if (bots[i].bDead || (bots[i].bot_team != pBot->bot_team) || !(bots[i].is_used)
-						|| (bots[i].pEdict == pEdict)
-						|| (bots[i].pBotUser != pEdict) || (bots[i].pTasks->iTask != TASK_FOLLOWUSER)
+					if (bots[i].bDead || bots[i].bot_team != pBot->bot_team || !bots[i].is_used
+						|| bots[i].pEdict == pEdict
+						|| bots[i].pBotUser != pEdict || bots[i].pTasks->iTask != TASK_FOLLOWUSER
 						//                  && ((bots[i].pLift != pBot->pLift)
-						|| ((bots[i].pEdict->v.groundentity == pBot->pLift)
-							&& (bots[i].pEdict->v.flags & FL_ONGROUND)))
+						|| bots[i].pEdict->v.groundentity == pBot->pLift
+						&& bots[i].pEdict->v.flags & FL_ONGROUND)
 					{
 						continue;
 					}
@@ -3859,11 +3859,11 @@ bool BotDoWaypointNav(bot_t* pBot)
 			bNeedWait = false;
 			for (i = 0; i < gpGlobals->maxClients; i++)
 			{
-				if (bots[i].bDead || (bots[i].bot_team != pBot->bot_team) || !(bots[i].is_used)
-					|| (bots[i].pBotUser != pEdict) || (bots[i].pTasks->iTask != TASK_FOLLOWUSER)
-					|| (bots[i].pLift != pBot->pLift))
+				if (bots[i].bDead || bots[i].bot_team != pBot->bot_team || !bots[i].is_used
+					|| bots[i].pBotUser != pEdict || bots[i].pTasks->iTask != TASK_FOLLOWUSER
+					|| bots[i].pLift != pBot->pLift)
 					continue;
-				if ((bots[i].pEdict->v.groundentity != pBot->pLift) || !(bots[i].pEdict->v.flags & FL_ONGROUND))
+				if (bots[i].pEdict->v.groundentity != pBot->pLift || !(bots[i].pEdict->v.flags & FL_ONGROUND))
 				{
 					bNeedWait = true;
 					break;
@@ -3883,7 +3883,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 				}
 			}
 
-			if ((!bNeedWait) || (pBot->f_UsageLiftTime < gpGlobals->time))
+			if (!bNeedWait || pBot->f_UsageLiftTime < gpGlobals->time)
 			{
 				pBot->iLiftUsageState = LIFT_LOOKING_BUTTON_INSIDE;
 				pBot->f_UsageLiftTime = gpGlobals->time + 10.0f;
@@ -3903,8 +3903,8 @@ bool BotDoWaypointNav(bot_t* pBot)
 				f_button_distance = (v_button_origin - pEdict->v.origin).Length();
 				if (f_button_distance < f_button_min_distance)
 				{
-					if ((fabs(pEdict->v.origin.z - v_button_origin.z) < 30.0f)
-						&& (FStrEq(STRING(pBot->pLift->v.targetname), ButtonsData[i].target)))
+					if (fabs(pEdict->v.origin.z - v_button_origin.z) < 30.0f
+						&& FStrEq(STRING(pBot->pLift->v.targetname), ButtonsData[i].target))
 					{
 						cNearestButtonIndex = i;
 						f_button_min_distance = f_button_distance;
@@ -3941,7 +3941,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 
 				TRACE_LINE(pEdict->v.origin, v_button_origin, ignore_monsters, pEdict, &tr);
 				EntHitIndex = ENTINDEX(tr.pHit);
-				if ((tr.flFraction > 0.95f) || (EntHitIndex == ButtonsData[cNearestButtonIndex].EntIndex))
+				if (tr.flFraction > 0.95f || EntHitIndex == ButtonsData[cNearestButtonIndex].EntIndex)
 					fDistance = 30.0f;
 				if (pBot->fButtonPushTime < gpGlobals->time) // KWo - 09.02.2008
 					pBot->iAimFlags = AIM_ENTITY; // look at button and only at it (so bot can trigger it)
@@ -3954,9 +3954,9 @@ bool BotDoWaypointNav(bot_t* pBot)
 				if (g_b_DebugNavig)
 					ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s found a lift button inside the lift and is trying to reach it.\n", pBot->name);
 
-				if (((v_button_origin - pEdict->v.origin).Length() < fDistance) && (pEdict->v.groundentity == pBot->pLift)
-					&& (pBot->fButtonPushTime + 1.0f < gpGlobals->time)
-					&& (pBot->pLift->v.velocity.z == 0) && (pEdict->v.flags & FL_ONGROUND) && (flDot >= 0.90f))
+				if ((v_button_origin - pEdict->v.origin).Length() < fDistance && pEdict->v.groundentity == pBot->pLift
+					&& pBot->fButtonPushTime + 1.0f < gpGlobals->time
+					&& pBot->pLift->v.velocity.z == 0 && pEdict->v.flags & FL_ONGROUND && flDot >= 0.90f)
 				{
 					pEdict->v.button |= IN_USE;
 					pBot->fButtonPushTime = gpGlobals->time + 3.0f;
@@ -3970,19 +3970,19 @@ bool BotDoWaypointNav(bot_t* pBot)
 					BotPushTask(pBot, &TempTask);
 				}
 
-				else if ((g_b_DebugNavig) && (pBot->fButtonPushTime + 1.0f < gpGlobals->time))
+				else if (g_b_DebugNavig && pBot->fButtonPushTime + 1.0f < gpGlobals->time)
 				{
 					ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s can't reach the lift button from inside - distance %f.\n", pBot->name, (v_button_origin - pEdict->v.origin).Length());
 				}
 			}
 		}
 		// is lift activated AND bot is standing on it AND lift is moving ?
-		if ((pBot->iLiftUsageState == LIFT_LOOKING_BUTTON_INSIDE) || (pBot->iLiftUsageState == LIFT_GO_IN)
-			|| (pBot->iLiftUsageState == LIFT_WAITING_FOR_TEAMNATES) || (pBot->iLiftUsageState == LIFT_WAITING_FOR))
+		if (pBot->iLiftUsageState == LIFT_LOOKING_BUTTON_INSIDE || pBot->iLiftUsageState == LIFT_GO_IN
+			|| pBot->iLiftUsageState == LIFT_WAITING_FOR_TEAMNATES || pBot->iLiftUsageState == LIFT_WAITING_FOR)
 		{
-			if ((pEdict->v.groundentity == pBot->pLift)
-				&& (pBot->pLift->v.velocity.z != 0) && (pEdict->v.flags & FL_ONGROUND)
-				&& ((paths[pBot->prev_wpt_index[0]]->flags & W_FL_LIFT) || !FNullEnt(pBot->pBotUser)))
+			if (pEdict->v.groundentity == pBot->pLift
+				&& pBot->pLift->v.velocity.z != 0 && pEdict->v.flags & FL_ONGROUND
+				&& (paths[pBot->prev_wpt_index[0]]->flags & W_FL_LIFT || !FNullEnt(pBot->pBotUser)))
 			{
 				pBot->iLiftUsageState = LIFT_TRAVELING_BY;
 				pBot->f_UsageLiftTime = gpGlobals->time + 14.0f;
@@ -4019,7 +4019,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 			// button has been pressed, lift should come
 			if (pBot->fButtonPushTime + 8.0f >= gpGlobals->time)
 			{
-				if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+				if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 					pBot->dest_origin = paths[pBot->prev_wpt_index[0]]->origin;
 				else
 					pBot->dest_origin = pEdict->v.origin;
@@ -4038,12 +4038,12 @@ bool BotDoWaypointNav(bot_t* pBot)
 				{
 					v_button_origin = ButtonsData[i].origin;
 					f_button_distance = (v_button_origin - pEdict->v.origin).Length();
-					if ((f_button_distance < f_button_min_distance)
-						&& (fabs(pEdict->v.origin.z - v_button_origin.z) < 30.0f))
+					if (f_button_distance < f_button_min_distance
+						&& fabs(pEdict->v.origin.z - v_button_origin.z) < 30.0f)
 					{
 						TRACE_LINE(pEdict->v.origin, v_button_origin, ignore_monsters, pEdict, &tr);
 						EntHitIndex = ENTINDEX(tr.pHit);  // KWo - 10.02.2006
-						if ((EntHitIndex == ButtonsData[i].EntIndex) || (tr.flFraction > 0.95))
+						if (EntHitIndex == ButtonsData[i].EntIndex || tr.flFraction > 0.95)
 						{
 							if (!FNullEnt(pBot->pLift) && !bLiftExistDoorClosed) // KWo - 18.11.2006
 							{
@@ -4069,12 +4069,12 @@ bool BotDoWaypointNav(bot_t* pBot)
 					{
 						v_button_origin = ButtonsData[i].origin;
 						f_button_distance = (v_button_origin - pEdict->v.origin).Length();
-						if ((f_button_distance < f_button_min_distance)
-							&& (fabs(pEdict->v.origin.z - v_button_origin.z) < 30.0f))
+						if (f_button_distance < f_button_min_distance
+							&& fabs(pEdict->v.origin.z - v_button_origin.z) < 30.0f)
 						{
 							TRACE_LINE(pEdict->v.origin, v_button_origin, ignore_monsters, pEdict, &tr);
 							EntHitIndex = ENTINDEX(tr.pHit);  // KWo - 10.02.2006
-							if ((EntHitIndex == ButtonsData[i].EntIndex) || (tr.flFraction > 0.95f))
+							if (EntHitIndex == ButtonsData[i].EntIndex || tr.flFraction > 0.95f)
 							{
 								cNearestButtonIndex = i;
 								f_button_min_distance = f_button_distance;
@@ -4093,8 +4093,8 @@ bool BotDoWaypointNav(bot_t* pBot)
 					{
 						if (!(clients[i].iFlags & CLIENT_USED)
 							|| !(clients[i].iFlags & CLIENT_ALIVE)
-							|| (clients[i].iTeam != pBot->bot_team)
-							|| (clients[i].pEdict == pEdict)
+							|| clients[i].iTeam != pBot->bot_team
+							|| clients[i].pEdict == pEdict
 							|| FNullEnt(clients[i].pEdict->v.groundentity)
 							|| bLiftExistDoorClosed) // KWo - 18.11.2006
 							continue;
@@ -4112,7 +4112,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 					}
 					if (bLiftUsed)
 					{
-						if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+						if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 							pBot->dest_origin = paths[pBot->prev_wpt_index[0]]->origin;
 						else
 							pBot->dest_origin = ButtonsData[cNearestButtonIndex].origin;
@@ -4135,7 +4135,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 						pBot->vecEntity = v_button_origin;
 						pBot->bCheckTerrain = FALSE;
 						pBot->bCanChooseAimDirection = FALSE;
-						if (((v_button_origin - pEdict->v.origin).Length() < 60.0f) && (flDot >= 0.90f))
+						if ((v_button_origin - pEdict->v.origin).Length() < 60.0f && flDot >= 0.90f)
 						{
 							pEdict->v.button |= IN_USE;
 							pBot->fButtonPushTime = gpGlobals->time + 2.0f;
@@ -4165,11 +4165,11 @@ bool BotDoWaypointNav(bot_t* pBot)
 			if (g_b_DebugNavig)
 				ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is waiting for a lift.\n", pBot->name);
 
-			if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+			if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 			{
 				if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LIFT))
 					pBot->dest_origin = paths[pBot->prev_wpt_index[0]]->origin;
-				else if ((pBot->prev_wpt_index[1] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+				else if (pBot->prev_wpt_index[1] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 					pBot->dest_origin = paths[pBot->prev_wpt_index[1]]->origin;
 			}
 			if ((pEdict->v.origin - pBot->dest_origin).Length() < 10.0f)
@@ -4178,15 +4178,15 @@ bool BotDoWaypointNav(bot_t* pBot)
 				pBot->f_sidemove_speed = 0.0f;
 			}
 		}
-		if ((pBot->iLiftUsageState == LIFT_WAITING_FOR) || (pBot->iLiftUsageState == LIFT_GO_IN))
+		if (pBot->iLiftUsageState == LIFT_WAITING_FOR || pBot->iLiftUsageState == LIFT_GO_IN)
 		{
 			// Bot fall down somewhere inside the lift's groove :)
-			if ((pEdict->v.groundentity != pBot->pLift) && (pBot->prev_wpt_index[0] >= 0)
-				&& (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+			if (pEdict->v.groundentity != pBot->pLift && pBot->prev_wpt_index[0] >= 0
+				&& pBot->prev_wpt_index[0] < g_iNumWaypoints)
 			{
-				if ((paths[pBot->prev_wpt_index[0]]->flags & W_FL_LIFT)
-					&& ((paths[pBot->curr_wpt_index]->origin.z - pEdict->v.origin.z) > 50.0f)
-					&& ((paths[pBot->prev_wpt_index[0]]->origin.z - pEdict->v.origin.z) > 50.0f))
+				if (paths[pBot->prev_wpt_index[0]]->flags & W_FL_LIFT
+					&& paths[pBot->curr_wpt_index]->origin.z - pEdict->v.origin.z > 50.0f
+					&& paths[pBot->prev_wpt_index[0]]->origin.z - pEdict->v.origin.z > 50.0f)
 				{
 					DeleteSearchNodes(pBot);
 					pBot->iLiftUsageState = LIFT_NO_NEARBY;
@@ -4194,18 +4194,18 @@ bool BotDoWaypointNav(bot_t* pBot)
 					pBot->f_UsageLiftTime = 0.0f;
 					BotFindWaypoint(pBot);
 					bPathValid = false;
-					if ((pBot->prev_wpt_index[2] >= 0) && (pBot->prev_wpt_index[2] < g_iNumWaypoints))
+					if (pBot->prev_wpt_index[2] >= 0 && pBot->prev_wpt_index[2] < g_iNumWaypoints)
 					{
 						iTempIndex = pBot->prev_wpt_index[2];
 						pBot->pWayNodesStart = FindShortestPath(pBot->curr_wpt_index, iTempIndex, &bPathValid);
 					}
-					return (FALSE);
+					return false;
 				}
 			}
 		}
 	} // W_FL_LIFT END , but lift code is continued...
 
-	if ((!FNullEnt(pBot->pLift)) && !(paths[pBot->curr_wpt_index]->flags & W_FL_LIFT))
+	if (!FNullEnt(pBot->pLift) && !(paths[pBot->curr_wpt_index]->flags & W_FL_LIFT))
 	{
 		if (pBot->iLiftUsageState == LIFT_TRAVELING_BY)
 		{
@@ -4215,8 +4215,8 @@ bool BotDoWaypointNav(bot_t* pBot)
 			pBot->iLiftUsageState = LIFT_LEAVING;
 			pBot->f_UsageLiftTime = gpGlobals->time + 10.0f;
 		}
-		if ((pBot->iLiftUsageState == LIFT_LEAVING) && (pBot->f_UsageLiftTime < gpGlobals->time)
-			&& (pEdict->v.groundentity != pBot->pLift))
+		if (pBot->iLiftUsageState == LIFT_LEAVING && pBot->f_UsageLiftTime < gpGlobals->time
+			&& pEdict->v.groundentity != pBot->pLift)
 		{
 			if (g_b_DebugNavig)
 				ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s finished the travel by a lift.\n", pBot->name);
@@ -4227,7 +4227,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 		}
 	}
 
-	if ((pBot->f_UsageLiftTime < gpGlobals->time) && (pBot->f_UsageLiftTime != 0.0f))
+	if (pBot->f_UsageLiftTime < gpGlobals->time && pBot->f_UsageLiftTime != 0.0f)
 	{
 		if (g_b_DebugNavig)
 			ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is no longer waiting for a lift - too long time; Lift state %i.\n", pBot->name, pBot->iLiftUsageState);
@@ -4237,7 +4237,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 		pBot->f_UsageLiftTime = 0.0f;
 		DeleteSearchNodes(pBot);
 
-		if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+		if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 		{
 			if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LIFT))
 				BotChangeWptIndex(pBot, pBot->prev_wpt_index[0]);
@@ -4246,12 +4246,12 @@ bool BotDoWaypointNav(bot_t* pBot)
 		}
 		else
 			BotFindWaypoint(pBot);
-		return (FALSE);
+		return false;
 	}
 	// End of lift code
 
 	   // Special Button Handling - KWo - a lot of code here has been rewritten
-	if ((paths[pBot->curr_wpt_index]->flags & W_FL_USE_BUTTON) && (g_iNumButtons > 0) && (pBot->fButtonPushTime < gpGlobals->time) && (pBot->bButtonPushDecided))  // KWo - 09.07.2006
+	if (paths[pBot->curr_wpt_index]->flags & W_FL_USE_BUTTON && g_iNumButtons > 0 && pBot->fButtonPushTime < gpGlobals->time && pBot->bButtonPushDecided)  // KWo - 09.07.2006
 	{
 		cNearestButtonIndex = -1;   // KWo - 10.02.2006
 		f_button_min_distance = 100.0f;
@@ -4268,7 +4268,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 			{
 				TRACE_LINE(pBot->wpt_origin, v_button_origin, ignore_monsters, pEdict, &tr);
 				EntHitIndex = ENTINDEX(tr.pHit);  // KWo - 10.02.2006
-				if ((EntHitIndex == ButtonsData[i].EntIndex) || (tr.flFraction > 0.95))
+				if (EntHitIndex == ButtonsData[i].EntIndex || tr.flFraction > 0.95)
 				{
 					cNearestButtonIndex = i;
 					f_button_min_distance = f_button_distance;
@@ -4299,8 +4299,8 @@ bool BotDoWaypointNav(bot_t* pBot)
 			if (g_b_DebugNavig)
 				ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s found a button EntIndex %i .\n", pBot->name, EntHitIndex);
 
-			if ((((tr2.flFraction > 0.95) && (v_button_origin - pEdict->v.origin).Length() < 50.0f)
-				|| ((EntHitIndex == ButtonsData[cNearestButtonIndex].EntIndex) && ((tr2.vecEndPos - GetGunPosition(pEdict)).Length() < 50.0f))))
+			if (tr2.flFraction > 0.95 && (v_button_origin - pEdict->v.origin).Length() < 50.0f
+				|| EntHitIndex == ButtonsData[cNearestButtonIndex].EntIndex && (tr2.vecEndPos - GetGunPosition(pEdict)).Length() < 50.0f)
 			{
 				if (flDot > 0.92)
 				{
@@ -4317,7 +4317,7 @@ bool BotDoWaypointNav(bot_t* pBot)
 		}
 	}
 
-	if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+	if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 		v_trace_start = paths[pBot->prev_wpt_index[0]]->origin;
 	else
 		v_trace_start = pEdict->v.origin;
@@ -4326,11 +4326,11 @@ bool BotDoWaypointNav(bot_t* pBot)
 
 	if (g_i_botthink_index == g_iFrameCounter) // KWo - 23.03.2007
 	{
-		if ((pBot->bOnLadder) || (pBot->curr_travel_flags && W_FL_LADDER)) // 16.12.2007
+		if (pBot->bOnLadder || pBot->curr_travel_flags && W_FL_LADDER) // 16.12.2007
 			TRACE_LINE(v_trace_start, v_trace_end, ignore_monsters, pEdict, &tr);
 		else
 			TRACE_HULL(v_trace_start, v_trace_end, ignore_monsters,
-				((pEdict->v.flags & IN_DUCK) || paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) ? point_hull : head_hull, pEdict, &tr); // KWo - 17.04.2013
+				pEdict->v.flags & IN_DUCK || paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH ? point_hull : head_hull, pEdict, &tr); // KWo - 17.04.2013
 		pBot->pHit = tr.pHit; // KWo - 23.03.2007
 	}
 	tr.pHit = pBot->pHit; // KWo - 23.03.2007
@@ -4342,7 +4342,7 @@ breakabledoorcheck:
 	if (!FNullEnt(tr.pHit))
 	{
 		// Special Door Button Handling
-		if ((strncmp(STRING(tr.pHit->v.classname), "func_door", 9) == 0) && (pBot->iLiftUsageState == LIFT_NO_NEARBY)) // KWo - 23.04.2006
+		if (strncmp(STRING(tr.pHit->v.classname), "func_door", 9) == 0 && pBot->iLiftUsageState == LIFT_NO_NEARBY) // KWo - 23.04.2006
 		{
 			fDesiredDistance = 0;
 			pBot->iAimFlags = AIM_DEST; // look at door and only at it (so it opens in the right direction)
@@ -4364,7 +4364,7 @@ breakabledoorcheck:
 				{
 					const char* vtarget2 = ButtonsData[i].target;
 					iStrLen = strlen(vtarget2);  // KWo - 05.10.2008
-					if ((iStrLen > 2) && (strncmp(vtarget2, vtargetname, iStrLen) == 0)) // KWo - 05.10.2008
+					if (iStrLen > 2 && strncmp(vtarget2, vtargetname, iStrLen) == 0) // KWo - 05.10.2008
 	 //               if (FStrEq(vtarget2, vtargetname))
 					{
 						bDoorHasTargetButton = true;
@@ -4375,7 +4375,7 @@ breakabledoorcheck:
 							v_button_origin = ButtonsData[i].origin;
 							v_tr23_start = pEdict->v.origin;
 							TRACE_LINE(v_tr23_start, v_button_origin, ignore_monsters, pEdict, &tr2);
-							if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+							if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 							{
 								v_tr23_start = paths[pBot->prev_wpt_index[0]]->origin;
 							}
@@ -4384,15 +4384,15 @@ breakabledoorcheck:
 								v_tr23_start = pEdict->v.origin;
 							}
 							TRACE_LINE(v_tr23_start, v_button_origin, ignore_monsters, pEdict, &tr3);
-							if ((ENTINDEX(tr2.pHit) == ButtonsData[i].EntIndex)
-								|| (ENTINDEX(tr3.pHit) == ButtonsData[i].EntIndex))  // KWo - 29.03.2008
+							if (ENTINDEX(tr2.pHit) == ButtonsData[i].EntIndex
+								|| ENTINDEX(tr3.pHit) == ButtonsData[i].EntIndex)  // KWo - 29.03.2008
 							{
 								cNearestButtonIndex = i;
 								f_tr2FlFraction = tr2.flFraction;
 								f_tr3FlFraction = tr3.flFraction;
 								break;
 							}
-							else if ((tr2.flFraction > 0.95f) || (tr3.flFraction > 0.95f))
+							else if (tr2.flFraction > 0.95f || tr3.flFraction > 0.95f)
 							{
 								f_button_distance = (v_button_origin - v_trace_start).Length();  // distance between button and the WP tracehull is started
 								if (f_button_distance < f_button_min_distance)
@@ -4407,15 +4407,15 @@ breakabledoorcheck:
 					}
 				}
 
-				if ((cNearestButtonIndex == -1) && (pBot->f_timeHitDoor < gpGlobals->time) && (iAmountLooped == 1)
-					&& (pBot->fButtonNoticedTime + 3.0f < gpGlobals->time) && (pBot->fButtonPushTime < gpGlobals->time)
-					&& (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_GOBACK)) // KWo - 14.08.2006
+				if (cNearestButtonIndex == -1 && pBot->f_timeHitDoor < gpGlobals->time && iAmountLooped == 1
+					&& pBot->fButtonNoticedTime + 3.0f < gpGlobals->time && pBot->fButtonPushTime < gpGlobals->time
+					&& pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_GOBACK) // KWo - 14.08.2006
 				{
 					pBot->dest_origin = tr.vecEndPos;
 				}
 
 				// found one ?
-				if ((cNearestButtonIndex > -1) && (pBot->fButtonPushTime < gpGlobals->time)) // KWo - 10.02.2006
+				if (cNearestButtonIndex > -1 && pBot->fButtonPushTime < gpGlobals->time) // KWo - 10.02.2006
 				{
 					if (g_b_DebugNavig)
 						ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s found a button.\n", pBot->name);
@@ -4423,7 +4423,7 @@ breakabledoorcheck:
 					v_button_origin = ButtonsData[cNearestButtonIndex].origin;
 					if (FStrEq("func_button", ButtonsData[cNearestButtonIndex].classname)) // KWo - 29.03.2008
 					{
-						if ((f_tr2FlFraction > 0.99f) || (f_tr3FlFraction > 0.99f))
+						if (f_tr2FlFraction > 0.99f || f_tr3FlFraction > 0.99f)
 							f_button_min_distance = 40.0f;
 						else
 							f_button_min_distance = 60.0f;
@@ -4446,12 +4446,12 @@ breakabledoorcheck:
 						ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s found a button targetting the door and faces it with flDot = %f .\n",
 							pBot->name, flDot);
 
-					if (((GetGunPosition(pEdict) - v_button_origin).Length() < f_button_min_distance)
-						&& (flDot >= 0.92f)) // Is Bot facing the Button ?
+					if ((GetGunPosition(pEdict) - v_button_origin).Length() < f_button_min_distance
+						&& flDot >= 0.92f) // Is Bot facing the Button ?
 					{
 						pBot->fButtonPushTime = gpGlobals->time + 1.5f;
 						pEdict->v.button |= IN_USE;
-						if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+						if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 						{
 							pBot->dest_origin = paths[pBot->prev_wpt_index[0]]->origin;
 						}
@@ -4471,7 +4471,7 @@ breakabledoorcheck:
 					v_button_origin = BreakablesData[i].origin;
 					if ((pEdict->v.origin - BreakablesData[i].origin).Length() < 100.0f)
 					{
-						if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+						if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 						{
 							fCone = UTIL_GetVectorsCone(pBot->wpt_origin, paths[pBot->prev_wpt_index[0]]->origin,
 								v_button_origin, paths[pBot->prev_wpt_index[0]]->origin);  // KWo - 13.02.2006
@@ -4488,7 +4488,7 @@ breakabledoorcheck:
 							pBot->bCheckTerrain = FALSE;
 							BotSelectBestWeapon(pBot);
 
-							if (!(pEdict->v.oldbuttons & IN_ATTACK) && (GetShootingConeDeviation(pEdict, &v_button_origin) > 0.98))
+							if (!(pEdict->v.oldbuttons & IN_ATTACK) && GetShootingConeDeviation(pEdict, &v_button_origin) > 0.98)
 							{
 								pEdict->v.button |= IN_ATTACK;
 								pBot->iAimFlags &= ~AIM_ENTITY;
@@ -4499,9 +4499,9 @@ breakabledoorcheck:
 			}
 
 			// if pushed button recently and door still not open wait for door to open
-			if (!(FStrEq(vtargetname, "")) && (pBot->f_timeDoorOpen > gpGlobals->time) && bDoorHasTargetButton)  // KWo - 10.02.2006
+			if (!FStrEq(vtargetname, "") && pBot->f_timeDoorOpen > gpGlobals->time && bDoorHasTargetButton)  // KWo - 10.02.2006
 			{
-				if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+				if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 				{
 					if (g_b_DebugNavig)
 						ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is trying to reach the previous WP while waiting for the door open.\n", pBot->name);
@@ -4527,9 +4527,9 @@ breakabledoorcheck:
 			}
 
 			// if door has no button but needs to be "USE"ed to be opened
-			else if ((tr.pHit->v.spawnflags & (1 << 8))
-				&& (((tr.pHit->v.origin - pEdict->v.origin).Length() < 80.0f)
-					|| ((tr.vecEndPos - GetGunPosition(pEdict)).Length() < 80.0f)))
+			else if (tr.pHit->v.spawnflags & 1 << 8
+				&& ((tr.pHit->v.origin - pEdict->v.origin).Length() < 80.0f
+					|| (tr.vecEndPos - GetGunPosition(pEdict)).Length() < 80.0f))
 			{
 				if (g_b_DebugNavig || g_b_DebugTasks)
 					ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is USE'ing the door to open it (pause 3).\n", pBot->name);
@@ -4540,9 +4540,9 @@ breakabledoorcheck:
 			}
 
 			// if bot hits the door, then it opens, so wait a bit to let it open safely (normal door without target)
-			if ((pEdict->v.velocity.Length2D() < 2) && (pBot->f_timeDoorOpen < gpGlobals->time)
-				&& (pBot->fButtonPushTime < gpGlobals->time) && (!bDoorHasTargetButton)
-				&& ((!pBot->bHitDoor) || (pBot->f_timeHitDoor + 3.0f > gpGlobals->time))) // KWo - 17.01.2010
+			if (pEdict->v.velocity.Length2D() < 2 && pBot->f_timeDoorOpen < gpGlobals->time
+				&& pBot->fButtonPushTime < gpGlobals->time && !bDoorHasTargetButton
+				&& (!pBot->bHitDoor || pBot->f_timeHitDoor + 3.0f > gpGlobals->time)) // KWo - 17.01.2010
 			{
 				if (g_b_DebugNavig || g_b_DebugTasks)
 					ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s is waiting until the door is open (pause 4).\n", pBot->name);
@@ -4560,13 +4560,13 @@ breakabledoorcheck:
 
 		// Special Breakable Handling
 		else if (IsShootableBreakable(tr.pHit)
-			|| (((iAmountLooped == 1) || (iAmountLooped == 4))
-				&& (FStrEq(STRING(tr.pHit->v.classname), "func_breakable")) && (tr.pHit != pBot->pBreakableIgnore)
-				&& (tr.pHit->v.takedamage > 0) && ((tr.pHit->v.impulse == 0) || (iAmountLooped == 1))
-				&& (tr.pHit->v.health < 1000))) // KWo - 12.03.2010
+			|| (iAmountLooped == 1 || iAmountLooped == 4)
+			&& FStrEq(STRING(tr.pHit->v.classname), "func_breakable") && tr.pHit != pBot->pBreakableIgnore
+			&& tr.pHit->v.takedamage > 0 && (tr.pHit->v.impulse == 0 || iAmountLooped == 1)
+			&& tr.pHit->v.health < 1000) // KWo - 12.03.2010
 		{
 			fCone = 2;
-			if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+			if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 			{
 				fCone = UTIL_GetVectorsCone(pBot->wpt_origin, paths[pBot->prev_wpt_index[0]]->origin,
 					VecBModelOrigin(tr.pHit), paths[pBot->prev_wpt_index[0]]->origin);  // KWo - 13.02.2006
@@ -4588,14 +4588,14 @@ breakabledoorcheck:
 			}
 			else
 			{
-				if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))  // KWo - 31.01.2006
+				if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)  // KWo - 31.01.2006
 				{
 					TRACE_LINE(paths[pBot->prev_wpt_index[0]]->origin, pBot->wpt_origin, ignore_monsters, pEdict, &tr4);
 					if (IsShootableBreakable(tr4.pHit)
-						|| (((iAmountLooped == 1) || (iAmountLooped == 4))
-							&& (FStrEq(STRING(tr4.pHit->v.classname), "func_breakable")) && (tr4.pHit != pBot->pBreakableIgnore)
-							&& (tr4.pHit->v.takedamage > 0) && ((tr4.pHit->v.impulse == 0) || (iAmountLooped == 1))
-							&& (tr4.pHit->v.health < 1000))) // KWo - 12.03.2010
+						|| (iAmountLooped == 1 || iAmountLooped == 4)
+						&& FStrEq(STRING(tr4.pHit->v.classname), "func_breakable") && tr4.pHit != pBot->pBreakableIgnore
+						&& tr4.pHit->v.takedamage > 0 && (tr4.pHit->v.impulse == 0 || iAmountLooped == 1)
+						&& tr4.pHit->v.health < 1000) // KWo - 12.03.2010
 					{
 						if (g_b_DebugNavig || g_b_DebugTasks || g_b_DebugEntities)
 							ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s found a breakable (2) - faces with fCone = %f.\n",
@@ -4611,7 +4611,7 @@ breakabledoorcheck:
 		}
 		else if (iAmountLooped < 4)
 		{
-			if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+			if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 				v_trace_start = paths[pBot->prev_wpt_index[0]]->origin;
 			else
 				v_trace_start = pEdict->v.origin;
@@ -4628,7 +4628,7 @@ breakabledoorcheck:
 				v_trace_start = v_trace_start - pEdict->v.view_ofs;
 				v_trace_end = v_trace_end - pEdict->v.view_ofs;
 			}
-			else if ((iAmountLooped == 3) && (pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))   // KWo - 17.02.2006
+			else if (iAmountLooped == 3 && pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)   // KWo - 17.02.2006
 			{
 				v_trace_start = paths[pBot->prev_wpt_index[0]]->origin;
 				v_trace_end = paths[pBot->curr_wpt_index]->origin; // KWo - 15.04.2013
@@ -4657,9 +4657,9 @@ breakabledoorcheck:
 	}
 
 	// Needs precise placement - check if we get past the point
-	if ((fDesiredDistance < 20.0f) && (wpt_distance < 30.0f))
+	if (fDesiredDistance < 20.0f && wpt_distance < 30.0f)
 	{
-		v_OriginNextFrame = pEdict->v.origin + (pEdict->v.velocity * pBot->fTimeFrameInterval);  // KWo - 17.10.2006 - reverted back
+		v_OriginNextFrame = pEdict->v.origin + pEdict->v.velocity * pBot->fTimeFrameInterval;  // KWo - 17.10.2006 - reverted back
 
 		if ((v_OriginNextFrame - pBot->wpt_origin).Length() > wpt_distance)
 			fDesiredDistance = wpt_distance + 1;
@@ -4671,7 +4671,7 @@ breakabledoorcheck:
 		if (BotGetSafeTask(pBot)->iData == pBot->curr_wpt_index)
 		{
 			// Add Goal Values
-			if ((pBot->chosengoal_index != -1) && (pBot->chosengoal_index < g_iNumWaypoints) && (BotGetSafeTask(pBot)->iTask != TASK_FOLLOWUSER)) // KWo - 27.06.2006
+			if (pBot->chosengoal_index != -1 && pBot->chosengoal_index < g_iNumWaypoints && BotGetSafeTask(pBot)->iTask != TASK_FOLLOWUSER) // KWo - 27.06.2006
 			{
 				// Changed goal WP with current WP in goal experience collecting - KWo - 28.12.2009
 				iGoalIndex = pBot->chosengoal_index;
@@ -4679,7 +4679,7 @@ breakabledoorcheck:
 
 				if (pBot->bot_team == TEAM_CS_TERRORIST)
 				{
-					iWPTValue = (pBotExperienceData + (iStartIndex * g_iNumWaypoints) + iGoalIndex)->wTeam0Value;
+					iWPTValue = (pBotExperienceData + iStartIndex * g_iNumWaypoints + iGoalIndex)->wTeam0Value;
 					iWPTValue += (int)(pBot->pEdict->v.health * 0.05f);	// KWo - to remove warning
 					iWPTValue += (int)(pBot->f_goal_value * 0.05f);	// KWo - to remove warning
 
@@ -4688,11 +4688,11 @@ breakabledoorcheck:
 					else if (iWPTValue > MAX_GOAL_VAL)
 						iWPTValue = MAX_GOAL_VAL;
 
-					(pBotExperienceData + (iStartIndex * g_iNumWaypoints) + iGoalIndex)->wTeam0Value = iWPTValue;
+					(pBotExperienceData + iStartIndex * g_iNumWaypoints + iGoalIndex)->wTeam0Value = iWPTValue;
 				}
 				else
 				{
-					iWPTValue = (pBotExperienceData + (iStartIndex * g_iNumWaypoints) + iGoalIndex)->wTeam1Value;
+					iWPTValue = (pBotExperienceData + iStartIndex * g_iNumWaypoints + iGoalIndex)->wTeam1Value;
 					iWPTValue += (int)(pBot->pEdict->v.health * 0.05f);	// KWo - to remove warning
 					iWPTValue += (int)(pBot->f_goal_value * 0.05f);	// KWo - to remove warning
 
@@ -4701,7 +4701,7 @@ breakabledoorcheck:
 					else if (iWPTValue > MAX_GOAL_VAL)
 						iWPTValue = MAX_GOAL_VAL;
 
-					(pBotExperienceData + (iStartIndex * g_iNumWaypoints) + iGoalIndex)->wTeam1Value = iWPTValue;
+					(pBotExperienceData + iStartIndex * g_iNumWaypoints + iGoalIndex)->wTeam1Value = iWPTValue;
 				}
 			}
 
@@ -4710,7 +4710,7 @@ breakabledoorcheck:
 
 			pBot->prev_time = gpGlobals->time + 0.5f;     // KWo - 25.05.2010
 			pBot->f_moved_distance = 15.0f;               // KWo - 25.05.2010
-			return (TRUE);
+			return true;
 		}
 
 		else if (pBot->pWaypointNodes == NULL)
@@ -4718,14 +4718,14 @@ breakabledoorcheck:
 			if (g_b_DebugNavig)
 				ALERT(at_logged, "[DEBUG] BotDoWaypointNav - Bot %s has no nodes to follow.\n", pBot->name);
 
-			return (FALSE);
+			return false;
 		}
 
 		// Defusion Map ?
 		if (g_iMapType & MAP_DE)
 		{
 			// Bomb planted and CT ?
-			if (g_bBombPlanted && (pBot->bot_team == TEAM_CS_COUNTER))
+			if (g_bBombPlanted && pBot->bot_team == TEAM_CS_COUNTER)
 			{
 				iWPTIndex = BotGetSafeTask(pBot)->iData;
 
@@ -4777,7 +4777,7 @@ breakabledoorcheck:
 		// Do the actual movement checking
 		BotHeadTowardWaypoint(pBot);
 	}
-	return (FALSE);
+	return false;
 }
 
 int BotFindGoal(bot_t* pBot)
@@ -4817,7 +4817,7 @@ int BotFindGoal(bot_t* pBot)
 	if (g_iDebugGoalIndex != -1) // KWo - 25.07.2006
 	{
 		pBot->chosengoal_index = g_iDebugGoalIndex;
-		return (g_iDebugGoalIndex);
+		return g_iDebugGoalIndex;
 	}
 
 	// Pathfinding Behaviour depending on Maptype
@@ -4857,14 +4857,14 @@ int BotFindGoal(bot_t* pBot)
 	}
 
 	// Terrorist carrying the C4 ?
-	if ((pBot->pEdict->v.weapons & (1 << CS_WEAPON_C4))
+	if (pBot->pEdict->v.weapons & 1 << CS_WEAPON_C4
 		|| pBot->bIsVIP)
 	{
 		iTactic = 3;
 		goto tacticchosen;
 	}
 
-	else if (bHasHostage && (pBot->bot_team == TEAM_CS_COUNTER))
+	else if (bHasHostage && pBot->bot_team == TEAM_CS_COUNTER)
 	{
 		min_distance = 9999.0f;
 		min_index = -1;
@@ -4891,7 +4891,7 @@ int BotFindGoal(bot_t* pBot)
 				ALERT(at_logged, "[DEBUG] BotFindGoal - Bot %s has a hostage and chose a goal = %d, flags = %d.\n",
 					pBot->name, pBot->chosengoal_index, paths[pBot->chosengoal_index]->flags);
 
-			return (g_rgiRescueWaypoints[min_index]);
+			return g_rgiRescueWaypoints[min_index];
 		}
 	}
 
@@ -4901,7 +4901,7 @@ int BotFindGoal(bot_t* pBot)
 	if (g_b_DebugNavig)
 		ALERT(at_logged, "[DEBUG] BotFindGoal - Bot's %s AgressionLevel = %f, FearLevel = %f.\n", pBot->name, pBot->fAgressionLevel, pBot->fFearLevel);
 
-	if ((g_iMapType & MAP_AS) || (g_iMapType & MAP_CS))
+	if (g_iMapType & MAP_AS || g_iMapType & MAP_CS)
 	{
 		if (pBot->bot_team == TEAM_CS_TERRORIST)
 		{
@@ -4921,7 +4921,7 @@ int BotFindGoal(bot_t* pBot)
 		{
 			if (g_bBombPlanted)
 			{
-				if ((g_b_cv_chat) && (g_bBombSayString) && (g_iAliveCTs > 1)) // KWo - 16.05.2008
+				if (g_b_cv_chat && g_bBombSayString && g_iAliveCTs > 1) // KWo - 16.05.2008
 				{
 					BotPrepareChatMessage(pBot, szBombChat[RANDOM_LONG(0, iNumBombChats - 1)]);
 					BotPushMessageQueue(pBot, MSG_CS_SAY);
@@ -4929,7 +4929,7 @@ int BotFindGoal(bot_t* pBot)
 				}
 				int iTemp = BotChooseBombWaypoint(pBot); // KWo - 27.06.2006
 				pBot->chosengoal_index = iTemp; // KWo - 27.06.2006
-				return (iTemp); // KWo - 27.06.2006
+				return iTemp; // KWo - 27.06.2006
 			}
 
 			iDefensive += 30;
@@ -4955,7 +4955,7 @@ int BotFindGoal(bot_t* pBot)
 	if (!BotHasCampWeapon(pBot)) // KWo - 19.05.2010
 		iCampDesire = 0;
 	else if (BotHasSniperWeapon(pBot))
-		iCampDesire = (int)(RANDOM_FLOAT(1.5f, 2.5f) * (float)(iCampDesire));
+		iCampDesire = (int)(RANDOM_FLOAT(1.5f, 2.5f) * (float)iCampDesire);
 
 	if (g_b_DebugNavig)
 		ALERT(at_logged, "[DEBUG] BotFindGoal - Bot's %s GoalDesire = %d, ForwardDesire = %d, iCampDesire = %d, iBackoffDesire = %d.\n",
@@ -5025,10 +5025,10 @@ tacticchosen:
 		for (index = 0; index < g_iNumGoalPoints; index++)  // KWo - 12.02.2006
 		{
 			iClosestGoalIndex = g_rgiGoalWaypoints[index];
-			if ((iClosestGoalIndex >= 0) && (iClosestGoalIndex < g_iNumWaypoints))
+			if (iClosestGoalIndex >= 0 && iClosestGoalIndex < g_iNumWaypoints)
 			{
-				if (((vBotOrigin - paths[iClosestGoalIndex]->origin).Length() < 1000)  // KWo - 14.04.2008
-					&& (!IsGroupOfEnemies(pBot, paths[iClosestGoalIndex]->origin)))
+				if ((vBotOrigin - paths[iClosestGoalIndex]->origin).Length() < 1000  // KWo - 14.04.2008
+					&& !IsGroupOfEnemies(pBot, paths[iClosestGoalIndex]->origin))
 				{
 					iGoalChoices[index2] = iClosestGoalIndex;
 					bGoalNearby = true;
@@ -5046,21 +5046,21 @@ tacticchosen:
 				assert((iGoalChoices[index] >= 0) && (iGoalChoices[index] < g_iNumWaypoints));
 			}
 		}
-		else if (pBot->pEdict->v.weapons & (1 << CS_WEAPON_C4))  // KWo - 14.04.2008
+		else if (pBot->pEdict->v.weapons & 1 << CS_WEAPON_C4)  // KWo - 14.04.2008
 		{
 			iClosestGoalIndex = iGoalChoices[RANDOM_LONG(0, index2 - 1)];
 			pBot->chosengoal_index = iClosestGoalIndex;
-			return (iClosestGoalIndex);
+			return iClosestGoalIndex;
 		}
 	}
 
-	if ((pBot->curr_wpt_index < 0) || (pBot->curr_wpt_index >= g_iNumWaypoints))
+	if (pBot->curr_wpt_index < 0 || pBot->curr_wpt_index >= g_iNumWaypoints)
 		BotChangeWptIndex(pBot, WaypointFindNearestToMove(pBot->pEdict, pBot->pEdict->v.origin)); // KWo - 17.04.2008
 
 	if (pBot->bot_personality == 1) // Psycho doesn't care about danger :)  KWo - 14.02.2006
 	{
 		iTestIndex = iGoalChoices[RANDOM_LONG(0, 3)];
-		if ((iTestIndex >= 0) && (iTestIndex < g_iNumWaypoints))
+		if (iTestIndex >= 0 && iTestIndex < g_iNumWaypoints)
 		{
 			pBot->chosengoal_index = iTestIndex;  // KWo - 27.06.2006
 
@@ -5068,7 +5068,7 @@ tacticchosen:
 				ALERT(at_logged, "[DEBUG] BotFindGoal - Bot's %s chose goal = %d, flags = %d.\n",
 					pBot->name, pBot->chosengoal_index, paths[pBot->chosengoal_index]->flags);
 
-			return (iTestIndex);
+			return iTestIndex;
 		}
 	}
 
@@ -5083,8 +5083,8 @@ tacticchosen:
 
 			if (pBot->bot_team == TEAM_CS_TERRORIST)
 			{
-				if ((pBotExperienceData + (iBotIndex * g_iNumWaypoints) + iGoalChoices[index])->wTeam0Value
-					< (pBotExperienceData + (iBotIndex * g_iNumWaypoints) + iTestIndex)->wTeam0Value)
+				if ((pBotExperienceData + iBotIndex * g_iNumWaypoints + iGoalChoices[index])->wTeam0Value
+					< (pBotExperienceData + iBotIndex * g_iNumWaypoints + iTestIndex)->wTeam0Value)
 				{
 					iGoalChoices[index + 1] = iGoalChoices[index];
 					iGoalChoices[index] = iTestIndex;
@@ -5093,8 +5093,8 @@ tacticchosen:
 			}
 			else
 			{
-				if ((pBotExperienceData + (iBotIndex * g_iNumWaypoints) + iGoalChoices[index])->wTeam1Value
-					< (pBotExperienceData + (iBotIndex * g_iNumWaypoints) + iTestIndex)->wTeam1Value)
+				if ((pBotExperienceData + iBotIndex * g_iNumWaypoints + iGoalChoices[index])->wTeam1Value
+					< (pBotExperienceData + iBotIndex * g_iNumWaypoints + iTestIndex)->wTeam1Value)
 				{
 					iGoalChoices[index + 1] = iGoalChoices[index];
 					iGoalChoices[index] = iTestIndex;
@@ -5110,7 +5110,7 @@ tacticchosen:
 		ALERT(at_logged, "[DEBUG] BotFindGoal - Bot's %s chose goal = %d, flags %d.\n",
 			pBot->name, pBot->chosengoal_index, paths[pBot->chosengoal_index]->flags);
 
-	return (iGoalChoices[0]);
+	return iGoalChoices[0];
 }
 
 void BotResetCollideState(bot_t* pBot)
@@ -5162,18 +5162,18 @@ int BotCheckCollisionWithPlayer(bot_t* pBot, edict_t* pPlayer) // KWo - 01.04.20
 	Vector2D v2_BotDestination;
 
 	if (FNullEnt(pEdict) || FNullEnt(pPlayer))
-		return (0);
+		return 0;
 	if (pBot->bOnLadder)
-		return (0);
+		return 0;
 	if (!IsAlive(pPlayer))
-		return (0);
+		return 0;
 	f_Distance = (pPlayer->v.origin - pEdict->v.origin).Length();
 	if (f_Distance > 240.0f)
-		return (0);
+		return 0;
 	if (fabs(pPlayer->v.origin.z - pEdict->v.origin.z) > 60.0f)
-		return (0);
+		return 0;
 
-	if ((iTask == TASK_ATTACK) || (pBot->f_move_speed == 0.0f)) // KWo - 07.04.2010
+	if (iTask == TASK_ATTACK || pBot->f_move_speed == 0.0f) // KWo - 07.04.2010
 		v_Direction = pBot->vecLookAt - pEdict->v.origin;
 	else
 		v_Direction = pBot->dest_origin - pEdict->v.origin;
@@ -5185,16 +5185,16 @@ int BotCheckCollisionWithPlayer(bot_t* pBot, edict_t* pPlayer) // KWo - 01.04.20
 	v_MoveAngles.z = 0.0f;
 	UTIL_ClampVector(&v_MoveAngles);
 	MAKE_VECTORS(v_MoveAngles);
-	v2_BotRightSide = (gpGlobals->v_right).Make2D();
+	v2_BotRightSide = gpGlobals->v_right.Make2D();
 
-	v2_PlayerVelocity = (pPlayer->v.velocity).Make2D();
+	v2_PlayerVelocity = pPlayer->v.velocity.Make2D();
 	v_BotVelocity = v_Direction * pBot->f_move_speed;
-	v2_BotVelocity = (v_BotVelocity).Make2D();
-	v2_BotVelocityL = ((-pEdict->v.maxspeed) * v2_BotRightSide) + v2_BotVelocity;
-	v2_BotVelocityR = ((pEdict->v.maxspeed) * v2_BotRightSide) + v2_BotVelocity;
+	v2_BotVelocity = v_BotVelocity.Make2D();
+	v2_BotVelocityL = -pEdict->v.maxspeed * v2_BotRightSide + v2_BotVelocity;
+	v2_BotVelocityR = pEdict->v.maxspeed * v2_BotRightSide + v2_BotVelocity;
 
-	v2_BotPosition = (pEdict->v.origin).Make2D();
-	v2_PlayerPosition = (pPlayer->v.origin).Make2D();
+	v2_BotPosition = pEdict->v.origin.Make2D();
+	v2_PlayerPosition = pPlayer->v.origin.Make2D();
 
 	f_DistanceL = 300.0f;
 	f_DistanceR = 300.0f;
@@ -5217,14 +5217,14 @@ int BotCheckCollisionWithPlayer(bot_t* pBot, edict_t* pPlayer) // KWo - 01.04.20
 			f_DistanceR = f_Distance;
 	}
 
-	if ((f_DistanceR == 300.0f) && (f_DistanceL == 300.0f))
-		return (0);
-	else if ((f_DistanceL <= f_DistanceR) && (f_DistanceL < (((pEdict->v.velocity).Length() > 160.0f) ? 100.0f : 50.0f))) // KWo - 28.04.2010
-		return (1); // go right
-	else if ((f_DistanceL > f_DistanceR) && (f_DistanceR < (((pEdict->v.velocity).Length() > 160.0f) ? 100.0f : 50.0f))) // KWo - 28.04.2010
-		return (-1); // go left
+	if (f_DistanceR == 300.0f && f_DistanceL == 300.0f)
+		return 0;
+	else if (f_DistanceL <= f_DistanceR && f_DistanceL < (pEdict->v.velocity.Length() > 160.0f ? 100.0f : 50.0f)) // KWo - 28.04.2010
+		return 1; // go right
+	else if (f_DistanceL > f_DistanceR && f_DistanceR < (pEdict->v.velocity.Length() > 160.0f ? 100.0f : 50.0f)) // KWo - 28.04.2010
+		return -1; // go left
 
-	return (0);
+	return 0;
 }
 
 // the function lets the bot to unstuck
@@ -5235,8 +5235,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 	edict_t* pNearestPlayer = NULL;
 	bool bBypassPlayer = FALSE;
 	bool bBotIsStuck = FALSE;
-	bool bCurrWptIndexOK = ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints));
-	bool bPrevWptIndexOK = ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints));
+	bool bCurrWptIndexOK = pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints;
+	bool bPrevWptIndexOK = pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints;
 	bool bCurrentWpGoal = FALSE;              // KWo - 19.04.2010
 	bool bCurrentTravelJump = FALSE;          // KWo - 19.04.2010
 	int Ent_Index; // KWo - 06.03.2006
@@ -5267,7 +5267,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 	float fDistToNextWP;             // KWo - 27.01.2012
 	float fDistToPrevWP;             // KWo - 27.01.2012
 
-	if ((iTask == TASK_ATTACK) || (pBot->dest_origin == pBot->pEdict->v.origin) || (pBot->f_move_speed == 0.0f)) // KWo - 13.10.2011
+	if (iTask == TASK_ATTACK || pBot->dest_origin == pBot->pEdict->v.origin || pBot->f_move_speed == 0.0f) // KWo - 13.10.2011
 		v_direction = pBot->vecLookAt - pEdict->v.origin;
 	else
 		v_direction = pBot->dest_origin - pEdict->v.origin;
@@ -5288,17 +5288,17 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 	v_src = GetGunPosition(pEdict); // EyePosition ()
 	v_dest = v_src + vecDirection * 32;  // KWo - 08.02.2006
 
-	if (((pBot->cCollisionState == COLLISION_NOTDECIDED) || (pBot->f_probe_time < gpGlobals->time))
-		&& ((g_i_botthink_index % 4) == (g_iFrameCounter % 4))) // KWo - 22.10.2011
+	if ((pBot->cCollisionState == COLLISION_NOTDECIDED || pBot->f_probe_time < gpGlobals->time)
+		&& g_i_botthink_index % 4 == g_iFrameCounter % 4) // KWo - 22.10.2011
 	{
 		TRACE_HULL(v_src, v_dest, dont_ignore_monsters,
-			(((pEdict->v.flags & IN_DUCK) || paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) ? point_hull : head_hull), pEdict, &tr);   // KWo - 17.04.2013
+			pEdict->v.flags & IN_DUCK || paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH ? point_hull : head_hull, pEdict, &tr);   // KWo - 17.04.2013
 
-		if ((tr.flFraction != 1.0f) && (!FNullEnt(tr.pHit)))
+		if (tr.flFraction != 1.0f && !FNullEnt(tr.pHit))
 		{
 			if (IsShootableBreakable(tr.pHit)
-				|| ((FStrEq(STRING(tr.pHit->v.classname), "func_breakable")) && (tr.pHit != pBot->pBreakableIgnore)
-					&& (tr.pHit->v.takedamage > 0) && (tr.pHit->v.impulse == 0) && (tr.pHit->v.health < 1000))) // KWo - 12.03.2010
+				|| FStrEq(STRING(tr.pHit->v.classname), "func_breakable") && tr.pHit != pBot->pBreakableIgnore
+				&& tr.pHit->v.takedamage > 0 && tr.pHit->v.impulse == 0 && tr.pHit->v.health < 1000) // KWo - 12.03.2010
 			{
 				pent = tr.pHit;
 				Ent_Index = ENTINDEX(pent); // KWo - 06.03.2006
@@ -5344,13 +5344,13 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 			v_src = pEdict->v.origin;
 			v_dest = v_src + vecDirection * 48;   // KWo - 08.02.2006
 			TRACE_HULL(v_src, v_dest, dont_ignore_monsters,
-				(((pEdict->v.flags & IN_DUCK) || paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) ? point_hull : head_hull), pEdict, &tr);   // KWo - 17.04.2013
+				pEdict->v.flags & IN_DUCK || paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH ? point_hull : head_hull, pEdict, &tr);   // KWo - 17.04.2013
 
-			if ((tr.flFraction != 1.0f) && (!FNullEnt(tr.pHit)))  // KWo - 26.01.2006
+			if (tr.flFraction != 1.0f && !FNullEnt(tr.pHit))  // KWo - 26.01.2006
 			{
 				if (IsShootableBreakable(tr.pHit)
-					|| ((FStrEq(STRING(tr.pHit->v.classname), "func_breakable")) && (tr.pHit != pBot->pBreakableIgnore)
-						&& (tr.pHit->v.takedamage > 0) && (tr.pHit->v.impulse == 0) && (tr.pHit->v.health < 1000))) // KWo - 12.03.2010
+					|| FStrEq(STRING(tr.pHit->v.classname), "func_breakable") && tr.pHit != pBot->pBreakableIgnore
+					&& tr.pHit->v.takedamage > 0 && tr.pHit->v.impulse == 0 && tr.pHit->v.health < 1000) // KWo - 12.03.2010
 				{
 					pent = tr.pHit;
 					Ent_Index = ENTINDEX(pent); // KWo - 06.03.2006
@@ -5393,19 +5393,19 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 			}
 		}
 	}
-	if (((pBot->cCollisionState == COLLISION_NOTDECIDED) || (pBot->f_probe_time < gpGlobals->time))
-		&& (bPrevWptIndexOK) && (bCurrWptIndexOK) && (FNullEnt(pBot->pShootBreakable))
-		&& ((g_i_botthink_index % 4) == (g_iFrameCounter % 4))
-		&& ((iTask != TASK_ATTACK) || (pBot->byFightStyle != 1))) // KWo - 22.10.2011
+	if ((pBot->cCollisionState == COLLISION_NOTDECIDED || pBot->f_probe_time < gpGlobals->time)
+		&& bPrevWptIndexOK && bCurrWptIndexOK && FNullEnt(pBot->pShootBreakable)
+		&& g_i_botthink_index % 4 == g_iFrameCounter % 4
+		&& (iTask != TASK_ATTACK || pBot->byFightStyle != 1)) // KWo - 22.10.2011
 	{
 		v_src = paths[pBot->prev_wpt_index[0]]->origin;
 		v_dest = paths[pBot->curr_wpt_index]->origin;
 		TRACE_LINE(v_src, v_dest, dont_ignore_monsters, pEdict, &tr);
-		if ((tr.flFraction != 1.0f) && (!FNullEnt(tr.pHit)))  // KWo - 26.01.2006
+		if (tr.flFraction != 1.0f && !FNullEnt(tr.pHit))  // KWo - 26.01.2006
 		{
 			if (IsShootableBreakable(tr.pHit)
-				|| ((FStrEq(STRING(tr.pHit->v.classname), "func_breakable")) && (tr.pHit != pBot->pBreakableIgnore)
-					&& (tr.pHit->v.takedamage > 0) && (tr.pHit->v.impulse == 0) && (tr.pHit->v.health < 1000))) // KWo - 12.03.2010
+				|| FStrEq(STRING(tr.pHit->v.classname), "func_breakable") && tr.pHit != pBot->pBreakableIgnore
+				&& tr.pHit->v.takedamage > 0 && tr.pHit->v.impulse == 0 && tr.pHit->v.health < 1000) // KWo - 12.03.2010
 			{
 				pBot->pShootBreakable = tr.pHit;
 				pBot->iCampButtons = pEdict->v.button & IN_DUCK;
@@ -5426,7 +5426,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 		// Standing still, no need to check ?
 		// FIXME: Doesn't care for ladder movement (handled separately)
 		// should be included in some way
-		if ((pBot->f_move_speed != 0.0f) || (pBot->f_sidemove_speed != 0.0f) || (true)) // KWo - 17.01.2010
+		if (pBot->f_move_speed != 0.0f || pBot->f_sidemove_speed != 0.0f || true) // KWo - 17.01.2010
 		{
 			pent = NULL;
 			pNearestPlayer = NULL;
@@ -5443,8 +5443,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 			{
 				if (!(clients[i].iFlags & CLIENT_USED)
 					|| !(clients[i].iFlags & CLIENT_ALIVE)
-					|| (clients[i].pEdict == pEdict)
-					|| (clients[i].pEdict->v.effects & EF_NODRAW))
+					|| clients[i].pEdict == pEdict
+					|| clients[i].pEdict->v.effects & EF_NODRAW)
 					continue;
 
 				if (fabs(clients[i].pEdict->v.origin.z - pEdict->v.origin.z) < 32)
@@ -5452,7 +5452,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 					v_src = clients[i].pEdict->v.origin;
 					v_dest = pEdict->v.origin;
 				}
-				else if ((clients[i].pEdict->v.origin.z - pEdict->v.origin.z) > 0)
+				else if (clients[i].pEdict->v.origin.z - pEdict->v.origin.z > 0)
 				{
 					v_src = clients[i].pEdict->v.origin + Vector(0.0f, 0.0f, -16.0f);
 					v_dest = pEdict->v.origin + Vector(0.0f, 0.0f, 16.0f);
@@ -5474,7 +5474,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 			}
 
 			// Found somebody ?
-			if (!FNullEnt(pNearestPlayer) && (pBot->cCollisionState == COLLISION_NOTDECIDED) /* && FInViewCone (&pNearestPlayer->v.origin, pEdict) */)
+			if (!FNullEnt(pNearestPlayer) && pBot->cCollisionState == COLLISION_NOTDECIDED /* && FInViewCone (&pNearestPlayer->v.origin, pEdict) */)
 			{
 				// bot found a visible teammate
 				if (g_b_DebugStuck)
@@ -5490,26 +5490,26 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 				MAKE_VECTORS(vecMoveAngles);
 				v_BotRightSide = gpGlobals->v_right;
 
-				if (((!pBot->b_bomb_blinking) || (!bCurrentWpGoal)) && (!bCurrentTravelJump)
-					&& ((pBot->current_weapon.iId != CS_WEAPON_KNIFE)
-						|| ((pBot->bot_team == clients[index].iTeam) && (!g_b_cv_ffa)))
-					&& (f_nearestdistance < 240.0f) && (f_nearestdistance >= 40.0f)
-					&& (iBotBypassPlayerColl != 0))  // KWo - 20.04.2010
+				if ((!pBot->b_bomb_blinking || !bCurrentWpGoal) && !bCurrentTravelJump
+					&& (pBot->current_weapon.iId != CS_WEAPON_KNIFE
+						|| pBot->bot_team == clients[index].iTeam && !g_b_cv_ffa)
+					&& f_nearestdistance < 240.0f && f_nearestdistance >= 40.0f
+					&& iBotBypassPlayerColl != 0)  // KWo - 20.04.2010
 				{
 					bBypassPlayer = TRUE;
 					TRACE_HULL(pEdict->v.origin + pEdict->v.view_ofs, pBot->dest_origin, dont_ignore_monsters,
-						(pEdict->v.flags & FL_DUCKING) ? head_hull : human_hull, pEdict, &tr2); // KWo - 27.04.2010
+						pEdict->v.flags & FL_DUCKING ? head_hull : human_hull, pEdict, &tr2); // KWo - 27.04.2010
 					if (tr2.flFraction == 1.0f)
 						bBypassPlayer = FALSE;
 					if (!bBypassPlayer) goto nobypass;
 
-					if ((pEdict->v.oldbuttons & IN_FORWARD) || (pEdict->v.oldbuttons & IN_BACK))
+					if (pEdict->v.oldbuttons & IN_FORWARD || pEdict->v.oldbuttons & IN_BACK)
 						v_BotVelocity = vecDirection * pBot->f_move_speed;
 					else
 						v_BotVelocity = g_vecZero;
 
-					v_BotVelocityL = ((-pEdict->v.maxspeed) * v_BotRightSide) + v_BotVelocity;
-					v_BotVelocityR = ((pEdict->v.maxspeed) * v_BotRightSide) + v_BotVelocity;
+					v_BotVelocityL = -pEdict->v.maxspeed * v_BotRightSide + v_BotVelocity;
+					v_BotVelocityR = pEdict->v.maxspeed * v_BotRightSide + v_BotVelocity;
 
 					if (iBotBypassPlayerColl < 0)
 					{
@@ -5519,7 +5519,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							if (!IsDeadlyDropAtPos(pBot, v_BotTargetPos))
 							{
 								TRACE_LINE(pEdict->v.origin, v_BotTargetPos, ignore_monsters, pEdict, &tr2); // KWo - 27.04.2010
-								if ((!FStrEq("worldspawn", STRING(tr2.pHit->v.classname))) || (tr2.flFraction == 1.0f))
+								if (!FStrEq("worldspawn", STRING(tr2.pHit->v.classname)) || tr2.flFraction == 1.0f)
 									pBot->f_sidemove_speed = -pEdict->v.maxspeed;
 							}
 							else // KWo - 07.04.2010
@@ -5538,7 +5538,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							if (!IsDeadlyDropAtPos(pBot, v_BotTargetPos))
 							{
 								TRACE_LINE(pEdict->v.origin, v_BotTargetPos, ignore_monsters, pEdict, &tr2); // KWo - 27.04.2010
-								if ((!FStrEq("worldspawn", STRING(tr2.pHit->v.classname))) || (tr2.flFraction == 1.0f))
+								if (!FStrEq("worldspawn", STRING(tr2.pHit->v.classname)) || tr2.flFraction == 1.0f)
 									pBot->f_sidemove_speed = pEdict->v.maxspeed;
 							}
 							else // KWo - 07.04.2010
@@ -5560,7 +5560,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							if (!IsDeadlyDropAtPos(pBot, v_BotTargetPos))
 							{
 								TRACE_LINE(pEdict->v.origin, v_BotTargetPos, ignore_monsters, pEdict, &tr2); // KWo - 27.04.2010
-								if ((!FStrEq("worldspawn", STRING(tr2.pHit->v.classname))) || (tr2.flFraction == 1.0f))
+								if (!FStrEq("worldspawn", STRING(tr2.pHit->v.classname)) || tr2.flFraction == 1.0f)
 									pBot->f_sidemove_speed = pEdict->v.maxspeed;
 							}
 							else
@@ -5579,7 +5579,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							if (!IsDeadlyDropAtPos(pBot, v_BotTargetPos))
 							{
 								TRACE_LINE(pEdict->v.origin, v_BotTargetPos, ignore_monsters, pEdict, &tr2); // KWo - 27.04.2010
-								if ((!FStrEq("worldspawn", STRING(tr2.pHit->v.classname))) || (tr2.flFraction == 1.0f))
+								if (!FStrEq("worldspawn", STRING(tr2.pHit->v.classname)) || tr2.flFraction == 1.0f)
 									pBot->f_sidemove_speed = -pEdict->v.maxspeed;
 							}
 							else
@@ -5593,18 +5593,18 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							}
 						}
 					}
-					if ((iBotBypassPlayerColl != 0) && (pBot->f_sidemove_speed != 0.0f) && (bPrevWptIndexOK) && (bCurrWptIndexOK)
-						&& (pBot->pWaypointNodes != NULL) && (!g_bRecalcVis) && (pBot->bMoveToGoal)
-						&& (BotGetSafeTask(pBot)->iData != pBot->curr_wpt_index))   // KWo - 04.04.2012
+					if (iBotBypassPlayerColl != 0 && pBot->f_sidemove_speed != 0.0f && bPrevWptIndexOK && bCurrWptIndexOK
+						&& pBot->pWaypointNodes != NULL && !g_bRecalcVis && pBot->bMoveToGoal
+						&& BotGetSafeTask(pBot)->iData != pBot->curr_wpt_index)   // KWo - 04.04.2012
 					{
 						if (pBot->pWaypointNodes->NextNode != NULL)
 						{
 							fDistToCurWP = (pEdict->v.origin - paths[pBot->curr_wpt_index]->origin).Length();
 							fDistToPrevWP = (pEdict->v.origin - paths[pBot->prev_wpt_index[0]]->origin).Length();
 							fDistToNextWP = (pEdict->v.origin - paths[pBot->pWaypointNodes->NextNode->iIndex]->origin).Length();
-							if ((fDistToCurWP < fDistToPrevWP) && (fDistToCurWP < fDistToNextWP)
-								&& ((pNearestPlayer->v.origin - paths[pBot->curr_wpt_index]->origin).Length() < 80.0f)
-								&& (fDistToCurWP < 80.0f))
+							if (fDistToCurWP < fDistToPrevWP && fDistToCurWP < fDistToNextWP
+								&& (pNearestPlayer->v.origin - paths[pBot->curr_wpt_index]->origin).Length() < 80.0f
+								&& fDistToCurWP < 80.0f)
 							{
 								// Advance in waypoints List
 								if (g_b_DebugStuck || g_b_DebugNavig)
@@ -5618,7 +5618,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 					if (g_b_DebugStuck)
 						ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s is about collision with %s (distance = %f) and needs strafe %s.\n",
-							pBot->name, STRING(clients[index].pEdict->v.netname), f_nearestdistance, (pBot->f_sidemove_speed > 0.0f) ? "right" : "left");
+							pBot->name, STRING(clients[index].pEdict->v.netname), f_nearestdistance, pBot->f_sidemove_speed > 0.0f ? "right" : "left");
 
 					// jump label
 				nobypass:
@@ -5626,12 +5626,12 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 						BotResetCollideState(pBot);
 				}
 
-				if ((f_nearestdistance < 40.0f) && (pBot->f_moved_distance < ((pEdict->v.flags & FL_DUCKING) ? 3.0f : 10.0f))
-					&& ((pBot->pEdict->v.origin - pBot->dest_origin).Length() > 20.0f))
+				if (f_nearestdistance < 40.0f && pBot->f_moved_distance < (pEdict->v.flags & FL_DUCKING ? 3.0f : 10.0f)
+					&& (pBot->pEdict->v.origin - pBot->dest_origin).Length() > 20.0f)
 				{
 					//               TRACE_HULL(pEdict->v.origin + pEdict->v.view_ofs, pBot->dest_origin, dont_ignore_monsters, (pEdict->v.flags & FL_DUCKING) ? head_hull : human_hull, pEdict, &tr2); // KWo - 28.01.2012
 					pBot->bPlayerCollision = TRUE;
-					if (/* (tr2.flFraction != 1.0f) && */ (pBot->cCollisionState == COLLISION_NOTDECIDED))  // KWo - 02.04.2010
+					if (/* (tr2.flFraction != 1.0f) && */ pBot->cCollisionState == COLLISION_NOTDECIDED)  // KWo - 02.04.2010
 					{
 						v_src = pEdict->v.origin;
 						v_dest = v_src - vecDirection * 32;
@@ -5671,7 +5671,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 				{
 					ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s %s stuck with player - %s; dist = %i, mov dist = %0.1f. NoCollTime %s gl_time, TASK = %s.\n",
 						pBot->name, pBot->bPlayerCollision ? "is" : "is not", STRING(pNearestPlayer->v.netname), (int)f_nearestdistance, pBot->f_moved_distance,
-						(pBot->fNoCollTime <= gpGlobals->time) ? "<=" : ">", g_TaskNames[pBot->pTasks->iTask]);
+						pBot->fNoCollTime <= gpGlobals->time ? "<=" : ">", g_TaskNames[pBot->pTasks->iTask]);
 
 					/*
 									  char szMessage[2048];
@@ -5696,7 +5696,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 			ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s moved distance = %i, dist to dest = %i, speed = %.0f, TASK = %s, timers %s.\n",
 				pBot->name, (int)pBot->f_moved_distance, (int)(pBot->pEdict->v.origin - pBot->dest_origin).Length(),
 				pBot->f_move_speed, g_TaskNames[iTask],
-				((pBot->fNoCollTime < gpGlobals->time) && (pBot->f_wpt_tim_str_chg < gpGlobals->time)) ? "OK" : "NOT OK");
+				pBot->fNoCollTime < gpGlobals->time && pBot->f_wpt_tim_str_chg < gpGlobals->time ? "OK" : "NOT OK");
 
 			/*
 					 char szMessage[2048];
@@ -5716,14 +5716,14 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 		// No Player collision ?
 		if (!bBypassPlayer
-			&& ((pBot->cCollisionState == COLLISION_PROBING)
-				|| (((g_i_botthink_index % 4) == (g_iFrameCounter % 4))
-					&& (((pBot->f_wpt_tim_str_chg < gpGlobals->time)
-						&& ((pBot->f_move_speed != 0.0f) || (pBot->f_sidemove_speed != 0.0f)
-							|| ((pBot->bHitDoor) && (pBot->f_timeHitDoor + 3.5f < gpGlobals->time)))
-						&& (pBot->fNoCollTime < gpGlobals->time)
-						&& ((iTask != TASK_ATTACK) || (pBot->byFightStyle != 1)))
-						|| (pBot->bPlayerCollision))))) // KWo - 22.10.2011
+			&& (pBot->cCollisionState == COLLISION_PROBING
+				|| g_i_botthink_index % 4 == g_iFrameCounter % 4
+				&& (pBot->f_wpt_tim_str_chg < gpGlobals->time
+					&& (pBot->f_move_speed != 0.0f || pBot->f_sidemove_speed != 0.0f
+						|| pBot->bHitDoor && pBot->f_timeHitDoor + 3.5f < gpGlobals->time)
+					&& pBot->fNoCollTime < gpGlobals->time
+					&& (iTask != TASK_ATTACK || pBot->byFightStyle != 1)
+					|| pBot->bPlayerCollision))) // KWo - 22.10.2011
 		{
 			if (pBot->cCollisionState == COLLISION_NOTDECIDED) // KWo - 23.03.2007
 			{
@@ -5735,12 +5735,12 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 				}
 
 				// Didn't we move enough previously ?
-				if ((((pBot->f_moved_distance < ((pEdict->v.flags & FL_DUCKING) ? 3.0f : 4.0f)) && ((pBot->pEdict->v.origin - pBot->dest_origin).Length() > 20.0f))
-					|| (pBot->bPlayerCollision))
-					&& (iTask != TASK_CAMP)
-					&& ((iTask != TASK_ATTACK) || (pBot->byFightStyle != 1) || (pBot->bPlayerCollision)
-						|| ((pBot->bHitDoor) && (pBot->f_timeHitDoor + 3.5f < gpGlobals->time)))
-					&& (pBot->f_UsageLiftTime == 0.0f)) // KWo - 17.01.2010
+				if ((pBot->f_moved_distance < (pEdict->v.flags & FL_DUCKING ? 3.0f : 4.0f) && (pBot->pEdict->v.origin - pBot->dest_origin).Length() > 20.0f
+					|| pBot->bPlayerCollision)
+					&& iTask != TASK_CAMP
+					&& (iTask != TASK_ATTACK || pBot->byFightStyle != 1 || pBot->bPlayerCollision
+						|| pBot->bHitDoor && pBot->f_timeHitDoor + 3.5f < gpGlobals->time)
+					&& pBot->f_UsageLiftTime == 0.0f) // KWo - 17.01.2010
 				{
 					// Then consider being stuck
 	 //               pBot->prev_time = gpGlobals->time;
@@ -5760,13 +5760,13 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 				}
 
 				// Not stuck yet
-				else if ((g_i_botthink_index % 4) == (g_iFrameCounter % 4)) // 24.10.2009
+				else if (g_i_botthink_index % 4 == g_iFrameCounter % 4) // 24.10.2009
 				{
 					bool bOnLadderWPT = FALSE;
 
 					if (bCurrWptIndexOK && bPrevWptIndexOK)
 					{
-						if ((paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) && (paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER))
+						if (paths[pBot->curr_wpt_index]->flags & W_FL_LADDER && paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER)
 							bOnLadderWPT = TRUE;
 					}
 
@@ -5786,11 +5786,11 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 						pBot->f_firstcollide_time = 0.0f;
 				}
 			}
-			else if (pBot->bPlayerCollision || (pBot->f_probe_time >= gpGlobals->time)) // KWo - 27.02.2007
+			else if (pBot->bPlayerCollision || pBot->f_probe_time >= gpGlobals->time) // KWo - 27.02.2007
 			{
 				bBotIsStuck = TRUE;
 			}
-			else if ((pBot->f_probe_time + 3.0f < gpGlobals->time) && (pBot->f_probe_time != 0.0f)) // KWo - 27.02.2007
+			else if (pBot->f_probe_time + 3.0f < gpGlobals->time && pBot->f_probe_time != 0.0f) // KWo - 27.02.2007
 			{
 				if (g_b_DebugStuck)
 					ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s resets its collision state because it was too long time in probing state.\n", pBot->name);
@@ -5826,7 +5826,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 			}
 
 			// Bot is stuck !!
-			else if ((g_i_botthink_index % 4) == (g_iFrameCounter % 4)) // 24.10.2009
+			else if (g_i_botthink_index % 4 == g_iFrameCounter % 4) // 24.10.2009
 			{
 				// Not yet decided what to do ?
 
@@ -5853,7 +5853,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 				Vector v_trace_start = pEdict->v.origin; // KWo - 16.07.2006
 				Vector v_trace_end = pBot->dest_origin; // KWo - 16.07.2006
-				TRACE_HULL(v_trace_start + pEdict->v.view_ofs, v_trace_end, dont_ignore_monsters, ((pEdict->v.flags & IN_DUCK) ? head_hull : human_hull), pEdict, &tr); // KWo - 16.07.2006
+				TRACE_HULL(v_trace_start + pEdict->v.view_ofs, v_trace_end, dont_ignore_monsters, pEdict->v.flags & IN_DUCK ? head_hull : human_hull, pEdict, &tr); // KWo - 16.07.2006
 
 				if (pBot->cCollisionState == COLLISION_NOTDECIDED)
 				{
@@ -5863,12 +5863,12 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 						if (FStrEq(STRING(tr.pHit->v.classname), "player"))
 						{
 							int iEntIndex = ENTINDEX(tr.pHit);
-							if ((iEntIndex > 0) && (iEntIndex <= gpGlobals->maxClients))
+							if (iEntIndex > 0 && iEntIndex <= gpGlobals->maxClients)
 							{
-								if (((clients[iEntIndex - 1].iTeam == pBot->bot_team) || g_bIgnoreEnemies) && (!g_b_cv_ffa)) // KWo - 05.10.2006
+								if ((clients[iEntIndex - 1].iTeam == pBot->bot_team || g_bIgnoreEnemies) && !g_b_cv_ffa) // KWo - 05.10.2006
 									bBotHitTeamnate = true;
 							}
-							if ((bBotHitTeamnate && ((tr.pHit->v.origin - pEdict->v.origin).Length() < 50.0f)) || pBot->bPlayerCollision) // KWO - 27.02.2007
+							if (bBotHitTeamnate && (tr.pHit->v.origin - pEdict->v.origin).Length() < 50.0f || pBot->bPlayerCollision) // KWO - 27.02.2007
 							{
 								pBot->bBotNeedsObviateObstacle = true;
 
@@ -5878,7 +5878,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							}
 						}
 
-						else if ((FStrEq(STRING(tr.pHit->v.classname), "hostage_entity")) && (pBot->bot_team == TEAM_CS_TERRORIST)) // KWo - 08.01.2008
+						else if (FStrEq(STRING(tr.pHit->v.classname), "hostage_entity") && pBot->bot_team == TEAM_CS_TERRORIST) // KWo - 08.01.2008
 						{
 							bBotHitHostage = true;
 							pBot->bBotNeedsObviateObstacle = true;
@@ -5905,11 +5905,11 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							float f_dist_traced;    // KWo - 15.08.2006
 							TRACE_LINE(pEdict->v.origin, v_dest, dont_ignore_monsters, pEdict, &tr2); // KWo - 17.01.2008
 	   //                     TRACE_HULL (pEdict->v.origin, v_dest, dont_ignore_monsters, head_hull, pEdict, &tr2);    // KWo - 23.05.2010
-							f_dist_traced = (tr2.flFraction) * (v_dest - pEdict->v.origin).Length();      // KWo - 15.08.2006
+							f_dist_traced = tr2.flFraction * (v_dest - pEdict->v.origin).Length();      // KWo - 15.08.2006
 							if (!FNullEnt(tr2.pHit))
 							{
-								if ((((tr2.flFraction < 1.0f) && (strncmp("func_door", STRING(tr2.pHit->v.classname), 9) == 0) && (f_dist_traced < 20.0f)) || bBotHitDoor)
-									&& (pBot->f_UsageLiftTime == 0) && (pBot->f_timeHitDoor + 3.5f < gpGlobals->time))
+								if ((tr2.flFraction < 1.0f && strncmp("func_door", STRING(tr2.pHit->v.classname), 9) == 0 && f_dist_traced < 20.0f || bBotHitDoor)
+									&& pBot->f_UsageLiftTime == 0 && pBot->f_timeHitDoor + 3.5f < gpGlobals->time)
 								{
 									bBotHitDoor = TRUE;
 									pBot->bHitDoor = TRUE;  // KWo - 24.10.2009
@@ -5955,7 +5955,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 									}
 								}
 							}
-							else if ((pBot->f_moved_distance < 10.0f) && (!bBotHitHostage) && (tr2.flFraction >= 1.0f)
+							else if (pBot->f_moved_distance < 10.0f && !bBotHitHostage && tr2.flFraction >= 1.0f
 								&& !(pEdict->v.flags & FL_DUCKING)) // not blocked in the normal way, but maybe legs - needs overjump something?
 							{
 								v_center = pEdict->v.angles;
@@ -5981,8 +5981,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 								{
 									// bot's head is clear, check at shoulder level...
 									// trace from the bot's shoulder left diagonal forward to the right shoulder... KWo - 08.01.2008 (changed -16 to - 18...)
-									v_src = GetGunPosition(pEdict) + Vector(0, 0, -18) + (-16) * gpGlobals->v_right;
-									v_forward = GetGunPosition(pEdict) + Vector(0, 0, -18) + (16) * gpGlobals->v_right + vecDirection * 32;
+									v_src = GetGunPosition(pEdict) + Vector(0, 0, -18) + -16 * gpGlobals->v_right;
+									v_forward = GetGunPosition(pEdict) + Vector(0, 0, -18) + 16 * gpGlobals->v_right + vecDirection * 32;
 
 									TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 17.01.2008
 									 // check if the trace hit something...
@@ -5992,8 +5992,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 									{
 										// bot's head is clear, check at shoulder level...
 										// trace from the bot's shoulder right diagonal forward to the left shoulder... KWo - 08.01.2008 (changed -16 to - 18...)
-										v_src = GetGunPosition(pEdict) + Vector(0, 0, -18) + (16) * gpGlobals->v_right;
-										v_forward = GetGunPosition(pEdict) + Vector(0, 0, -18) + (-16) * gpGlobals->v_right + vecDirection * 32;
+										v_src = GetGunPosition(pEdict) + Vector(0, 0, -18) + 16 * gpGlobals->v_right;
+										v_forward = GetGunPosition(pEdict) + Vector(0, 0, -18) + -16 * gpGlobals->v_right + vecDirection * 32;
 
 										TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 17.01.2008
 										if (tr.flFraction < 1.0f)
@@ -6002,8 +6002,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 										else
 										{
 											// Trace from the left Waist to the right forward Waist Pos
-											v_src = pEdict->v.origin + Vector(0, 0, -33) + (-16) * gpGlobals->v_right;
-											v_forward = pEdict->v.origin + Vector(0, 0, -16) + (16) * gpGlobals->v_right + vecDirection * 24;
+											v_src = pEdict->v.origin + Vector(0, 0, -33) + -16 * gpGlobals->v_right;
+											v_forward = pEdict->v.origin + Vector(0, 0, -16) + 16 * gpGlobals->v_right + vecDirection * 24;
 
 											// trace from the bot's waist straight forward...
 											TRACE_LINE(v_src, v_forward, ignore_monsters, pEdict, &tr);
@@ -6012,8 +6012,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 											if (tr.flFraction >= 1.0f)
 											{
 												// Trace from the right Waist to the left forward Waist Pos
-												v_src = pEdict->v.origin + Vector(0, 0, -33) + (16) * gpGlobals->v_right;
-												v_forward = pEdict->v.origin + Vector(0, 0, -16) + (-16) * gpGlobals->v_right + vecDirection * 24;
+												v_src = pEdict->v.origin + Vector(0, 0, -33) + 16 * gpGlobals->v_right;
+												v_forward = pEdict->v.origin + Vector(0, 0, -16) + -16 * gpGlobals->v_right + vecDirection * 24;
 
 												// check if the trace hit something...
 												TRACE_LINE(v_src, v_forward, ignore_monsters, pEdict, &tr);
@@ -6027,7 +6027,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 									}
 								}
 							}
-							else if ((pBot->f_moved_distance < 3.0f) && (tr2.flFraction >= 1.0f) && (pEdict->v.flags & FL_DUCKING)) // not blocked in the normal way, but maybe legs - needs overjump something?
+							else if (pBot->f_moved_distance < 3.0f && tr2.flFraction >= 1.0f && pEdict->v.flags & FL_DUCKING) // not blocked in the normal way, but maybe legs - needs overjump something?
 							{
 								v_center = pEdict->v.angles;
 								v_center.z = 0;
@@ -6071,8 +6071,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 										else
 										{
 											// Trace from the left Waist to the right forward Waist Pos
-											v_src = pEdict->v.origin + Vector(0, 0, -16) + (-16) * gpGlobals->v_right;
-											v_forward = pEdict->v.origin + Vector(0, 0, -16) + (16) * gpGlobals->v_right + vecDirection * 32;
+											v_src = pEdict->v.origin + Vector(0, 0, -16) + -16 * gpGlobals->v_right;
+											v_forward = pEdict->v.origin + Vector(0, 0, -16) + 16 * gpGlobals->v_right + vecDirection * 32;
 
 											// trace from the bot's waist straight forward...
 											TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 17.01.2008
@@ -6081,8 +6081,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 											if (tr.flFraction >= 1.0f)
 											{
 												// Trace from the right Waist to the left forward Waist Pos
-												v_src = pEdict->v.origin + Vector(0, 0, -16) + (16) * gpGlobals->v_right;
-												v_forward = pEdict->v.origin + Vector(0, 0, -16) + (-16) * gpGlobals->v_right + vecDirection * 32;
+												v_src = pEdict->v.origin + Vector(0, 0, -16) + 16 * gpGlobals->v_right;
+												v_forward = pEdict->v.origin + Vector(0, 0, -16) + -16 * gpGlobals->v_right + vecDirection * 32;
 
 												// check if the trace hit something...
 												TRACE_LINE(v_src, v_forward, dont_ignore_monsters, pEdict, &tr); // KWo - 17.01.2008
@@ -6096,23 +6096,23 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 								}
 							}
 						}
-						if (pBot->bPlayerCollision && (!BotCantMoveBack(pBot, vecDirection))) // KWo - 27.02.2007
+						if (pBot->bPlayerCollision && !BotCantMoveBack(pBot, vecDirection)) // KWo - 27.02.2007
 							cBits |= PROBE_GOBACK;
 
-						if ((((pBot->f_moved_distance < 2.0f) && ((!bBotHitHostage) && (pBot->bBotNeedsObviateObstacle)))
-							|| (f_nearestdistance < 20)) && pBot->bIsLeader)
+						if ((pBot->f_moved_distance < 2.0f && (!bBotHitHostage && pBot->bBotNeedsObviateObstacle)
+							|| f_nearestdistance < 20) && pBot->bIsLeader)
 						{
 							if (g_b_DebugStuck)
 								ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s is a leader and is too close to another player - wants to jump.\n", pBot->name);
 
 							bTryJump = TRUE;
 						}
-						if ((!bTryJump) && (bPrevWptIndexOK))  // KWo - 04.10.2009
+						if (!bTryJump && bPrevWptIndexOK)  // KWo - 04.10.2009
 						{
 							for (i = 0; i < MAX_PATH_INDEX; i++)
 							{
-								if ((paths[pBot->prev_wpt_index[0]]->index[i] == pBot->curr_wpt_index)
-									&& (paths[pBot->prev_wpt_index[0]]->connectflag[i] & C_FL_JUMP))
+								if (paths[pBot->prev_wpt_index[0]]->index[i] == pBot->curr_wpt_index
+									&& paths[pBot->prev_wpt_index[0]]->connectflag[i] & C_FL_JUMP)
 								{
 									bTryJump = TRUE;
 									break;
@@ -6132,13 +6132,13 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 						{
 							TRACE_LINE(pBot->pEdict->v.origin, pBot->wpt_origin, dont_ignore_monsters, pBot->pEdict, &tr2); // KWo - 14.07.2006
 							float fRandomProbeJump = RANDOM_FLOAT(0.0f, 10.0f); // KWo - 26.06.2006 to prevent stupid jumping
-							if ((((fRandomProbeJump > 9.0f) || ((!bBotHitHostage) && (fRandomProbeJump > 9.0f)
-								&& (BotCantMoveForward(pBot, vecDirection)) && (tr2.flFraction == 1.0f)))
-								|| (pBot->dest_origin.z >= pEdict->v.origin.z + 18.0f))
-								&& (!bBotHitDoor) && (pBot->f_timeHitDoor + 2.0f < gpGlobals->time)) // KWo - 26.06.2006
+							if ((fRandomProbeJump > 9.0f || !bBotHitHostage && fRandomProbeJump > 9.0f
+									&& BotCantMoveForward(pBot, vecDirection) && tr2.flFraction == 1.0f
+								|| pBot->dest_origin.z >= pEdict->v.origin.z + 18.0f)
+								&& !bBotHitDoor && pBot->f_timeHitDoor + 2.0f < gpGlobals->time) // KWo - 26.06.2006
 							{
-								if ((pBot->f_moved_distance < 2.0f) && ((pBot->pEdict->v.origin - pBot->dest_origin).Length() > 15.0f)
-									&& (pBot->f_UsageLiftTime == 0.0f)) // KWo - 08.10.2006
+								if (pBot->f_moved_distance < 2.0f && (pBot->pEdict->v.origin - pBot->dest_origin).Length() > 15.0f
+									&& pBot->f_UsageLiftTime == 0.0f) // KWo - 08.10.2006
 								{
 									if (g_b_DebugStuck)
 										ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s wants to overjump an obstacle (3).\n", pBot->name);
@@ -6146,7 +6146,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 									cBits |= PROBE_JUMP;
 								}
 							}
-							if ((pBot->f_moved_distance < 2.0f) && (pBot->bBotNeedsObviateObstacle) && (f_nearestdistance < 30) && (fRandomProbeJump > 9.0f))
+							if (pBot->f_moved_distance < 2.0f && pBot->bBotNeedsObviateObstacle && f_nearestdistance < 30 && fRandomProbeJump > 9.0f)
 							{
 								cBits |= PROBE_JUMP;
 
@@ -6157,18 +6157,18 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 							cBits |= PROBE_DUCK;
 							cBits |= PROBE_STRAFE;
-							if ((!BotCantMoveBack(pBot, vecDirection)) && (!bBotHitHostage) && (!bAlreadyBack) && (pBot->f_timeHitDoor + 5.0f < gpGlobals->time)) // KWo - 15.01.2007
+							if (!BotCantMoveBack(pBot, vecDirection) && !bBotHitHostage && !bAlreadyBack && pBot->f_timeHitDoor + 5.0f < gpGlobals->time) // KWo - 15.01.2007
 								cBits |= PROBE_GOBACK;
 						}
 					}
 
 					if (g_b_DebugStuck)
 						ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s is stuck, cBits = %s %s %s %s.\n",
-							pBot->name, (cBits & PROBE_JUMP) ? "PROBE_JUMP," : "", (cBits & PROBE_DUCK) ? "PROBE_DUCK," : "",
-							(cBits & PROBE_STRAFE) ? "PROBE_STRAFE," : "", (cBits & PROBE_GOBACK) ? "PROBE_GOBACK" : "");
+							pBot->name, cBits & PROBE_JUMP ? "PROBE_JUMP," : "", cBits & PROBE_DUCK ? "PROBE_DUCK," : "",
+							cBits & PROBE_STRAFE ? "PROBE_STRAFE," : "", cBits & PROBE_GOBACK ? "PROBE_GOBACK" : "");
 
 					// Collision check allowed if not flying through the air
-					if ((pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND)) || pBot->bPlayerCollision)  // KWo - 27.02.2007
+					if (pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND) || pBot->bPlayerCollision)  // KWo - 27.02.2007
 					{
 						char cState[10];
 						i = 0;
@@ -6221,8 +6221,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 								pBot->iCampButtons = 0; // KWo - 17.02.2008
 								cState[i] += 10;
 							}
-							if ((pBot->dest_origin.z >= pEdict->v.origin.z + 18.0f) || ((!bBotHitHostage) && (tr2.flFraction == 1.0f) && BotCantMoveForward(pBot, vecDirection))
-								|| (f_nearestdistance <= 35.0f)) // KWo - 26.02.2007
+							if (pBot->dest_origin.z >= pEdict->v.origin.z + 18.0f || !bBotHitHostage && tr2.flFraction == 1.0f && BotCantMoveForward(pBot, vecDirection)
+								|| f_nearestdistance <= 35.0f) // KWo - 26.02.2007
 								cState[i] += 30;
 							if (bTryJump)
 							{
@@ -6240,7 +6240,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 								if (tr2.flFraction >= 1.0f)
 								{
 									v_src = GetGunPosition(pEdict);
-									v_src = v_src + (-gpGlobals->v_right * 15);
+									v_src = v_src + -gpGlobals->v_right * 15;
 									UTIL_TraceLine(v_src, pBot->dest_origin, ignore_monsters, ignore_glass, pEdict, &tr2);
 
 									if (tr2.flFraction >= 1.0f)
@@ -6270,7 +6270,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							if (BotCanDuckUnder(pBot, vecDirectionNormal))
 								cState[i] += 20;
 
-							if ((pBot->dest_origin.z + 36.0f <= pEdict->v.origin.z)
+							if (pBot->dest_origin.z + 36.0f <= pEdict->v.origin.z
 								&& BotEntityIsVisible(pBot, pBot->dest_origin))
 								cState[i] += 25;
 						}
@@ -6328,12 +6328,12 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							}
 
 							// Now check which side is blocked
-							v_dest = pEdict->v.origin + gpGlobals->v_right * (pBot->bBotNeedsObviateObstacle ? 50 : (pEdict->v.flags & FL_DUCKING) ? 10 : 20);
+							v_dest = pEdict->v.origin + gpGlobals->v_right * (pBot->bBotNeedsObviateObstacle ? 50 : pEdict->v.flags & FL_DUCKING ? 10 : 20);
 							v_src = pEdict->v.origin;
 
 							TRACE_LINE(v_src, v_dest, dont_ignore_monsters, pEdict, &tr2);  // KWo - 01.04.2010
 
-							if ((tr2.flFraction != 1.0f) || IsDeadlyDropAtPos(pBot, v_dest)) // KWo - 02.04.2010
+							if (tr2.flFraction != 1.0f || IsDeadlyDropAtPos(pBot, v_dest)) // KWo - 02.04.2010
 							{
 								bBlockedRight = TRUE;
 								cState[3] = COLLISION_NOMOVE;  // KWo - 25.06.2006
@@ -6341,12 +6341,12 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							else
 								pBot->str_r_origin = v_dest;
 
-							v_dest = pEdict->v.origin + -gpGlobals->v_right * (pBot->bBotNeedsObviateObstacle ? 50 : (pEdict->v.flags & FL_DUCKING) ? 10 : 20);
+							v_dest = pEdict->v.origin + -gpGlobals->v_right * (pBot->bBotNeedsObviateObstacle ? 50 : pEdict->v.flags & FL_DUCKING ? 10 : 20);
 							v_src = pEdict->v.origin;
 
 							TRACE_LINE(v_src, v_dest, dont_ignore_monsters, pEdict, &tr2);  // KWo - 01.04.2010
 
-							if ((tr2.flFraction != 1.0f) || IsDeadlyDropAtPos(pBot, v_dest)) // KWo - 02.04.2010
+							if (tr2.flFraction != 1.0f || IsDeadlyDropAtPos(pBot, v_dest)) // KWo - 02.04.2010
 							{
 								bBlockedLeft = TRUE;
 								cState[2] = COLLISION_NOMOVE;  // KWo - 25.06.2006
@@ -6413,7 +6413,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							v_dest = v_src - v_direction * 32;
 							TRACE_LINE(v_src, v_dest, dont_ignore_monsters, pEdict, &tr2);  // KWo - 01.04.2010
 
-							if ((tr2.flFraction != 1.0f) || IsDeadlyDropAtPos(pBot, v_dest)) // KWo - 02.04.2010
+							if (tr2.flFraction != 1.0f || IsDeadlyDropAtPos(pBot, v_dest)) // KWo - 02.04.2010
 							{
 								cState[i] -= 70;
 								cState[4] = COLLISION_NOMOVE;  // KWo - 25.06.2006
@@ -6421,7 +6421,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							else
 							{
 								cState[i] += 40;
-								if ((bBotHitDoor) || (f_nearestdistance < 50))
+								if (bBotHitDoor || f_nearestdistance < 50)
 								{
 									cState[i] += 40;
 								}
@@ -6458,8 +6458,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 									pBot->name, g_CollideMoveNames[(int)pBot->cCollideMoves[i]], cState[i + 5]);
 						}
 
-						if ((pBot->cCollideMoves[0] == COLLISION_STRAFELEFT)
-							|| (pBot->cCollideMoves[0] == COLLISION_STRAFERIGHT))
+						if (pBot->cCollideMoves[0] == COLLISION_STRAFELEFT
+							|| pBot->cCollideMoves[0] == COLLISION_STRAFERIGHT)
 						{
 							pBot->f_probe_time = gpGlobals->time + 1.6f;
 						}
@@ -6475,10 +6475,10 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 					}
 				}
 			} // KWo - 24.10.2009
-			else if ((g_i_botthink_index % 4) != (g_iFrameCounter % 4)) // 24.10.2009
+			else if (g_i_botthink_index % 4 != g_iFrameCounter % 4) // 24.10.2009
 				bBotIsStuck = FALSE;
 
-			if ((bBotIsStuck) || (pBot->cCollisionState == COLLISION_PROBING)) // KWo - 11.11.2009
+			if (bBotIsStuck || pBot->cCollisionState == COLLISION_PROBING) // KWo - 11.11.2009
 			{
 				if (g_b_DebugStuck)
 				{
@@ -6512,13 +6512,13 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 						if (pBot->cCollStateIndex <= 5)  // KWo - 25.06.2006
 						{
-							if ((pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_STRAFELEFT)
-								|| (pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_STRAFERIGHT))
+							if (pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_STRAFELEFT
+								|| pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_STRAFERIGHT)
 								pBot->f_probe_time = gpGlobals->time + 1.6f;
 							else if (pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_GOBACK)
 								pBot->f_probe_time = gpGlobals->time + 0.8f;
-							else if ((pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_JUMP)
-								|| (pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_DUCK))
+							else if (pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_JUMP
+								|| pBot->cCollideMoves[(int)pBot->cCollStateIndex] == COLLISION_DUCK)
 								pBot->f_probe_time = gpGlobals->time + 0.5f;
 						}
 
@@ -6550,8 +6550,8 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 						{
 						case COLLISION_JUMP:
 						{
-							if (((pEdict->v.flags & FL_ONGROUND) || pBot->bInWater)
-								&& !pBot->bHitDoor && (!pBot->bOnLadder) && (pBot->f_timeHitDoor < gpGlobals->time)) // KWo - 17.04.2016
+							if ((pEdict->v.flags & FL_ONGROUND || pBot->bInWater)
+								&& !pBot->bHitDoor && !pBot->bOnLadder && pBot->f_timeHitDoor < gpGlobals->time) // KWo - 17.04.2016
 							{
 								if (g_b_DebugStuck)
 									ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s is stuck, trying to jump; time %f.\n", pBot->name, gpGlobals->time);
@@ -6586,7 +6586,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 								if (bPrevWptIndexOK && bCurrWptIndexOK)   // KWo - 14.01.2008
 								{
-									if ((pBot->f_timeHitDoor + 3.0f > gpGlobals->time) || (pBot->f_timeHitDoor < gpGlobals->time)) // KWo - 17.09.2006
+									if (pBot->f_timeHitDoor + 3.0f > gpGlobals->time || pBot->f_timeHitDoor < gpGlobals->time) // KWo - 17.09.2006
 									{
 										Vector2D vec2DirToPrevWP;
 										Vector2D Vector2DirFromPoint;
@@ -6604,7 +6604,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 										if (fDot3 < 0.99f)
 										{
-											fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : (pEdict->v.maxspeed / 2.0f);          // KWo - 09.01.2008
+											fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : pEdict->v.maxspeed / 2.0f;          // KWo - 09.01.2008
 											pBot->f_move_speed = 0.0f;
 											BotSetStrafeSpeed(pBot, -fSideSpeed);          // KWo - 09.01.2008
 
@@ -6619,9 +6619,9 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 										fStrafeDistance = (pBot->str_l_origin - pBot->pEdict->v.origin).Length(); // KWo - 09.01.2008
 										if (fStrafeDistance > 10.0f) // KWo - 09.01.2008
 										{
-											fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : ((fStrafeDistance / 50.0f) * pEdict->v.maxspeed);    // KWo - 09.01.2008
+											fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : fStrafeDistance / 50.0f * pEdict->v.maxspeed;    // KWo - 09.01.2008
 											if (fSideSpeed > pEdict->v.maxspeed / 2.0f)                     // KWo - 09.01.2008
-												fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : (pEdict->v.maxspeed / 2.0f);
+												fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : pEdict->v.maxspeed / 2.0f;
 											BotSetStrafeSpeed(pBot, -fSideSpeed);                         // KWo - 09.01.2008
 
 											if (g_b_DebugStuck)
@@ -6639,9 +6639,9 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 	  //                              pBot->dest_origin = pBot->str_l_origin;
 									if (fStrafeDistance > 10.0f) // KWo - 09.01.2008
 									{
-										fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : ((fStrafeDistance / 50.0f) * pEdict->v.maxspeed);             // KWo - 09.01.2008
+										fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : fStrafeDistance / 50.0f * pEdict->v.maxspeed;             // KWo - 09.01.2008
 										if (fSideSpeed > pEdict->v.maxspeed / 2.0f)                              // KWo - 09.01.2008
-											fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : (pEdict->v.maxspeed / 2.0f);
+											fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : pEdict->v.maxspeed / 2.0f;
 										BotSetStrafeSpeed(pBot, -fSideSpeed);                                  // KWo - 09.01.2008
 
 										if (g_b_DebugStuck)
@@ -6664,9 +6664,9 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 								pBot->f_move_speed = 0.0f;
 								if (fStrafeDistance > 10.0f)                                                // KWo - 09.01.2008
 								{
-									fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : ((fStrafeDistance / 50.0f) * pEdict->v.maxspeed);             // KWo - 09.01.2008
+									fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : fStrafeDistance / 50.0f * pEdict->v.maxspeed;             // KWo - 09.01.2008
 									if (fSideSpeed > pEdict->v.maxspeed / 2.0f)                              // KWo - 09.01.2008
-										fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : (pEdict->v.maxspeed / 2.0f);
+										fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : pEdict->v.maxspeed / 2.0f;
 									BotSetStrafeSpeed(pBot, -fSideSpeed);                                  // KWo - 09.01.2008
 
 									if (g_b_DebugStuck)
@@ -6695,7 +6695,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 								if (bPrevWptIndexOK && bCurrWptIndexOK)   // KWo - 14.01.2008
 								{
-									if ((pBot->f_timeHitDoor + 3.0f > gpGlobals->time) || (pBot->f_timeHitDoor < gpGlobals->time)) // KWo - 17.09.2006
+									if (pBot->f_timeHitDoor + 3.0f > gpGlobals->time || pBot->f_timeHitDoor < gpGlobals->time) // KWo - 17.09.2006
 									{
 										Vector2D vec2DirToPrevWP;
 										Vector2D Vector2DirFromPoint;
@@ -6713,7 +6713,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 
 										if (fDot3 < 0.99)
 										{
-											fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : (pEdict->v.maxspeed / 2.0f);          // KWo - 09.01.2008
+											fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : pEdict->v.maxspeed / 2.0f;          // KWo - 09.01.2008
 											BotSetStrafeSpeed(pBot, fSideSpeed);           // KWo - 09.01.2008
 											pBot->f_move_speed = 0.0f;
 
@@ -6728,9 +6728,9 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 										fStrafeDistance = (pBot->str_r_origin - pBot->pEdict->v.origin).Length(); // KWo - 09.01.2008
 										if (fStrafeDistance > 10.0f) // KWo - 09.01.2008
 										{
-											fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : ((fStrafeDistance / 50.0f) * pEdict->v.maxspeed);    // KWo - 09.01.2008
+											fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : fStrafeDistance / 50.0f * pEdict->v.maxspeed;    // KWo - 09.01.2008
 											if (fSideSpeed > pEdict->v.maxspeed / 2.0f)                     // KWo - 09.01.2008
-												fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : (pEdict->v.maxspeed / 2.0f);
+												fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : pEdict->v.maxspeed / 2.0f;
 											BotSetStrafeSpeed(pBot, fSideSpeed);                          // KWo - 09.01.2008
 
 											if (g_b_DebugStuck)
@@ -6748,9 +6748,9 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 	  //                              pBot->dest_origin = pBot->str_r_origin;
 									if (fStrafeDistance > 10.0f)                                               // KWo - 09.01.2008
 									{
-										fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : ((fStrafeDistance / 50.0f) * pEdict->v.maxspeed);            // KWo - 09.01.2008
+										fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : fStrafeDistance / 50.0f * pEdict->v.maxspeed;            // KWo - 09.01.2008
 										if (fSideSpeed > pEdict->v.maxspeed / 2.0f)                             // KWo - 09.01.2008
-											fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : (pEdict->v.maxspeed / 2.0f);
+											fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : pEdict->v.maxspeed / 2.0f;
 										BotSetStrafeSpeed(pBot, fSideSpeed);                                  // KWo - 09.01.2008
 
 										if (g_b_DebugStuck)
@@ -6772,9 +6772,9 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 								pBot->f_move_speed = 0.0f;
 								if (fStrafeDistance > 10.0f)                                                // KWo - 09.01.2008
 								{
-									fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : ((fStrafeDistance / 50.0f) * pEdict->v.maxspeed);             // KWo - 09.01.2008
+									fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : fStrafeDistance / 50.0f * pEdict->v.maxspeed;             // KWo - 09.01.2008
 									if (fSideSpeed > pEdict->v.maxspeed / 2.0f)                              // KWo - 09.01.2008
-										fSideSpeed = (pEdict->v.flags & FL_DUCKING) ? (pEdict->v.maxspeed) : (pEdict->v.maxspeed / 2.0f);
+										fSideSpeed = pEdict->v.flags & FL_DUCKING ? pEdict->v.maxspeed : pEdict->v.maxspeed / 2.0f;
 									BotSetStrafeSpeed(pBot, fSideSpeed);                                   // KWo - 09.01.2008
 
 									if (g_b_DebugStuck)
@@ -6792,7 +6792,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 							if (g_b_DebugStuck)
 								ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s is stuck, trying to go back; time %f.\n", pBot->name, gpGlobals->time);
 
-							if ((pBot->f_timeHitDoor > gpGlobals->time) && (pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))  // 14.07.2006
+							if (pBot->f_timeHitDoor > gpGlobals->time && pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)  // 14.07.2006
 							{
 								pBot->dest_origin = paths[pBot->prev_wpt_index[0]]->origin;
 
@@ -6812,7 +6812,7 @@ void BotCheckTerrain(bot_t* pBot) // KWo - 19.07.2006
 								Vector vecDestination = g_vecZero;
 								MAKE_VECTORS(pEdict->v.angles);
 								vecForward = gpGlobals->v_forward;
-								vecDestination = pEdict->v.origin + (-40.0f) * vecForward; // KWo - 07.04.2010
+								vecDestination = pEdict->v.origin + -40.0f * vecForward; // KWo - 07.04.2010
 
 								if (!IsDeadlyDropAtPos(pBot, vecDestination))
 								{
@@ -6851,5 +6851,5 @@ STRINGNODE* GetNodeSTRING(STRINGNODE* pNode, int NodeNum)
 		i++;
 	}
 
-	return (pTempNode);
+	return pTempNode;
 }

@@ -28,13 +28,13 @@ void SoundAttachToThreat(edict_t* pEdict, const char* pszSample, float fVolume)
 		return;
 
 	// Hit/Fall Sound ?
-	if ((strncmp("player/bhit_", pszSample, 12) == 0)
-		|| (strncmp("player/headshot", pszSample, 15) == 0))
+	if (strncmp("player/bhit_", pszSample, 12) == 0
+		|| strncmp("player/headshot", pszSample, 15) == 0)
 	{
 		iIndex = ENTINDEX(pEdict) - 1;
 
 		// crash fix courtesy of Wei Mingzhi
-		if ((iIndex < 0) || (iIndex >= gpGlobals->maxClients))
+		if (iIndex < 0 || iIndex >= gpGlobals->maxClients)
 			iIndex = UTIL_GetNearestPlayerIndex(VecBModelOrigin(pEdict));
 
 		clients[iIndex].fHearingDistance = 768.0f * fVolume;
@@ -49,7 +49,7 @@ void SoundAttachToThreat(edict_t* pEdict, const char* pszSample, float fVolume)
 		iIndex = ENTINDEX(pEdict) - 1;
 
 		// crash fix courtesy of Wei Mingzhi
-		if ((iIndex < 0) || (iIndex >= gpGlobals->maxClients))
+		if (iIndex < 0 || iIndex >= gpGlobals->maxClients)
 			iIndex = UTIL_GetNearestPlayerIndex(VecBModelOrigin(pEdict));
 
 		clients[iIndex].fHearingDistance = 768.0f * fVolume;
@@ -64,7 +64,7 @@ void SoundAttachToThreat(edict_t* pEdict, const char* pszSample, float fVolume)
 		iIndex = ENTINDEX(pEdict) - 1;
 
 		// crash fix courtesy of Wei Mingzhi
-		if ((iIndex < 0) || (iIndex >= gpGlobals->maxClients))
+		if (iIndex < 0 || iIndex >= gpGlobals->maxClients)
 			iIndex = UTIL_GetNearestPlayerIndex(VecBModelOrigin(pEdict));
 
 		clients[iIndex].fHearingDistance = 512.0f * fVolume;
@@ -115,8 +115,8 @@ void SoundAttachToThreat(edict_t* pEdict, const char* pszSample, float fVolume)
 	}
 
 	// Broke something ?
-	else if ((strncmp("debris/bustmetal", pszSample, 16) == 0)
-		|| (strncmp("debris/bustglass", pszSample, 16) == 0))
+	else if (strncmp("debris/bustmetal", pszSample, 16) == 0
+		|| strncmp("debris/bustglass", pszSample, 16) == 0)
 	{
 		vecPosition = VecBModelOrigin(pEdict);
 		iIndex = UTIL_GetNearestPlayerIndex(vecPosition);

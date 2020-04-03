@@ -53,10 +53,10 @@ Vector UTIL_VecToAngles(const Vector& vec)
 
 	float fYaw, fPitch;
 
-	if ((vec.x == 0) && (vec.y == 0))
+	if (vec.x == 0 && vec.y == 0)
 	{
 		fYaw = 0;
-		fPitch = (vec.z > 0) ? 90.0f : 270.0f;
+		fPitch = vec.z > 0 ? 90.0f : 270.0f;
 	}
 	else
 	{
@@ -74,7 +74,7 @@ void UTIL_TraceLine(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTER
 
 void UTIL_TraceLine(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, edict_t* pentIgnore, TraceResult* ptr)
 {
-	TRACE_LINE(vecStart, vecEnd, (igmon == ignore_monsters ? TRUE : FALSE), pentIgnore, ptr);
+	TRACE_LINE(vecStart, vecEnd, igmon == ignore_monsters ? TRUE : FALSE, pentIgnore, ptr);
 }
 
 unsigned short FixedUnsigned16(float value, float scale)
@@ -87,7 +87,7 @@ unsigned short FixedUnsigned16(float value, float scale)
 	if (output > 0xFFFF)
 		output = 0xFFFF;
 
-	return ((unsigned short)output);
+	return (unsigned short)output;
 }
 
 short FixedSigned16(float value, float scale)
@@ -102,35 +102,33 @@ short FixedSigned16(float value, float scale)
 	if (output < -32768)
 		output = -32768;
 
-	return ((short)output);
+	return (short)output;
 }
 
 int UTIL_GetTeam(edict_t* pEntity)
 {
 	// return team number 1 through 2 based what MOD uses for team numbers
-	return (clients[ENTINDEX(pEntity) - 1].iTeam);
+	return clients[ENTINDEX(pEntity) - 1].iTeam;
 }
 
 bot_t* UTIL_GetBotPointer(edict_t* pEdict)
 {
 	if (FNullEnt(pEdict))
-		return (NULL); // reliability check
+		return NULL; // reliability check
 
 	int index = ENTINDEX(pEdict) - 1;
 
-	if ((index >= 0) && (index < gpGlobals->maxClients) && (bots[index].pEdict == pEdict))
-		return (&bots[index]);
+	if (index >= 0 && index < gpGlobals->maxClients && bots[index].pEdict == pEdict)
+		return &bots[index];
 
-	return (NULL); // return NULL if edict is not a bot
+	return NULL; // return NULL if edict is not a bot
 }
 
 bool IsAlive(edict_t* pEdict)
 {
-	return ((pEdict->v.deadflag == DEAD_NO)
-		&& (pEdict->v.health > 0)
-		&& !(pEdict->v.flags & FL_NOTARGET)
-		//           && (pEdict->v.takedamage != 0)  doesn't work with godmode  KWo - 05.04.2006
-		/*    && (pEdict->v.movetype != MOVETYPE_NOCLIP) */);  // KWo - 02.03.2010
+	return pEdict->v.deadflag == DEAD_NO
+		&& pEdict->v.health > 0
+		&& !(pEdict->v.flags & FL_NOTARGET);  // KWo - 02.03.2010
 }
 
 bool FInViewCone(Vector* pOrigin, edict_t* pEdict)
@@ -150,10 +148,10 @@ bool FInViewCone(Vector* pOrigin, edict_t* pEdict)
 	else
 		fov = 90.0f;
 
-	if (flDot >= cos((fov / 2) * M_PI / 180.0f))
-		return (TRUE);
+	if (flDot >= cos(fov / 2 * M_PI / 180.0f))
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 float GetShootingConeDeviation(edict_t* pEdict, Vector* pvecPosition)
@@ -164,23 +162,23 @@ float GetShootingConeDeviation(edict_t* pEdict, Vector* pvecPosition)
 	MAKE_VECTORS(vecAngle);
 
 	// He's facing it, he meant it
-	return (DotProduct(gpGlobals->v_forward, vecDir));
+	return DotProduct(gpGlobals->v_forward, vecDir);
 }
 
 bool IsShootableBreakable(edict_t* pent)  // KWo - 08.02.2006
 {
 	if (pent == NULL)
-		return (false);
+		return false;
 
-	return ((((FStrEq("func_breakable", STRING(pent->v.classname))
-		&& ((pent->v.playerclass == 1) || (pent->v.health == 0)
-			|| ((pent->v.health > 1) && (pent->v.health < 1000))
-			|| (pent->v.rendermode == 4))) // KWo - 21.02.2006 - br. crates has rendermode 4
-		|| (FStrEq("func_pushable", STRING(pent->v.classname))
-			&& (pent->v.health < 1000) && (pent->v.spawnflags & SF_PUSH_BREAKABLE))))  // KWo - 03.02.2007
-		&& (pent->v.impulse == 0)
-		&& (pent->v.takedamage > 0)
-		&& (!(pent->v.spawnflags & SF_BREAK_TRIGGER_ONLY)));
+	return (FStrEq("func_breakable", STRING(pent->v.classname))
+			&& (pent->v.playerclass == 1 || pent->v.health == 0
+				|| pent->v.health > 1 && pent->v.health < 1000
+				|| pent->v.rendermode == 4) // KWo - 21.02.2006 - br. crates has rendermode 4
+			|| FStrEq("func_pushable", STRING(pent->v.classname))
+			&& pent->v.health < 1000 && pent->v.spawnflags & SF_PUSH_BREAKABLE)  // KWo - 03.02.2007
+		&& pent->v.impulse == 0
+		&& pent->v.takedamage > 0
+		&& !(pent->v.spawnflags & SF_BREAK_TRIGGER_ONLY);
 }
 
 /*
@@ -215,25 +213,25 @@ bool FBoxVisible(bot_t* pBot, edict_t* pTargetEdict, Vector* pvHit, unsigned cha
 	pEdict = pBot->pEdict;           // KWo - 27.05.2008
 
 	if (FNullEnt(pTargetEdict))      // KWo - 17.01.2011
-		return (FALSE);
+		return false;
 
 	TargetEntIndex = ENTINDEX(pTargetEdict) - 1;                                        // 17.01.2011
-	if ((TargetEntIndex >= 0) && (TargetEntIndex < gpGlobals->maxClients))
+	if (TargetEntIndex >= 0 && TargetEntIndex < gpGlobals->maxClients)
 	{
 		TargetWeapon = clients[TargetEntIndex].iCurrentWeaponId;                          // 17.01.2011
-		WeaponIsGun = (WeaponIsPistol(TargetWeapon) || WeaponIsPrimaryGun(TargetWeapon)); // 17.01.2011
+		WeaponIsGun = WeaponIsPistol(TargetWeapon) || WeaponIsPrimaryGun(TargetWeapon); // 17.01.2011
 	}
 	else
 		WeaponIsGun = FALSE;
 
 	// Can't see the target entity if blinded or smoked...
 	if ((pEdict->v.origin - pTargetEdict->v.origin).Length() > pBot->f_view_distance)   // KWo - 14.09.2008
-		return (FALSE);
+		return false;
 
 	// don't look through water
-	if (((pEdict->v.waterlevel != 3) && (pTargetEdict->v.waterlevel == 3))
-		|| ((pEdict->v.waterlevel == 3) && (pTargetEdict->v.waterlevel == 0)))
-		return (FALSE);
+	if (pEdict->v.waterlevel != 3 && pTargetEdict->v.waterlevel == 3
+		|| pEdict->v.waterlevel == 3 && pTargetEdict->v.waterlevel == 0)
+		return false;
 
 	// KWo - 22.03.2008 - added invisibility check
 	RenderFx = pTargetEdict->v.renderfx;
@@ -242,34 +240,34 @@ bool FBoxVisible(bot_t* pBot, edict_t* pTargetEdict, Vector* pvHit, unsigned cha
 	RenderAmount = pTargetEdict->v.renderamt;
 	SemiTransparent = false;    // KWo (moved) - 05.09.2009
 
-	if (((RenderFx == kRenderFxExplode) || (pTargetEdict->v.effects & EF_NODRAW))
-		&& (!(WeaponIsGun) || !(pTargetEdict->v.oldbuttons & IN_ATTACK))) // kRenderFxExplode is always invisible even for mode kRenderNormal
+	if ((RenderFx == kRenderFxExplode || pTargetEdict->v.effects & EF_NODRAW)
+		&& (!WeaponIsGun || !(pTargetEdict->v.oldbuttons & IN_ATTACK))) // kRenderFxExplode is always invisible even for mode kRenderNormal
 	{
-		return (FALSE);
+		return false;
 	}
-	else if (((RenderFx == kRenderFxExplode) || (pTargetEdict->v.effects & EF_NODRAW))
-		&& (pTargetEdict->v.oldbuttons & IN_ATTACK) && (WeaponIsGun))  // KWo - 17.01.2011
+	else if ((RenderFx == kRenderFxExplode || pTargetEdict->v.effects & EF_NODRAW)
+		&& pTargetEdict->v.oldbuttons & IN_ATTACK && WeaponIsGun)  // KWo - 17.01.2011
 	{
 		SemiTransparent = true;
 	}
-	else if ((RenderFx != kRenderFxHologram) && (RenderMode != kRenderNormal)) // kRenderFxHologram is always visible no matter what is the mode
+	else if (RenderFx != kRenderFxHologram && RenderMode != kRenderNormal) // kRenderFxHologram is always visible no matter what is the mode
 	{
 		if (RenderFx == kRenderFxGlowShell)
 		{
-			if ((RenderAmount <= 20.0f) && (RenderColor.x <= 20)
-				&& (RenderColor.y <= 20) && (RenderColor.z <= 20))
+			if (RenderAmount <= 20.0f && RenderColor.x <= 20
+				&& RenderColor.y <= 20 && RenderColor.z <= 20)
 			{
-				if (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !(WeaponIsGun))
+				if (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !WeaponIsGun)
 				{
-					return (FALSE);
+					return false;
 				}
 				else
 				{
 					SemiTransparent = true;
 				}
 			}
-			else if ((RenderAmount <= 60.0f) && (RenderColor.x <= 60)
-				&& (RenderColor.y <= 60) && (RenderColor.z <= 60))
+			else if (RenderAmount <= 60.0f && RenderColor.x <= 60
+				&& RenderColor.y <= 60 && RenderColor.z <= 60)
 			{
 				SemiTransparent = true;
 			}
@@ -278,9 +276,9 @@ bool FBoxVisible(bot_t* pBot, edict_t* pTargetEdict, Vector* pvHit, unsigned cha
 		{
 			if (RenderAmount <= 20.0f)
 			{
-				if (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !(WeaponIsGun))
+				if (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !WeaponIsGun)
 				{
-					return (FALSE);
+					return false;
 				}
 				else
 				{
@@ -300,13 +298,13 @@ bool FBoxVisible(bot_t* pBot, edict_t* pTargetEdict, Vector* pvHit, unsigned cha
 		ALERT(at_logged, "[DEBUG] FBoxVisible - Bot %s checks the illumination of %s. It's = %f.\n",
 			STRING(pEdict->v.netname), STRING(pTargetEdict->v.netname), LightLevel);
 
-	if ((!pBot->bUsesNVG) && (((LightLevel < 3.0f) && (g_f_cv_skycolor > 50.0f)) || ((LightLevel < 25.0f) && (g_f_cv_skycolor <= 50.0f)))
-		&& (!(pTargetEdict->v.effects & EF_DIMLIGHT)) && (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !(WeaponIsGun))) // KWo - 17.01.2011
+	if (!pBot->bUsesNVG && (LightLevel < 3.0f && g_f_cv_skycolor > 50.0f || LightLevel < 25.0f && g_f_cv_skycolor <= 50.0f)
+		&& !(pTargetEdict->v.effects & EF_DIMLIGHT) && (!(pTargetEdict->v.oldbuttons & IN_ATTACK) || !WeaponIsGun)) // KWo - 17.01.2011
 	{
-		return (FALSE);
+		return false;
 	}
-	else if (((((LightLevel < 10.0f) && (g_f_cv_skycolor > 50.0f)) || ((LightLevel < 30.0f) && (g_f_cv_skycolor <= 50.0f)))
-		&& (pTargetEdict->v.oldbuttons & IN_ATTACK) && (WeaponIsGun)) && (!(pTargetEdict->v.effects & EF_DIMLIGHT)) && (!pBot->bUsesNVG)) // KWo - 17.01.2011
+	else if ((LightLevel < 10.0f && g_f_cv_skycolor > 50.0f || LightLevel < 30.0f && g_f_cv_skycolor <= 50.0f)
+		&& pTargetEdict->v.oldbuttons & IN_ATTACK && WeaponIsGun && !(pTargetEdict->v.effects & EF_DIMLIGHT) && !pBot->bUsesNVG) // KWo - 17.01.2011
 	{
 		SemiTransparent = true; // in this case we can notice the enemy, but not so good...
 	}
@@ -320,7 +318,7 @@ bool FBoxVisible(bot_t* pBot, edict_t* pTargetEdict, Vector* pvHit, unsigned cha
 	// Check direct Line to waist
 	UTIL_TraceLine(vecLookerOrigin, vecTarget, ignore_monsters, ignore_glass, pEdict, &tr);
 
-	if ((tr.flFraction >= 1.0f) || (tr.pHit == pTargetEdict))
+	if (tr.flFraction >= 1.0f || tr.pHit == pTargetEdict)
 	{
 		*pvHit = tr.vecEndPos + Vector(0.0f, 0.0f, 3.0f); // KWo - 13.07.2008
 		*ucBodyPart |= WAIST_VISIBLE;
@@ -339,14 +337,14 @@ bool FBoxVisible(bot_t* pBot, edict_t* pTargetEdict, Vector* pvHit, unsigned cha
 	UTIL_TraceLine(vecLookerOrigin, vecTarget, ignore_monsters, ignore_glass, pEdict, &tr);
 
 	// if the player is rendered, his head cannot be good seen...
-	if (((tr.flFraction >= 1.0f) || (tr.pHit == pTargetEdict)) && (!SemiTransparent))
+	if ((tr.flFraction >= 1.0f || tr.pHit == pTargetEdict) && !SemiTransparent)
 	{
 		*pvHit = tr.vecEndPos;
 		*ucBodyPart |= HEAD_VISIBLE;
 	}
 
 	if (*ucBodyPart != 0)
-		return (TRUE);
+		return true;
 
 	// Nothing visible - check randomly other Parts of Body
 	for (i = 0; i < 6; i++)
@@ -405,16 +403,16 @@ bool FBoxVisible(bot_t* pBot, edict_t* pTargetEdict, Vector* pvHit, unsigned cha
 
 		UTIL_TraceLine(vecLookerOrigin, vecTarget, dont_ignore_monsters, ignore_glass, pEdict, &tr);
 
-		if ((tr.flFraction >= 1.0f) && (tr.pHit == pTargetEdict))
+		if (tr.flFraction >= 1.0f && tr.pHit == pTargetEdict)
 		{
 			// Return seen position
 			*pvHit = tr.vecEndPos;
 			*ucBodyPart |= CUSTOM_VISIBLE;
-			return (TRUE);
+			return true;
 		}
 	}
 
-	return (FALSE);
+	return false;
 }
 
 bool FVisible(const Vector& vecOrigin, edict_t* pEdict)
@@ -426,21 +424,21 @@ bool FVisible(const Vector& vecOrigin, edict_t* pEdict)
 	vecLookerOrigin = GetGunPosition(pEdict);
 
 	// don't look through water
-	if ((POINT_CONTENTS(vecOrigin) == CONTENTS_WATER)
+	if (POINT_CONTENTS(vecOrigin) == CONTENTS_WATER
 		!= (POINT_CONTENTS(vecLookerOrigin) == CONTENTS_WATER))
-		return (FALSE);
+		return false;
 
 	UTIL_TraceLine(vecLookerOrigin, vecOrigin, ignore_monsters, ignore_glass, pEdict, &tr);
 
 	if (tr.flFraction != 1.0f)
-		return (FALSE);  // Line of sight is not established
+		return false;  // Line of sight is not established
 
-	return (TRUE);  // line of sight is valid.
+	return true;  // line of sight is valid.
 }
 
 Vector GetGunPosition(edict_t* pEdict)
 {
-	return (pEdict->v.origin + pEdict->v.view_ofs);
+	return pEdict->v.origin + pEdict->v.view_ofs;
 }
 
 int UTIL_GetNearestPlayerIndex(Vector vecOrigin)
@@ -465,12 +463,12 @@ int UTIL_GetNearestPlayerIndex(Vector vecOrigin)
 		}
 	}
 
-	return (index);
+	return index;
 }
 
 Vector VecBModelOrigin(edict_t* pEdict)
 {
-	return (pEdict->v.absmin + (pEdict->v.size * 0.5));
+	return pEdict->v.absmin + pEdict->v.size * 0.5;
 }
 
 void UTIL_ShowMenu(edict_t* pEdict, menutext_t* pMenu)
@@ -572,7 +570,7 @@ void UTIL_DecalTrace(TraceResult* pTrace, char* pszDecalName)
 	{
 		edict_t* pHit = pTrace->pHit;
 
-		if ((pHit->v.solid == SOLID_BSP) || (pHit->v.movetype == MOVETYPE_PUSHSTEP))
+		if (pHit->v.solid == SOLID_BSP || pHit->v.movetype == MOVETYPE_PUSHSTEP)
 			entityIndex = ENTINDEX(pHit);
 		else
 			return;
@@ -618,7 +616,7 @@ void UTIL_HostPrint(const char* fmt, ...)
 
 	// concatenate all the arguments in one string
 	va_start(argptr, fmt);
-	vsnprintf_s(pszMessage, sizeof(pszMessage), fmt, argptr);
+	vsnprintf_s(pszMessage, sizeof pszMessage, fmt, argptr);
 	va_end(argptr);
 
 	if (!FNullEnt(pHostEdict))
@@ -645,7 +643,7 @@ void UTIL_ServerPrint(const char* fmt, ...)
 
 	// concatenate all the arguments in one string
 	va_start(argptr, fmt);
-	vsnprintf_s(pszMessage, sizeof(pszMessage), fmt, argptr);
+	vsnprintf_s(pszMessage, sizeof pszMessage, fmt, argptr);
 	va_end(argptr);
 
 	SERVER_PRINT(pszMessage);
@@ -832,13 +830,13 @@ void UTIL_SaveButtonsData(void)    // KWo - 10.02.2006
 		while (!FNullEnt(pButton))
 		{
 			const char* vtarget = STRING(pButton->v.target);
-			if ((g_iNumButtons < MAX_BUTTONS) && ((i != 1) || !(pButton->v.spawnflags & SF_PUSH_BREAKABLE)) && (strcmp(vtarget, "") != 0))
+			if (g_iNumButtons < MAX_BUTTONS && (i != 1 || !(pButton->v.spawnflags & SF_PUSH_BREAKABLE)) && strcmp(vtarget, "") != 0)
 			{
 				ButtonsData[g_iNumButtons].EntIndex = ENTINDEX(pButton);
 				v_button_origin = VecBModelOrigin(pButton);
-				_snprintf_s(ButtonsData[g_iNumButtons].classname, sizeof(ButtonsData[g_iNumButtons].classname), "%s", STRING(pButton->v.classname));
+				_snprintf_s(ButtonsData[g_iNumButtons].classname, sizeof ButtonsData[g_iNumButtons].classname, "%s", STRING(pButton->v.classname));
 				ButtonsData[g_iNumButtons].origin = v_button_origin;
-				_snprintf_s(ButtonsData[g_iNumButtons].target, sizeof(ButtonsData[g_iNumButtons].target), "%s", STRING(pButton->v.target));
+				_snprintf_s(ButtonsData[g_iNumButtons].target, sizeof ButtonsData[g_iNumButtons].target, "%s", STRING(pButton->v.target));
 				g_iNumButtons++;
 			}
 			pButton = FIND_ENTITY_BY_CLASSNAME(pButton, button_name);
@@ -891,7 +889,7 @@ void UTIL_SaveBreakableData(void)    // KWo - 04.03.2006
 	{
 		for (i = 0; i < g_iNumBreakables; i++)
 		{
-			if (FStrEq(STRING(pEnt->v.targetname), BreakablesData[i].target) && !(FStrEq(STRING(pEnt->v.targetname), "")))
+			if (FStrEq(STRING(pEnt->v.targetname), BreakablesData[i].target) && !FStrEq(STRING(pEnt->v.targetname), ""))
 				BreakablesData[i].ignored = true;
 		}
 		j++;
@@ -902,7 +900,7 @@ void UTIL_SaveBreakableData(void)    // KWo - 04.03.2006
 		ALERT(at_logged, "[DEBUG] UTIL_SaveBreakableData - Found %i shootable breakables on the map and %d explosive .\n", g_iNumBreakables, j);
 		for (i = 0; i < g_iNumBreakables; i++)
 		{
-			ALERT(at_logged, "[DEBUG] UTIL_SaveBreakableData - Breakable %i , EntIndex = %i, classname - %s , target - %s , %s.\n", i + 1, BreakablesData[i].EntIndex, BreakablesData[i].classname, BreakablesData[i].target, (BreakablesData[i].ignored) ? "ignored" : "accepted");
+			ALERT(at_logged, "[DEBUG] UTIL_SaveBreakableData - Breakable %i , EntIndex = %i, classname - %s , target - %s , %s.\n", i + 1, BreakablesData[i].EntIndex, BreakablesData[i].classname, BreakablesData[i].target, BreakablesData[i].ignored ? "ignored" : "accepted");
 		}
 		pEnt = NULL;
 		while (!FNullEnt(pEnt = FIND_ENTITY_BY_CLASSNAME(pEnt, "func_breakable")))
@@ -1040,7 +1038,7 @@ void UTIL_CheckCvars(void) // KWo - 06.04.2006
 		g_i_cv_skin = (int)g_rgcvarPointer[PBCVAR_SKIN]->value;
 	else
 		g_i_cv_skin = (int)CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_SKIN]);
-	if ((g_i_cv_skin < 1) || (g_i_cv_skin > 5))
+	if (g_i_cv_skin < 1 || g_i_cv_skin > 5)
 		g_i_cv_skin = 5;
 
 	if (g_rgcvarPointer[PBCVAR_DETAILNAMES])  // KWo - 22.03.2008
@@ -1048,7 +1046,7 @@ void UTIL_CheckCvars(void) // KWo - 06.04.2006
 	else
 		g_i_cv_detailnames = (int)CVAR_GET_FLOAT(g_rgpszPbCvars[PBCVAR_DETAILNAMES]);
 
-	if ((g_i_cv_detailnames < 0) || (g_i_cv_detailnames > 3))
+	if (g_i_cv_detailnames < 0 || g_i_cv_detailnames > 3)
 		g_i_cv_detailnames = 0;
 
 	if (g_rgcvarPointer[PBCVAR_DEBUGLEVEL])  // KWo - 20.04.2013
@@ -1201,9 +1199,9 @@ void UTIL_CheckCvars(void) // KWo - 06.04.2006
 		str3 = g_rgcvarPointer[PBCVAR_BOTJOINTEAM]->string; // KWo - 16.09.2006
 	else
 		str3 = CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_BOTJOINTEAM]); // KWo - 16.09.2006
-	if ((FStrEq(str3, "T")) || (FStrEq(str3, "t")))  // KWo - 16.09.2006
+	if (FStrEq(str3, "T") || FStrEq(str3, "t"))  // KWo - 16.09.2006
 		g_i_cv_BotsJoinTeam = 1;
-	else if ((FStrEq(str3, "CT")) || (FStrEq(str3, "ct")))
+	else if (FStrEq(str3, "CT") || FStrEq(str3, "ct"))
 		g_i_cv_BotsJoinTeam = 2;
 	else
 		g_i_cv_BotsJoinTeam = 0;
@@ -1355,12 +1353,12 @@ void UTIL_CheckCvars(void) // KWo - 06.04.2006
 	{
 		pPlayer = INDEXENT(pl_index + 1);
 
-		if (!FNullEnt(pPlayer) && (pPlayer->v.flags & FL_CLIENT) && (!(pPlayer->v.flags & FL_FAKECLIENT)))
+		if (!FNullEnt(pPlayer) && pPlayer->v.flags & FL_CLIENT && !(pPlayer->v.flags & FL_FAKECLIENT))
 		{
 			infobuffer = GET_INFOKEYBUFFER(clients[pl_index].pEdict);
 			if (clients[pl_index].iFlags & CLIENT_ADMIN)
 			{
-				if ((*g_sz_cv_PasswordField == 0) && (*g_sz_cv_Password == 0))
+				if (*g_sz_cv_PasswordField == 0 && *g_sz_cv_Password == 0)
 					clients[pl_index].iFlags &= ~CLIENT_ADMIN;
 				else
 				{
@@ -1371,7 +1369,7 @@ void UTIL_CheckCvars(void) // KWo - 06.04.2006
 					}
 				}
 			}
-			else if ((*g_sz_cv_PasswordField != 0) && (*g_sz_cv_Password != 0))
+			else if (*g_sz_cv_PasswordField != 0 && *g_sz_cv_Password != 0)
 			{
 				if (FStrEq(g_sz_cv_Password, INFOKEY_VALUE(infobuffer, const_cast<char*>(g_sz_cv_PasswordField))))
 				{
@@ -1381,7 +1379,7 @@ void UTIL_CheckCvars(void) // KWo - 06.04.2006
 			}
 			humans++;
 			PLAYER_CNX_STATS(pPlayer, &ping, &loss);
-			if ((ping < 0) || (ping > 4095))
+			if (ping < 0 || ping > 4095)
 				ping = 100;
 			ping_av += ping;
 			loss_av += loss;
@@ -1498,7 +1496,7 @@ void UTIL_CheckHostages(void)    // KWo 17.05.2006
 		pHostage = INDEXENT(HostagesData[i].EntIndex);
 		if (!FNullEnt(pHostage))
 		{
-			if ((pHostage->v.health > 0.0f) && (pHostage->v.deadflag == 0))
+			if (pHostage->v.health > 0.0f && pHostage->v.deadflag == 0)
 				HostagesData[i].Alive = true;
 			else
 				HostagesData[i].Alive = false;
@@ -1518,7 +1516,7 @@ void UTIL_CheckHostages(void)    // KWo 17.05.2006
 
 			if (following == 0)
 			{
-				if ((HostagesData[i].UserEntIndex > 0) && (HostagesData[i].Alive))
+				if (HostagesData[i].UserEntIndex > 0 && HostagesData[i].Alive)
 				{
 					vecHostPos = pHostage->v.origin;  // KWo - 26.08.2006
 					bTakeHostage = true;  // KWo - 26.08.2006
@@ -1545,8 +1543,8 @@ void UTIL_CheckHostages(void)    // KWo 17.05.2006
 					if (g_i_cv_debuglevel & DEBUG_FL_ENTITIES)  // KWo - 04.05.2014
 						ALERT(at_logged, "[DEBUG] UTIL_CheckHostages - Found hostage's %d usernr - %d.\n", i + 1, HostUser);
 
-					if ((clients[HostUser - 1].iFlags & CLIENT_ALIVE) && (clients[HostUser - 1].iFlags & CLIENT_USED)
-						&& ((clients[HostUser - 1].vOrigin - pHostage->v.origin).Length() <= 600.0f))
+					if (clients[HostUser - 1].iFlags & CLIENT_ALIVE && clients[HostUser - 1].iFlags & CLIENT_USED
+						&& (clients[HostUser - 1].vOrigin - pHostage->v.origin).Length() <= 600.0f)
 					{
 						HostagesData[i].UserEntIndex = HostUser;
 
@@ -1567,11 +1565,11 @@ void UTIL_CheckHostages(void)    // KWo 17.05.2006
 			}
 
 			HostUser = HostagesData[i].UserEntIndex;
-			if ((HostUser > 0) && (HostUser <= gpGlobals->maxClients))
+			if (HostUser > 0 && HostUser <= gpGlobals->maxClients)
 			{
-				if ((bots[HostUser - 1].is_used) && !FNullEnt(pHostage))  // KWo - 16.07.2006
+				if (bots[HostUser - 1].is_used && !FNullEnt(pHostage))  // KWo - 16.07.2006
 				{
-					if (!HostagesData[i].Alive || ((pEntity->v.origin - pHostage->v.origin).Length() > 600.0f))
+					if (!HostagesData[i].Alive || (pEntity->v.origin - pHostage->v.origin).Length() > 600.0f)
 					{
 						for (j = 0; j < MAX_HOSTAGES; j++)
 						{
@@ -1587,7 +1585,7 @@ void UTIL_CheckHostages(void)    // KWo 17.05.2006
 				}
 
 				if ((!(clients[HostUser - 1].iFlags & CLIENT_USED) || !(clients[HostUser - 1].iFlags & CLIENT_ALIVE)
-					|| ((clients[HostUser - 1].vOrigin - pHostage->v.origin).Length() > 600.0f)) && (HostagesData[i].Alive))
+					|| (clients[HostUser - 1].vOrigin - pHostage->v.origin).Length() > 600.0f) && HostagesData[i].Alive)
 				{
 					/*
 					#if !defined __amd64__
@@ -1614,14 +1612,14 @@ void UTIL_CheckHostages(void)    // KWo 17.05.2006
 	{
 		for (i = 0; i < gpGlobals->maxClients; i++)
 		{
-			if ((bots[i].is_used) && !(bots[i].bDead) && (bots[i].bot_team == TEAM_CS_COUNTER))
+			if (bots[i].is_used && !bots[i].bDead && bots[i].bot_team == TEAM_CS_COUNTER)
 			{
 				bBotHasHost = FALSE;
 				for (j = 0; j < g_iNumHostages; j++)
 				{
 					if (!FNullEnt(bots[i].pHostages[j]))
 					{
-						if ((bots[i].pHostages[j]->v.health > 0) || ((bots[i].pHostages[j]->v.origin - bots[i].pEdict->v.origin).Length() < 600))
+						if (bots[i].pHostages[j]->v.health > 0 || (bots[i].pHostages[j]->v.origin - bots[i].pEdict->v.origin).Length() < 600)
 						{
 							bBotHasHost = true;
 						}
@@ -1648,97 +1646,97 @@ bool UTIL_CanUseWeapon(int iId)    // KWo 11.03.2006 - to use in the future rele
 	switch (iId)
 	{
 	case CS_WEAPON_P228:
-		return(g_iWeaponRestricted[PB_WEAPON_P228] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_P228] == 0;
 		break;
 	case CS_WEAPON_SHIELDGUN:
-		return(g_iWeaponRestricted[PB_WEAPON_SHIELDGUN] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_SHIELDGUN] == 0;
 		break;
 	case CS_WEAPON_SCOUT:
-		return(g_iWeaponRestricted[PB_WEAPON_SCOUT] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_SCOUT] == 0;
 		break;
 	case CS_WEAPON_HEGRENADE:
-		return(g_iEquipAmmoRestricted[PB_WEAPON_HEGRENADE] == 0);
+		return g_iEquipAmmoRestricted[PB_WEAPON_HEGRENADE] == 0;
 		break;
 	case CS_WEAPON_XM1014:
-		return(g_iWeaponRestricted[PB_WEAPON_XM1014] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_XM1014] == 0;
 		break;
 	case CS_WEAPON_C4:
-		return(true);
+		return true;
 		break;
 	case CS_WEAPON_MAC10:
-		return(g_iWeaponRestricted[PB_WEAPON_MAC10] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_MAC10] == 0;
 		break;
 	case CS_WEAPON_AUG:
-		return(g_iWeaponRestricted[PB_WEAPON_AUG] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_AUG] == 0;
 		break;
 	case CS_WEAPON_SMOKEGRENADE:
-		return(g_iEquipAmmoRestricted[PB_WEAPON_SMOKEGRENADE] == 0);
+		return g_iEquipAmmoRestricted[PB_WEAPON_SMOKEGRENADE] == 0;
 		break;
 	case CS_WEAPON_ELITE:
-		return(g_iWeaponRestricted[PB_WEAPON_ELITE] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_ELITE] == 0;
 		break;
 	case CS_WEAPON_FIVESEVEN:
-		return(g_iWeaponRestricted[PB_WEAPON_FIVESEVEN] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_FIVESEVEN] == 0;
 		break;
 	case CS_WEAPON_UMP45:
-		return(g_iWeaponRestricted[PB_WEAPON_UMP45] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_UMP45] == 0;
 		break;
 	case CS_WEAPON_SG550:
-		return(g_iWeaponRestricted[PB_WEAPON_SG550] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_SG550] == 0;
 		break;
 	case CS_WEAPON_GALIL:
-		return(g_iWeaponRestricted[PB_WEAPON_GALIL] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_GALIL] == 0;
 		break;
 	case CS_WEAPON_FAMAS:
-		return(g_iWeaponRestricted[PB_WEAPON_FAMAS] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_FAMAS] == 0;
 		break;
 	case CS_WEAPON_USP:
-		return(g_iWeaponRestricted[PB_WEAPON_USP] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_USP] == 0;
 		break;
 	case CS_WEAPON_GLOCK18:
-		return(g_iWeaponRestricted[PB_WEAPON_GLOCK18] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_GLOCK18] == 0;
 		break;
 	case CS_WEAPON_AWP:
-		return(g_iWeaponRestricted[PB_WEAPON_AWP] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_AWP] == 0;
 		break;
 	case CS_WEAPON_MP5NAVY:
-		return(g_iWeaponRestricted[PB_WEAPON_MP5NAVY] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_MP5NAVY] == 0;
 		break;
 	case CS_WEAPON_M249:
-		return(g_iWeaponRestricted[PB_WEAPON_M249] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_M249] == 0;
 		break;
 	case CS_WEAPON_M3:
-		return(g_iWeaponRestricted[PB_WEAPON_M3] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_M3] == 0;
 		break;
 	case CS_WEAPON_M4A1:
-		return(g_iWeaponRestricted[PB_WEAPON_M4A1] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_M4A1] == 0;
 		break;
 	case CS_WEAPON_TMP:
-		return(g_iWeaponRestricted[PB_WEAPON_TMP] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_TMP] == 0;
 		break;
 	case CS_WEAPON_G3SG1:
-		return(g_iWeaponRestricted[PB_WEAPON_G3SG1] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_G3SG1] == 0;
 		break;
 	case CS_WEAPON_FLASHBANG:
-		return(g_iEquipAmmoRestricted[PB_WEAPON_FLASHBANG] == 0);
+		return g_iEquipAmmoRestricted[PB_WEAPON_FLASHBANG] == 0;
 		break;
 	case CS_WEAPON_DEAGLE:
-		return(g_iWeaponRestricted[PB_WEAPON_DEAGLE] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_DEAGLE] == 0;
 		break;
 	case CS_WEAPON_SG552:
-		return(g_iWeaponRestricted[PB_WEAPON_SG552] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_SG552] == 0;
 		break;
 	case CS_WEAPON_AK47:
-		return(g_iWeaponRestricted[PB_WEAPON_AK47] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_AK47] == 0;
 		break;
 	case CS_WEAPON_KNIFE:
-		return(true);
+		return true;
 		break;
 	case CS_WEAPON_P90:
-		return(g_iWeaponRestricted[PB_WEAPON_P90] == 0);
+		return g_iWeaponRestricted[PB_WEAPON_P90] == 0;
 		break;
 	}
-	return(false);
+	return false;
 }
 
 void UTIL_FindButtonInSphere(signed char& cButtonIndex, const Vector& vecCenter, float flRadius)    // KWo 09.02.2006
@@ -1779,7 +1777,7 @@ float UTIL_GetVectorsCone(Vector vec1_start, Vector vec1_end, Vector vec2_start,
 
 	fCone = sqrt((vec1Dir[0] - vec2Dir[0]) * (vec1Dir[0] - vec2Dir[0]) + (vec1Dir[1] - vec2Dir[1]) * (vec1Dir[1] - vec2Dir[1])
 		+ (vec1Dir[2] - vec2Dir[2]) * (vec1Dir[2] - vec2Dir[2]));
-	return (fCone);
+	return fCone;
 }
 
 void UTIL_DrawBeam(Vector start, Vector end, int life, int width, int noise, int red, int green, int blue, int brightness, int speed)  // KWo - 21.03.2006 to see how bots test corridors
@@ -1840,7 +1838,7 @@ void UTIL_CheckSmokeGrenades(void) // KWo - 29.01.2008
 			continue;
 
 		if (FStrEq(STRING(pent->v.model), "models/w_smokegrenade.mdl")
-			&& (pent->v.flags & FL_ONGROUND) && (pent->v.movetype == MOVETYPE_BOUNCE))  // KWo - 13.09.2008
+			&& pent->v.flags & FL_ONGROUND && pent->v.movetype == MOVETYPE_BOUNCE)  // KWo - 13.09.2008
 			bSmoke = TRUE;
 
 		for (bot_index = 0; bot_index < gpGlobals->maxClients; bot_index++)
@@ -1865,7 +1863,7 @@ void UTIL_CheckSmokeGrenades(void) // KWo - 29.01.2008
 				// Check if visible to the Bot
 				vecView = GetGunPosition(pEdict);
 
-				if (BotInFieldOfView(pBot, pent->v.origin - vecView) > (pEdict->v.fov * 0.5f - 5.0f))
+				if (BotInFieldOfView(pBot, pent->v.origin - vecView) > pEdict->v.fov * 0.5f - 5.0f)
 					continue;
 				if (!BotEntityIsVisible(pBot, pent->v.origin))
 					continue;
@@ -1876,10 +1874,10 @@ void UTIL_CheckSmokeGrenades(void) // KWo - 29.01.2008
 					if (!(pent->v.flags & FL_ONGROUND) /* && (pent->v.velocity.Length() > 240.0) */) // KWo - 13.09.2008
 					{
 						fDistance = (pent->v.origin - pEdict->v.origin).Length();
-						fDistanceMoved = ((pent->v.origin + pent->v.velocity * pBot->fTimeFrameInterval) - pEdict->v.origin).Length(); // KWo - 17.10.2006 - reverted back
+						fDistanceMoved = (pent->v.origin + pent->v.velocity * pBot->fTimeFrameInterval - pEdict->v.origin).Length(); // KWo - 17.10.2006 - reverted back
 
 						// Is the Grenade approaching this Bot ?
-						if ((fDistanceMoved < fDistance) && (fDistance < 512.0f))
+						if (fDistanceMoved < fDistance && fDistance < 512.0f)
 						{
 							pBot->pAvoidGrenade = pent;
 						}
@@ -1908,12 +1906,12 @@ float UTIL_IlluminationOf(edict_t* pEdict) // KWo - 23.03.2012 - rewritten - tha
 	// KWo - added it for all clients - maybe there are also other bots, heh?
 	if (!FNullEnt(pEdict))
 	{
-		if ((entity_index >= 0) && (entity_index < 32) && (pEdict->v.flags & FL_FAKECLIENT))
-			return (100 * sqrt(min(75.0f, (float)pEdict->v.light_level) / 75.0f));
+		if (entity_index >= 0 && entity_index < 32 && pEdict->v.flags & FL_FAKECLIENT)
+			return 100 * sqrt(min(75.0f, (float)pEdict->v.light_level) / 75.0f);
 		else
-			return (100 * sqrt(min(75.0f, (float)GETENTITYILLUM(pEdict)) / 75.0f));
+			return 100 * sqrt(min(75.0f, (float)GETENTITYILLUM(pEdict)) / 75.0f);
 	}
-	return (0.0f);
+	return 0.0f;
 }
 
 void SetBotNvg(bot_t* pBot, bool setnv)
@@ -1924,7 +1922,7 @@ void SetBotNvg(bot_t* pBot, bool setnv)
 	// Make into edict pointer
 	edict_t* pEdict = pBot->pEdict;
 
-	int* nightgoogles = ((int*)pEdict->pvPrivateData + OFFSET_NVGOOGLES);
+	int* nightgoogles = (int*)pEdict->pvPrivateData + OFFSET_NVGOOGLES;
 
 	if (setnv)
 	{
@@ -1944,9 +1942,9 @@ bool BotHasNvg(bot_t* pBot)
 	edict_t* pEdict = pBot->pEdict;
 
 	if ((int)*((int*)pEdict->pvPrivateData + OFFSET_NVGOOGLES) & HAS_NVGOOGLES)
-		return (true);
+		return true;
 
-	return (false);
+	return false;
 }
 
 void UTIL_HudMessage(edict_t* pEntity, const hudtextparms_t& textparms, char* pMessage) // KWo - 16.01.2010 from AMX X
@@ -1958,8 +1956,8 @@ void UTIL_HudMessage(edict_t* pEntity, const hudtextparms_t& textparms, char* pM
 
 	WRITE_BYTE(TE_TEXTMESSAGE);
 	WRITE_BYTE(textparms.channel & 0xFF);                          // channel
-	WRITE_SHORT(FixedSigned16(textparms.x, (1 << 13)));              // x coordinates * 8192
-	WRITE_SHORT(FixedSigned16(textparms.y, (1 << 13)));              // y coordinates * 8192
+	WRITE_SHORT(FixedSigned16(textparms.x, 1 << 13));              // x coordinates * 8192
+	WRITE_SHORT(FixedSigned16(textparms.y, 1 << 13));              // y coordinates * 8192
 	WRITE_BYTE(textparms.effect);                                  // effect (fade in/out)
 	WRITE_BYTE(textparms.r1);                                      // initial RED
 	WRITE_BYTE(textparms.g1);                                      // initial GREEN
@@ -1969,12 +1967,12 @@ void UTIL_HudMessage(edict_t* pEntity, const hudtextparms_t& textparms, char* pM
 	WRITE_BYTE(255);                                               // effect GREEN
 	WRITE_BYTE(255);                                               // effect BLUE
 	WRITE_BYTE(1);                                                 // effect ALPHA
-	WRITE_SHORT(FixedUnsigned16(textparms.fadeinTime, (1 << 8)));    // fade-in time in seconds * 256
-	WRITE_SHORT(FixedUnsigned16(textparms.fadeoutTime, (1 << 8)));   // fade-out time in seconds * 256
-	WRITE_SHORT(FixedUnsigned16(textparms.holdTime, (1 << 8)));      // hold time in seconds * 256
+	WRITE_SHORT(FixedUnsigned16(textparms.fadeinTime, 1 << 8));    // fade-in time in seconds * 256
+	WRITE_SHORT(FixedUnsigned16(textparms.fadeoutTime, 1 << 8));   // fade-out time in seconds * 256
+	WRITE_SHORT(FixedUnsigned16(textparms.holdTime, 1 << 8));      // hold time in seconds * 256
 
 	if (textparms.effect == 2)
-		WRITE_SHORT(FixedUnsigned16(textparms.fxTime, (1 << 8)));     // effect time in seconds * 256
+		WRITE_SHORT(FixedUnsigned16(textparms.fxTime, 1 << 8));     // effect time in seconds * 256
 
 	WRITE_STRING(pMessage);
 	MESSAGE_END();

@@ -101,8 +101,8 @@ void BotSpawnInit(bot_t* pBot)
 	pBot->fTimeTeamOrder = 0.0;
 
 	char szBotModelName[64];
-	strncpy(szBotModelName, (INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pEdict), "model")), sizeof(szBotModelName));
-	strncpy(pBot->sz_BotModelName, szBotModelName, sizeof(szBotModelName));
+	strncpy(szBotModelName, INFOKEY_VALUE(GET_INFOKEYBUFFER(pBot->pEdict), "model"), sizeof szBotModelName);
+	strncpy(pBot->sz_BotModelName, szBotModelName, sizeof szBotModelName);
 
 	pBot->fMinSpeed = 260.0;
 	pBot->prev_speed = 0.0; // fake "paused" since bot is NOT stuck
@@ -322,8 +322,8 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 	bool is_used;
 	int iMaxBotSkill = (int)g_rgcvarPointer[PBCVAR_MAXBOTSKILL]->value;	// KWo - to remove warning
 	int iMinBotSkill = (int)g_rgcvarPointer[PBCVAR_MINBOTSKILL]->value;	// KWo - to remove warning
-	iMaxBotSkill = (iMaxBotSkill > 100) ? 100 : (iMaxBotSkill < 1) ? 1 : iMaxBotSkill;
-	iMinBotSkill = (iMinBotSkill > 100) ? 100 : (iMinBotSkill < 1) ? 1 : iMinBotSkill;
+	iMaxBotSkill = iMaxBotSkill > 100 ? 100 : iMaxBotSkill < 1 ? 1 : iMaxBotSkill;
+	iMinBotSkill = iMinBotSkill > 100 ? 100 : iMinBotSkill < 1 ? 1 : iMinBotSkill;
 	if (iMaxBotSkill < iMinBotSkill)
 		iMinBotSkill = iMaxBotSkill;
 
@@ -331,18 +331,18 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 	if (g_iNumWaypoints < 1)
 	{
 		UTIL_ServerPrint("No Waypoints for this Map, can't create Bot !\n");
-		memset(BotCreateTab, 0, sizeof(BotCreateTab));
+		memset(BotCreateTab, 0, sizeof BotCreateTab);
 		botcreation_time = 0.0;
 		return;
 	}
 
 	// Don't allow creating Bots when max_bots is reached
-	else if ((((g_i_cv_BotsQuotaMatch == 0) && (g_iNum_players >= g_iMax_bots))
-		|| ((g_i_cv_BotsQuotaMatch > 0) && (g_iNum_bots > g_iMax_bots)))
-		&& (g_iMax_bots > 0) && (g_iNum_bots >= g_iMin_bots))  // KWo - 08.03.2007
+	else if ((g_i_cv_BotsQuotaMatch == 0 && g_iNum_players >= g_iMax_bots
+		|| g_i_cv_BotsQuotaMatch > 0 && g_iNum_bots > g_iMax_bots)
+		&& g_iMax_bots > 0 && g_iNum_bots >= g_iMin_bots)  // KWo - 08.03.2007
 	{
 		UTIL_ServerPrint("Max Bots reached, can't create Bot !\n");
-		memset(BotCreateTab, 0, sizeof(BotCreateTab));
+		memset(BotCreateTab, 0, sizeof BotCreateTab);
 		botcreation_time = 0.0;
 		return;
 	}
@@ -351,13 +351,13 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 	else if (g_bWaypointsChanged)
 	{
 		UTIL_ServerPrint("Waypoints changed/not initialised, can't create Bot !\n");
-		memset(BotCreateTab, 0, sizeof(BotCreateTab));
+		memset(BotCreateTab, 0, sizeof BotCreateTab);
 		botcreation_time = 0.0;
 		return;
 	}
 
 	// If Skill is given, assign it
-	if ((bot_skill > 0) && (bot_skill <= 100))
+	if (bot_skill > 0 && bot_skill <= 100)
 		skill = bot_skill;
 	else
 		skill = RANDOM_LONG(iMinBotSkill, iMaxBotSkill); // else give random skill
@@ -365,34 +365,34 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 	assert((skill > 0) && (skill <= 100));
 
 	// Create Random Personality
-	if ((bot_personality < 0) || (bot_personality > 2))
+	if (bot_personality < 0 || bot_personality > 2)
 		bot_personality = RANDOM_LONG(0, 2);
 
-	if ((bot_team != TEAM_CS_TERRORIST) && (bot_team != TEAM_CS_COUNTER))
+	if (bot_team != TEAM_CS_TERRORIST && bot_team != TEAM_CS_COUNTER)
 		bot_team = 5;
 
 	if (g_i_cv_BotsJoinTeam > 0) // KWo - 16.09.2006
 		bot_team = g_i_cv_BotsJoinTeam;
 
-	if ((g_i_cv_skin > 0) && (g_i_cv_skin < 5)) // 18.11.2006
+	if (g_i_cv_skin > 0 && g_i_cv_skin < 5) // 18.11.2006
 		bot_class = g_i_cv_skin;
-	if ((bot_class < 1) || (bot_class > 5))
+	if (bot_class < 1 || bot_class > 5)
 		bot_class = 5;
 
 	// If No Name is given, do our name stuff
-	if ((bot_name == NULL) || (*bot_name == 0))
+	if (bot_name == NULL || *bot_name == 0)
 	{
 		// If as many Bots as NumBotnames, don't allow Bot Creation
 		if (g_iNum_bots >= iNumBotNames)
 		{
 			UTIL_ServerPrint("Not enough Bot Names in botnames.txt, can't create Bot !\n");
-			memset(BotCreateTab, 0, sizeof(BotCreateTab));
+			memset(BotCreateTab, 0, sizeof BotCreateTab);
 			botcreation_time = 0.0;
 			return;
 		}
 
 		// Clear Array of used Botnames
-		memset(szUsedBotNames, 0, sizeof(szUsedBotNames));
+		memset(szUsedBotNames, 0, sizeof szUsedBotNames);
 
 		// Cycle through all Players in Game and pick up Bots Names
 		iUsedCount = 0;
@@ -400,7 +400,7 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 		{
 			pPlayer = INDEXENT(index);
 
-			if (!FNullEnt(pPlayer) && (pPlayer->v.flags & FL_FAKECLIENT))
+			if (!FNullEnt(pPlayer) && pPlayer->v.flags & FL_FAKECLIENT)
 			{
 				const char* bname = STRING(pPlayer->v.netname);
 				if (!FStrEq(bname, ""))	// KWo - to remove warning cast to a pointer
@@ -432,28 +432,28 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 			if (g_i_cv_detailnames == 1) // use prefix and sufix
 			{
 				if (bot_personality == 0)
-					snprintf(c_name, sizeof(c_name), "[POD]%s (%d)", (g_pszBotNames + name_index)->name, skill);
+					snprintf(c_name, sizeof c_name, "[POD]%s (%d)", (g_pszBotNames + name_index)->name, skill);
 				else if (bot_personality == 1)
-					snprintf(c_name, sizeof(c_name), "[P*D]%s (%d)", (g_pszBotNames + name_index)->name, skill);
+					snprintf(c_name, sizeof c_name, "[P*D]%s (%d)", (g_pszBotNames + name_index)->name, skill);
 				else
-					snprintf(c_name, sizeof(c_name), "[P0D]%s (%d)", (g_pszBotNames + name_index)->name, skill);
+					snprintf(c_name, sizeof c_name, "[P0D]%s (%d)", (g_pszBotNames + name_index)->name, skill);
 			}
 			if (g_i_cv_detailnames == 2) // use prefix only
 			{
 				if (bot_personality == 0)
-					snprintf(c_name, sizeof(c_name), "[POD]%s", (g_pszBotNames + name_index)->name);
+					snprintf(c_name, sizeof c_name, "[POD]%s", (g_pszBotNames + name_index)->name);
 				else if (bot_personality == 1)
-					snprintf(c_name, sizeof(c_name), "[P*D]%s", (g_pszBotNames + name_index)->name);
+					snprintf(c_name, sizeof c_name, "[P*D]%s", (g_pszBotNames + name_index)->name);
 				else
-					snprintf(c_name, sizeof(c_name), "[P0D]%s", (g_pszBotNames + name_index)->name);
+					snprintf(c_name, sizeof c_name, "[P0D]%s", (g_pszBotNames + name_index)->name);
 			}
 			if (g_i_cv_detailnames == 3) // use sufix only
 			{
-				snprintf(c_name, sizeof(c_name), "%s (%d)", (g_pszBotNames + name_index)->name, skill);
+				snprintf(c_name, sizeof c_name, "%s (%d)", (g_pszBotNames + name_index)->name, skill);
 			}
 		}
 		else
-			strncpy(c_name, (g_pszBotNames + name_index)->name, sizeof(c_name));
+			strncpy(c_name, (g_pszBotNames + name_index)->name, sizeof c_name);
 	}
 
 	// a name has been given
@@ -462,13 +462,13 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 		// If Detailnames are on, see if we NEED to attach Clan Tag and skill
 		if (g_i_cv_detailnames) // KWo - 22.03.2008 - added new meaning of g_i_cv_detailnames
 		{
-			if ((g_i_cv_detailnames == 1) || (g_i_cv_detailnames == 2))
+			if (g_i_cv_detailnames == 1 || g_i_cv_detailnames == 2)
 			{
-				if ((strstr(bot_name, "[POD]") != NULL)
-					|| (strstr(bot_name, "[P*D]") != NULL)
-					|| (strstr(bot_name, "[P0D]") != NULL)) // the bot already had a prefix
+				if (strstr(bot_name, "[POD]") != NULL
+					|| strstr(bot_name, "[P*D]") != NULL
+					|| strstr(bot_name, "[P0D]") != NULL) // the bot already had a prefix
 				{
-					strncpy(c_name, bot_name, sizeof(c_name));
+					strncpy(c_name, bot_name, sizeof c_name);
 
 					if (bot_personality == 0)
 						c_name[2] = 'O';
@@ -479,16 +479,16 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 				}
 				else // KWo - 07.07.2008
 				{
-					if ((strchr(bot_name, '(') != NULL) && (strchr(bot_name, ')') != NULL)) // the bot already had a sufix
+					if (strchr(bot_name, '(') != NULL && strchr(bot_name, ')') != NULL) // the bot already had a sufix
 					{
-						if ((g_i_cv_detailnames == 1) || (g_i_cv_detailnames == 2)) // use prefix and eventually existing sufix
+						if (g_i_cv_detailnames == 1 || g_i_cv_detailnames == 2) // use prefix and eventually existing sufix
 						{
 							if (bot_personality == 0)
-								snprintf(c_name, sizeof(c_name), "[POD]%s", bot_name);
+								snprintf(c_name, sizeof c_name, "[POD]%s", bot_name);
 							else if (bot_personality == 1)
-								snprintf(c_name, sizeof(c_name), "[P*D]%s", bot_name);
+								snprintf(c_name, sizeof c_name, "[P*D]%s", bot_name);
 							else
-								snprintf(c_name, sizeof(c_name), "[P0D]%s", bot_name);
+								snprintf(c_name, sizeof c_name, "[P0D]%s", bot_name);
 						}
 					}
 					else
@@ -496,36 +496,36 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 						if (g_i_cv_detailnames == 1) // use prefix and sufix
 						{
 							if (bot_personality == 0)
-								snprintf(c_name, sizeof(c_name), "[POD]%s (%d)", bot_name, skill);
+								snprintf(c_name, sizeof c_name, "[POD]%s (%d)", bot_name, skill);
 							else if (bot_personality == 1)
-								snprintf(c_name, sizeof(c_name), "[P*D]%s (%d)", bot_name, skill);
+								snprintf(c_name, sizeof c_name, "[P*D]%s (%d)", bot_name, skill);
 							else
-								snprintf(c_name, sizeof(c_name), "[P0D]%s (%d)", bot_name, skill);
+								snprintf(c_name, sizeof c_name, "[P0D]%s (%d)", bot_name, skill);
 						}
 						else if (g_i_cv_detailnames == 2) // use prefix only
 						{
 							if (bot_personality == 0)
-								snprintf(c_name, sizeof(c_name), "[POD]%s", bot_name);
+								snprintf(c_name, sizeof c_name, "[POD]%s", bot_name);
 							else if (bot_personality == 1)
-								snprintf(c_name, sizeof(c_name), "[P*D]%s", bot_name);
+								snprintf(c_name, sizeof c_name, "[P*D]%s", bot_name);
 							else
-								snprintf(c_name, sizeof(c_name), "[P0D]%s", bot_name);
+								snprintf(c_name, sizeof c_name, "[P0D]%s", bot_name);
 						}
 					}
 				}
 			}
 			else // use sufix only
 			{
-				if ((strchr(bot_name, '(') == NULL) || (strchr(bot_name, ')') == NULL)) // KWo - 07.07.2008 the bot didn't have yet a sufix
-					snprintf(c_name, sizeof(c_name), "%s (%d)", bot_name, skill);
+				if (strchr(bot_name, '(') == NULL || strchr(bot_name, ')') == NULL) // KWo - 07.07.2008 the bot didn't have yet a sufix
+					snprintf(c_name, sizeof c_name, "%s (%d)", bot_name, skill);
 				else
-					snprintf(c_name, sizeof(c_name), "%s", bot_name);
+					snprintf(c_name, sizeof c_name, "%s", bot_name);
 			}
 		}
 		else
-			strncpy(c_name, bot_name, sizeof(c_name));
+			strncpy(c_name, bot_name, sizeof c_name);
 	}
-	c_name[sizeof(c_name) - 1] = 0;
+	c_name[sizeof c_name - 1] = 0;
 
 	// This call creates the Fakeclient
  //   BotEnt = (*g_engfuncs.pfnCreateFakeClient) (c_name);
@@ -534,7 +534,7 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 	if (FNullEnt(BotEnt))
 	{
 		UTIL_ServerPrint("Max Players reached. Can't create bot!\n");
-		memset(BotCreateTab, 0, sizeof(BotCreateTab));
+		memset(BotCreateTab, 0, sizeof BotCreateTab);
 		botcreation_time = 0.0;
 		return;
 	}
@@ -570,7 +570,7 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 	SET_CLIENT_KEYVALUE(index + 1, infobuffer, "dm", "0");
 	SET_CLIENT_KEYVALUE(index + 1, infobuffer, "_ah", "0");
 	SET_CLIENT_KEYVALUE(index + 1, infobuffer, "_vgui_menus", "0");
-	if ((!g_bIsOldCS15) && (g_i_cv_latencybot == 1))               // KWo - 02.03.2010
+	if (!g_bIsOldCS15 && g_i_cv_latencybot == 1)               // KWo - 02.03.2010
 		SET_CLIENT_KEYVALUE(index + 1, infobuffer, "*bot", "1");
 
 	// - End Infobuffer -
@@ -596,7 +596,7 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 	memset(pBot, 0, sizeof(bot_t));
 	pBot->pEdict = BotEnt;
 
-	snprintf(pBot->name, sizeof(pBot->name), STRING(pBot->pEdict->v.netname));
+	snprintf(pBot->name, sizeof pBot->name, STRING(pBot->pEdict->v.netname));
 	pBot->is_used = TRUE;
 	pBot->not_started = 1; // hasn't joined game yet
 	pBot->start_action = MSG_CS_IDLE;
@@ -658,7 +658,7 @@ void BotCreate(int bot_skill, int bot_personality, int bot_team, int bot_class, 
 	else
 	{
 		// botskill 99 -> update time = 0.05s, botskill 1 -> update time = 0.25s
-		pBot->fOffsetUpdateTime = 0.25 + (skill - 1) * (0.05 - 0.25) / (99.0);  // KWo - 27.04.2006
+		pBot->fOffsetUpdateTime = 0.25 + (skill - 1) * (0.05 - 0.25) / 99.0;  // KWo - 27.04.2006
 	}
 
 	BotSpawnInit(pBot);
@@ -682,19 +682,19 @@ void BotStartGame(bot_t* pBot)
 	{
 		pBot->start_action = MSG_CS_IDLE; // switch back to idle
 
-		if ((pBot->bot_team < 1) || (pBot->bot_team > 2))
+		if (pBot->bot_team < 1 || pBot->bot_team > 2)
 			pBot->bot_team = 5;
 
 		FakeClientCommand(pBot->pEdict, "menuselect %d\n", pBot->bot_team);
 		return;
 	}
 
-	else if ((pBot->start_action == MSG_CS_CT_SELECT)
-		|| (pBot->start_action == MSG_CS_T_SELECT))
+	else if (pBot->start_action == MSG_CS_CT_SELECT
+		|| pBot->start_action == MSG_CS_T_SELECT)
 	{
 		pBot->start_action = MSG_CS_IDLE; // switch back to idle
 
-		if ((pBot->bot_class < 1) || (pBot->bot_class > 4))
+		if (pBot->bot_class < 1 || pBot->bot_class > 4)
 			pBot->bot_class = RANDOM_LONG(1, 4); // use random if invalid
 
 		FakeClientCommand(pBot->pEdict, "menuselect %d\n", pBot->bot_class);
@@ -715,7 +715,7 @@ int BotGetMessageQueue(bot_t* pBot)
 	iMSG = pBot->aMessageQueue[pBot->iActMessageIndex++];
 	pBot->iActMessageIndex &= 0x1f; // Wraparound
 
-	return (iMSG);
+	return iMSG;
 }
 
 void BotPushMessageQueue(bot_t* pBot, int iMessage)
@@ -758,7 +758,7 @@ int BotInFieldOfView(bot_t* pBot, Vector dest)
 	if (angle > 180)
 		angle = 360 - angle;
 
-	return (angle);
+	return angle;
 	// rsm - END
 }
 
@@ -772,18 +772,18 @@ bool BotItemIsVisible(bot_t* pBot, Vector& vecDest, char* pszItemName, bool bBom
 	// check if line of sight to object is not blocked (i.e. visible)
 	if (tr.flFraction < 1.0) // KWo - 28.08.2008
 	{
-		if ((tr.flFraction > 0.97) && (FStrEq(STRING(tr.pHit->v.classname), pszItemName)))
-			return (TRUE);
+		if (tr.flFraction > 0.97 && FStrEq(STRING(tr.pHit->v.classname), pszItemName))
+			return true;
 
-		if ((strncmp(pszItemName, "weaponbox", 9) == 0) && (tr.flFraction > (bBomb ? 0.80 : 0.95))) // KWo - 28.08.2008
-			return (TRUE);
+		if (strncmp(pszItemName, "weaponbox", 9) == 0 && tr.flFraction > (bBomb ? 0.80 : 0.95)) // KWo - 28.08.2008
+			return true;
 
-		if ((strncmp(pszItemName, "csdmw_", 6) == 0) && (tr.flFraction > 0.95)) // KWo - 18.11.2006
-			return (TRUE);
+		if (strncmp(pszItemName, "csdmw_", 6) == 0 && tr.flFraction > 0.95) // KWo - 18.11.2006
+			return true;
 
-		return (FALSE);
+		return false;
 	}
-	return (TRUE);
+	return true;
 }
 
 bool BotEntityIsVisible(bot_t* pBot, Vector vecDest)
@@ -795,9 +795,9 @@ bool BotEntityIsVisible(bot_t* pBot, Vector vecDest)
 
 	// check if line of sight to object is not blocked (i.e. visible)
 	if (tr.flFraction < 0.92) // KWo - 14.09.2008
-		return (FALSE);
+		return false;
 
-	return (TRUE);
+	return true;
 }
 
 bool BotLastEnemyVisible(bot_t* pBot) // not used...
@@ -814,9 +814,9 @@ bool BotLastEnemyVisible(bot_t* pBot) // not used...
 
 	// check if line of sight to object is not blocked (i.e. visible)
 	if (tr.flFraction >= 1.0)
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotLastEnemyShootable(bot_t* pBot)
@@ -826,15 +826,15 @@ bool BotLastEnemyShootable(bot_t* pBot)
 
 	if (!(pBot->iAimFlags & AIM_LASTENEMY) || FNullEnt(pBot->pLastEnemy)
 		/* || (BotGetSafeTask(pBot)->iTask == TASK_PAUSE) */) // KWo - 09.02.2008
-		return (FALSE);
+		return false;
 	if (pBot->vecLastEnemyOrigin == g_vecZero) // KWo - 14.10.2006
-		return (FALSE);
+		return false;
 
 	flDot = GetShootingConeDeviation(pEdict, &pBot->vecLastEnemyOrigin);
 	if (flDot >= 0.90)
-		return (TRUE);
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 void BotCheckAvoidGrenades(bot_t* pBot)
@@ -862,7 +862,7 @@ void BotCheckAvoidGrenades(bot_t* pBot)
 		pBot->cAvoidGrenade = 0;
 	}
 
-	else if ((pent->v.flags & FL_ONGROUND) || (pent->v.effects & EF_NODRAW))
+	else if (pent->v.flags & FL_ONGROUND || pent->v.effects & EF_NODRAW)
 	{
 		pBot->pAvoidGrenade = NULL;
 		pBot->cAvoidGrenade = 0;
@@ -873,7 +873,7 @@ void BotCheckAvoidGrenades(bot_t* pBot)
 		pSmoke = NULL;
 		pBot->pSmokeGrenade = NULL;
 	}
-	else if (!(pSmoke->v.flags & FL_ONGROUND) || (pSmoke->v.effects & EF_NODRAW))
+	else if (!(pSmoke->v.flags & FL_ONGROUND) || pSmoke->v.effects & EF_NODRAW)
 	{
 		pSmoke = NULL;
 		pBot->pSmokeGrenade = NULL;
@@ -901,7 +901,7 @@ void BotCheckAvoidGrenades(bot_t* pBot)
 	{
 		// Check if in field of view of the Bot
 		iInField = BotInFieldOfView(pBot, pSmoke->v.origin - vecView);
-		if (iInField < (pEdict->v.fov * 1.0 - 5.0)) // more wide - even +/-85 degress in this case...
+		if (iInField < pEdict->v.fov * 1.0 - 5.0) // more wide - even +/-85 degress in this case...
 		{
 			//         ALERT(at_logged, "[DEBUG] Bot %s checks a smoke grenade in his field of view.\n", pBot->name);
 			fDistance = (pSmoke->v.origin - pEdict->v.origin).Length();
@@ -931,23 +931,23 @@ int GetBestWeaponCarried(bot_t* pBot)
 	int iWeapons = pBot->pEdict->v.weapons;
 
 	if (BotHasShield(pBot))
-		iWeapons |= (1 << CS_WEAPON_SHIELDGUN);
+		iWeapons |= 1 << CS_WEAPON_SHIELDGUN;
 
 	for (i = 0; i < NUM_WEAPONS; i++)
 	{
 		iWeapId = pWeaponTab[*ptrWeaponTab].iId;
-		if (iWeapons & (1 << iWeapId))
+		if (iWeapons & 1 << iWeapId)
 		{
 			if ((WeaponIsPistol(iWeapId) || WeaponIsPrimaryGun(iWeapId))
-				&& ((pBot->m_rgAmmo[weapon_defs[iWeapId].iAmmo1] + pBot->m_rgAmmoInClip[iWeapId])
-					>= pWeaponTab[*ptrWeaponTab].min_primary_ammo)) // KWo - 26.12.2006
+				&& pBot->m_rgAmmo[weapon_defs[iWeapId].iAmmo1] + pBot->m_rgAmmoInClip[iWeapId]
+				>= pWeaponTab[*ptrWeaponTab].min_primary_ammo) // KWo - 26.12.2006
 			{
 				iWeaponIndex = i;
 			}
 		}
 		ptrWeaponTab++;
 	}
-	return (iWeaponIndex);
+	return iWeaponIndex;
 }
 
 int GetBestSecondaryWeaponCarried(bot_t* pBot)
@@ -963,22 +963,22 @@ int GetBestSecondaryWeaponCarried(bot_t* pBot)
 	int iWeapons = pBot->pEdict->v.weapons;
 
 	if (BotHasShield(pBot))
-		iWeapons |= (1 << CS_WEAPON_SHIELDGUN);
+		iWeapons |= 1 << CS_WEAPON_SHIELDGUN;
 
 	for (i = 0; i < NUM_WEAPONS; i++)
 	{
 		iWeapId = pWeaponTab[*ptrWeaponTab].iId;
-		if ((iWeapons & (1 << iWeapId))
+		if (iWeapons & 1 << iWeapId
 			&& WeaponIsPistol(iWeapId)
-			&& ((pBot->m_rgAmmo[weapon_defs[iWeapId].iAmmo1] + pBot->m_rgAmmoInClip[iWeapId])
-				>= pWeaponTab[*ptrWeaponTab].min_primary_ammo)) // KWo - 26.12.2006
+			&& pBot->m_rgAmmo[weapon_defs[iWeapId].iAmmo1] + pBot->m_rgAmmoInClip[iWeapId]
+			>= pWeaponTab[*ptrWeaponTab].min_primary_ammo) // KWo - 26.12.2006
 		{
 			iWeaponIndex = i;
 		}
 		ptrWeaponTab++;
 	}
 
-	return (iWeaponIndex);
+	return iWeaponIndex;
 }
 
 int BotRateGroundWeapon(bot_t* pBot, edict_t* pent)
@@ -994,8 +994,8 @@ int BotRateGroundWeapon(bot_t* pBot, edict_t* pent)
 	int iGroundWeaponTabIndex = 0;
 	char szModelName[40];
 
-	strncpy(szModelName, STRING(pent->v.model), sizeof(szModelName));
-	szModelName[sizeof(szModelName) - 1] = 0;
+	strncpy(szModelName, STRING(pent->v.model), sizeof szModelName);
+	szModelName[sizeof szModelName - 1] = 0;
 
 	for (i = 0; i < NUM_WEAPONS; i++)
 	{
@@ -1019,7 +1019,7 @@ int BotRateGroundWeapon(bot_t* pBot, edict_t* pent)
 		ALERT(at_logged, "[DEBUG] RateGroundWeapon - Bot %s has %s and found %s.\n", pBot->name,
 			&cs_weapon_select[iGroundWeaponTabIndex].model_name, szModelName);
 
-	return (iGroundIndexPref - iHasWeapon);
+	return iGroundIndexPref - iHasWeapon;
 }
 
 bool BotFindBreakable(bot_t* pBot)
@@ -1034,11 +1034,11 @@ bool BotFindBreakable(bot_t* pBot)
 
 	for (int i = 0; i < 5; ++i)
 	{
-		if ((i == 1) && (pBot->pShootBreakable == NULL)) // KWo - 28.01.2006
+		if (i == 1 && pBot->pShootBreakable == NULL) // KWo - 28.01.2006
 			continue;
 
 		v_dest = pBot->wpt_origin; // KWo - 04.10.2007
-		if ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints)) // KWo - 15.04.2013
+		if (pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints) // KWo - 15.04.2013
 		{
 			v_dest = paths[pBot->curr_wpt_index]->origin;
 		}
@@ -1046,7 +1046,7 @@ bool BotFindBreakable(bot_t* pBot)
 		switch (i)
 		{
 		case 0:
-			if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))  // KWo - 13.02.2006
+			if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)  // KWo - 13.02.2006
 			{
 				v_src = paths[pBot->prev_wpt_index[0]]->origin;
 			}
@@ -1084,10 +1084,10 @@ bool BotFindBreakable(bot_t* pBot)
 		TRACE_LINE(v_src, v_dest, dont_ignore_monsters, pEdict, &tr);
 		if (FNullEnt(tr.pHit)) // KWo - 28.01.2006
 			continue;
-		if ((tr.flFraction != 1.0) && ((pEdict->v.origin - tr.vecEndPos).Length() < 120.0)
-			&& ((IsShootableBreakable(tr.pHit))
-				|| (((i == 0) || (i == 4)) && (FStrEq(STRING(tr.pHit->v.classname), "func_breakable"))
-					&& (tr.pHit->v.takedamage > 0) && ((tr.pHit->v.impulse == 0) || (i == 0))))) // KWo - 12.03.2010
+		if (tr.flFraction != 1.0 && (pEdict->v.origin - tr.vecEndPos).Length() < 120.0
+			&& (IsShootableBreakable(tr.pHit)
+				|| (i == 0 || i == 4) && FStrEq(STRING(tr.pHit->v.classname), "func_breakable")
+				&& tr.pHit->v.takedamage > 0 && (tr.pHit->v.impulse == 0 || i == 0))) // KWo - 12.03.2010
 		{
 			if (g_b_DebugEntities)
 			{
@@ -1098,13 +1098,13 @@ bool BotFindBreakable(bot_t* pBot)
 			}
 
 			pBot->vecBreakable = tr.vecEndPos;
-			return (TRUE);
+			return true;
 		}
 	}
 	pBot->pBreakableIgnore = pBot->pShootBreakable; // KWo - 12.03.2010
 	pBot->pShootBreakable = NULL;
 	pBot->vecBreakable = g_vecZero;
-	return (FALSE);
+	return false;
 }
 
 bool IsDeadlyDropAtPos(bot_t* pBot, Vector vecTargetPos) // KWo - 02.04.2010
@@ -1121,11 +1121,11 @@ bool IsDeadlyDropAtPos(bot_t* pBot, Vector vecTargetPos) // KWo - 02.04.2010
 	height = tr.flFraction * 1000.0; // height from ground at goal position
 
 	if (height > 150.0)
-		return (TRUE);
+		return true;
 	// Wall blocking ?
 	if (tr.fStartSolid) // KWo - 07.04.2010
-		return (TRUE);
-	return (FALSE);
+		return true;
+	return false;
 }
 
 bool IsDeadlyDrop(bot_t* pBot, Vector vecTargetPos)
@@ -1153,13 +1153,13 @@ bool IsDeadlyDrop(bot_t* pBot, Vector vecTargetPos)
 	last_height = tr.flFraction * 1000.0; // height from ground at goal position
 	distance = (vecBot - v_check).Length(); // distance from goal
 
-	if ((distance <= 30.0) && (last_height > 150.0)) // KWo - 02.04.2010
-		return (TRUE);
+	if (distance <= 30.0 && last_height > 150.0) // KWo - 02.04.2010
+		return true;
 
 	while (distance > 30.0) // KWo - 30.10.2009
 	{
 		// move 30 units closer to the bot...
-		v_check = v_check - (v_direction * 30.0); // KWo - 02.04.2010
+		v_check = v_check - v_direction * 30.0; // KWo - 02.04.2010
 
 		v_down = v_check;
 		v_down.z = v_down.z - 1000.0; // straight down 1000 units
@@ -1168,7 +1168,7 @@ bool IsDeadlyDrop(bot_t* pBot, Vector vecTargetPos)
 
 		// Wall blocking ?
 		if (tr.fStartSolid)
-			return (FALSE);
+			return false;
 
 		height = tr.flFraction * 1000.0; // height from ground
 
@@ -1177,14 +1177,14 @@ bool IsDeadlyDrop(bot_t* pBot, Vector vecTargetPos)
 		{
 			if (g_b_DebugNavig)
 				ALERT(at_logged, "[DEBUG] Bot %s can fall down from tested location v_check = [%i, %i, %i].\n", pBot->name, (int)v_check.x, (int)v_check.y, (int)v_check.z);
-			return (TRUE);
+			return true;
 		}
 
 		last_height = height;
 
 		distance = (vecBot - v_check).Length(); // distance from goal
 	}
-	return (FALSE);
+	return false;
 }
 
 void BotFindItem(bot_t* pBot)
@@ -1247,8 +1247,8 @@ void BotFindItem(bot_t* pBot)
 			if (pent->v.effects & EF_NODRAW)
 				continue; // someone owns this weapon or it hasn't respawned yet
 
-			snprintf(vclassname, sizeof(vclassname), STRING(pent->v.classname)); // KWo - 25.12.2006
-			if (((strcmp("weaponbox", vclassname) == 0) || (strncmp(vclassname, "csdmw_", 6) == 0))
+			snprintf(vclassname, sizeof vclassname, STRING(pent->v.classname)); // KWo - 25.12.2006
+			if ((strcmp("weaponbox", vclassname) == 0 || strncmp(vclassname, "csdmw_", 6) == 0)
 				&& !FNullEnt(pent->v.owner)) // KWo - 25.12.2006
 			{
 				if (pent->v.owner == pEdict) // it's our weapon we dropped already
@@ -1266,7 +1266,7 @@ void BotFindItem(bot_t* pBot)
 					vecPosition = VecBModelOrigin(pent);
 				else
 					vecPosition = pent->v.origin;
-				bBomb = ((pBot->iPickupType == PICKUP_DROPPED_C4) || (pBot->iPickupType == PICKUP_PLANTED_C4)); // KWo - 29.08.2008
+				bBomb = pBot->iPickupType == PICKUP_DROPPED_C4 || pBot->iPickupType == PICKUP_PLANTED_C4; // KWo - 29.08.2008
 				if (BotItemIsVisible(pBot, vecPosition, (char*)STRING(pent->v.classname), bBomb)) // KWo - 29.08.2008
 					bItemExists = TRUE;
 				break;
@@ -1301,9 +1301,9 @@ void BotFindItem(bot_t* pBot)
 		bGrenade = false;
 		bMedkit = false;
 
-		if ((pent->v.effects & EF_NODRAW) || (pent == pBot->pItemIgnore[0])
-			|| (pent == pBot->pItemIgnore[1]) || (pent == pBot->pItemIgnore[2])
-			|| (fabs(pent->v.origin.z - pEdict->v.origin.z) > 100.0))  // KWo - 08.04.2016
+		if (pent->v.effects & EF_NODRAW || pent == pBot->pItemIgnore[0]
+			|| pent == pBot->pItemIgnore[1] || pent == pBot->pItemIgnore[2]
+			|| fabs(pent->v.origin.z - pEdict->v.origin.z) > 100.0)  // KWo - 08.04.2016
 			continue; // someone owns this weapon or it hasn't respawned yet or it needs to be ignored
 
 		 // see if this is a "func_" type of entity (func_button, etc.)...
@@ -1315,11 +1315,11 @@ void BotFindItem(bot_t* pBot)
 		vecEnd = vecEntityOrigin;
 
 		bBomb = FALSE;
-		if (((strcmp("weaponbox", STRING(pent->v.classname)) == 0)
-			&& (strcmp("models/w_backpack.mdl", STRING(pent->v.model)) == 0))
-			|| ((strcmp("grenade", vclassname) == 0)
-				&& ((strcmp("models/w_c4.mdl", STRING(pent->v.model)) == 0)
-					|| ((pent->v.dmg >= 100) && (pent->v.movetype == 6))))) // KWo - 29.08.2008
+		if (strcmp("weaponbox", STRING(pent->v.classname)) == 0
+			&& strcmp("models/w_backpack.mdl", STRING(pent->v.model)) == 0
+			|| strcmp("grenade", vclassname) == 0
+			&& (strcmp("models/w_c4.mdl", STRING(pent->v.model)) == 0
+				|| pent->v.dmg >= 100 && pent->v.movetype == 6)) // KWo - 29.08.2008
 		{
 			bBomb = TRUE;
 			if (g_b_DebugEntities)
@@ -1332,16 +1332,16 @@ void BotFindItem(bot_t* pBot)
 		// check if line of sight to object is not blocked (i.e. visible)
 		if (BotItemIsVisible(pBot, vecEnd, (char*)STRING(pent->v.classname), bBomb))
 		{
-			snprintf(vclassname, sizeof(vclassname), STRING(pent->v.classname)); // KWo - 13.05.2006
-			snprintf(vmodelname, sizeof(vmodelname), STRING(pent->v.model)); // KWo - 18.12.2006
+			snprintf(vclassname, sizeof vclassname, STRING(pent->v.classname)); // KWo - 13.05.2006
+			snprintf(vmodelname, sizeof vmodelname, STRING(pent->v.model)); // KWo - 18.12.2006
 
-			if ((strcmp("hostage_entity", vclassname) == 0) && (pBot->bot_team == TEAM_CS_COUNTER)) // KWo - 03.09.2006
+			if (strcmp("hostage_entity", vclassname) == 0 && pBot->bot_team == TEAM_CS_COUNTER) // KWo - 03.09.2006
 			{
 				for (h = 0; h < g_iNumHostages; h++) // KWo - 17.05.2006
 				{
 					if (HostagesData[h].EntIndex == ENTINDEX(pent))
 					{
-						if (HostagesData[h].Alive && (HostagesData[h].UserEntIndex == 0)) // KWo - 03.09.2006
+						if (HostagesData[h].Alive && HostagesData[h].UserEntIndex == 0) // KWo - 03.09.2006
 						{
 							if (g_b_DebugEntities)
 								ALERT(at_logged, "[DEBUG] BotFindItem - Bot %s found the hostage %d and can pickup it.\n", pBot->name, h);
@@ -1359,7 +1359,7 @@ void BotFindItem(bot_t* pBot)
 				iPickType = PICKUP_SHIELD;
 			}
 
-			else if ((strcmp("models/w_assault.mdl", vmodelname) == 0)
+			else if (strcmp("models/w_assault.mdl", vmodelname) == 0
 				&& !pBot->bUsingGrenade) // KWo - 21.12.2006
 			{
 				bCanPickup = TRUE;
@@ -1372,53 +1372,53 @@ void BotFindItem(bot_t* pBot)
 				iPickType = PICKUP_WEAPON;
 				bMedkit = true;
 			}
-			else if ((strcmp("models/w_357ammobox.mdl", vmodelname) == 0) && !pBot->bUsingGrenade) // KWo - 21.12.2006
+			else if (strcmp("models/w_357ammobox.mdl", vmodelname) == 0 && !pBot->bUsingGrenade) // KWo - 21.12.2006
 			{
 				bCanPickup = TRUE;
 				iPickType = PICKUP_WEAPON;
 				bSecondaryAmmo = true;
 			}
-			else if (((strcmp("models/w_9mmarclip.mdl", vmodelname) == 0)
-				|| (strcmp("models/w_shotbox.mdl", vmodelname) == 0) || (strcmp("models/w_9mmclip.mdl", vmodelname) == 0)
-				|| (strcmp("models/w_crossbow_clip.mdl", vmodelname) == 0) || (strcmp("models/w_chainammo.mdl", vmodelname) == 0))
+			else if ((strcmp("models/w_9mmarclip.mdl", vmodelname) == 0
+				|| strcmp("models/w_shotbox.mdl", vmodelname) == 0 || strcmp("models/w_9mmclip.mdl", vmodelname) == 0
+				|| strcmp("models/w_crossbow_clip.mdl", vmodelname) == 0 || strcmp("models/w_chainammo.mdl", vmodelname) == 0)
 				&& !pBot->bUsingGrenade && !BotHasShield(pBot)) // KWo - 21.12.2006
 			{
 				bCanPickup = TRUE;
 				iPickType = PICKUP_WEAPON;
 				bPrimaryAmmo = true;
 			}
-			else if (((strcmp("models/w_hegrenade.mdl", vmodelname) == 0)
-				|| (strcmp("models/w_smokegrenade.mdl", vmodelname) == 0)
-				|| (strcmp("models/w_flashbang.mdl", vmodelname) == 0)) && !pBot->bUsingGrenade
-				&& (pent->v.movetype != 10)) // KWo - 12.01.2007
+			else if ((strcmp("models/w_hegrenade.mdl", vmodelname) == 0
+				|| strcmp("models/w_smokegrenade.mdl", vmodelname) == 0
+				|| strcmp("models/w_flashbang.mdl", vmodelname) == 0) && !pBot->bUsingGrenade
+				&& pent->v.movetype != 10) // KWo - 12.01.2007
 			{
 				bCanPickup = TRUE;
 				iPickType = PICKUP_WEAPON;
 				bGrenade = true;
 			}
-			else if (((strcmp("weaponbox", vclassname) == 0) || (strncmp(vclassname, "csdmw_", 6) == 0))
-				&& (strcmp("models/w_backpack.mdl", vmodelname) != 0)
+			else if ((strcmp("weaponbox", vclassname) == 0 || strncmp(vclassname, "csdmw_", 6) == 0)
+				&& strcmp("models/w_backpack.mdl", vmodelname) != 0
 				&& !BotHasShield(pBot) && !pBot->bUsingGrenade) // KWo - 21.12.2006
 			{
 				bCanPickup = TRUE;
 				iPickType = PICKUP_WEAPON;
 			}
-			else if ((strcmp("weaponbox", vclassname) == 0)
-				&& (strcmp("models/w_backpack.mdl", STRING(pent->v.model)) == 0)) // KWo - 13.05.2006
+			else if (strcmp("weaponbox", vclassname) == 0
+				&& strcmp("models/w_backpack.mdl", STRING(pent->v.model)) == 0) // KWo - 13.05.2006
 			{
 				bCanPickup = TRUE;
 				iPickType = PICKUP_DROPPED_C4;
 			}
 
-			else if ((strcmp("grenade", vclassname) == 0)
-				&& ((strcmp("models/w_c4.mdl", STRING(pent->v.model)) == 0)
-					|| ((pent->v.dmg >= 100) && (pent->v.movetype == 6)))) // KWo - 17.04.2008
+			else if (strcmp("grenade", vclassname) == 0
+				&& (strcmp("models/w_c4.mdl", STRING(pent->v.model)) == 0
+					|| pent->v.dmg >= 100 && pent->v.movetype == 6)) // KWo - 17.04.2008
 			{
 				bCanPickup = TRUE;
 				iPickType = PICKUP_PLANTED_C4;
 			}
-			else if ((strcmp("item_thighpack", vclassname) == 0)
-				&& (pBot->bot_team == TEAM_CS_COUNTER) && !pBot->b_has_defuse_kit) // KWo - 13.05.2006
+			else if (strcmp("item_thighpack", vclassname) == 0
+				&& pBot->bot_team == TEAM_CS_COUNTER && !pBot->b_has_defuse_kit) // KWo - 13.05.2006
 			{
 				bCanPickup = TRUE;
 				iPickType = PICKUP_DEFUSEKIT;
@@ -1436,15 +1436,15 @@ void BotFindItem(bot_t* pBot)
 				// Found weapon on ground ?
 				if (iPickType == PICKUP_WEAPON)
 				{
-					if (pBot->bIsChickenOrZombie || (pBot->bIsVIP) && (!bSecondaryAmmo) || ((BotRateGroundWeapon(pBot, pent) <= 0)
-						|| ((pBot->iNumWeaponPickups >= g_i_cv_maxweaponpickup) && (g_i_cv_maxweaponpickup > 0)))
-						&& (!bPrimaryAmmo) && (!bSecondaryAmmo) && (!bArmor) && (!bGrenade) && (!bMedkit))  // KWo - 11.04.2008
+					if (pBot->bIsChickenOrZombie || pBot->bIsVIP && !bSecondaryAmmo || (BotRateGroundWeapon(pBot, pent) <= 0
+						|| pBot->iNumWeaponPickups >= g_i_cv_maxweaponpickup && g_i_cv_maxweaponpickup > 0)
+						&& !bPrimaryAmmo && !bSecondaryAmmo && !bArmor && !bGrenade && !bMedkit)  // KWo - 11.04.2008
 						bCanPickup = FALSE;
-					else if ((pBot->bIsVIP) && (bPrimaryAmmo) || (bArmor) && (pEdict->v.armorvalue > 60.0) || (bMedkit) && (pEdict->v.health > 60.0))
+					else if (pBot->bIsVIP && bPrimaryAmmo || bArmor && pEdict->v.armorvalue > 60.0 || bMedkit && pEdict->v.health > 60.0)
 						bCanPickup = FALSE;
 					else if (bPrimaryAmmo) // pickup only ammo for the weapon bot is carrying
 					{
-						if ((iWeaponPrimNum < MAX_WEAPONS) && (iWeaponPrimNum > 6))
+						if (iWeaponPrimNum < MAX_WEAPONS && iWeaponPrimNum > 6)
 						{
 							if (strcmp("models/w_9mmarclip.mdl", vmodelname) == 0)
 							{
@@ -1453,7 +1453,7 @@ void BotFindItem(bot_t* pBot)
 							}
 							else if (strcmp("models/w_shotbox.mdl", vmodelname) == 0)
 							{
-								if ((iWeaponPrimID != CS_WEAPON_M3) && (iWeaponPrimID != CS_WEAPON_XM1014))
+								if (iWeaponPrimID != CS_WEAPON_M3 && iWeaponPrimID != CS_WEAPON_XM1014)
 									bCanPickup = FALSE;
 							}
 							else if (strcmp("models/w_9mmclip.mdl", vmodelname) == 0)
@@ -1477,7 +1477,7 @@ void BotFindItem(bot_t* pBot)
 							}
 
 							if (bCanPickup
-								&& ((pBot->m_rgAmmoInClip[iWeaponPrimID] + pBot->m_rgAmmo[weapon_defs[iWeaponPrimID].iAmmo1]) > 0.3 * weapon_defs[iWeaponPrimID].iAmmo1Max))
+								&& pBot->m_rgAmmoInClip[iWeaponPrimID] + pBot->m_rgAmmo[weapon_defs[iWeaponPrimID].iAmmo1] > 0.3 * weapon_defs[iWeaponPrimID].iAmmo1Max)
 								bCanPickup = FALSE;
 						}
 						else
@@ -1487,10 +1487,10 @@ void BotFindItem(bot_t* pBot)
 					}
 					else if (bSecondaryAmmo)
 					{
-						if ((iWeaponSecNum < 7) && (iWeaponSecNum > 0))
+						if (iWeaponSecNum < 7 && iWeaponSecNum > 0)
 						{
-							if (((pBot->m_rgAmmoInClip[iWeaponSecID] + pBot->m_rgAmmo[weapon_defs[iWeaponSecID].iAmmo1]) > 0.3 * weapon_defs[iWeaponSecID].iAmmo1Max)
-								|| (pBot->current_weapon.iAmmo2 > 0.3 * weapon_defs[iWeaponSecID].iAmmo1Max))
+							if (pBot->m_rgAmmoInClip[iWeaponSecID] + pBot->m_rgAmmo[weapon_defs[iWeaponSecID].iAmmo1] > 0.3 * weapon_defs[iWeaponSecID].iAmmo1Max
+								|| pBot->current_weapon.iAmmo2 > 0.3 * weapon_defs[iWeaponSecID].iAmmo1Max)
 								bCanPickup = FALSE;
 						}
 						else
@@ -1499,11 +1499,11 @@ void BotFindItem(bot_t* pBot)
 					else if (bGrenade)
 					{
 						int weapons = pBot->pEdict->v.weapons;
-						if ((strcmp("models/w_hegrenade.mdl", vmodelname) == 0) && (weapons & (1 << CS_WEAPON_HEGRENADE)))
+						if (strcmp("models/w_hegrenade.mdl", vmodelname) == 0 && weapons & 1 << CS_WEAPON_HEGRENADE)
 							bCanPickup = FALSE;
-						else if ((strcmp("models/w_smokegrenade.mdl", vmodelname) == 0) && (weapons & (1 << CS_WEAPON_SMOKEGRENADE)))
+						else if (strcmp("models/w_smokegrenade.mdl", vmodelname) == 0 && weapons & 1 << CS_WEAPON_SMOKEGRENADE)
 							bCanPickup = FALSE;
-						else if ((strcmp("models/w_flashbang.mdl", vmodelname) == 0) && (weapons & (1 << CS_WEAPON_FLASHBANG)))
+						else if (strcmp("models/w_flashbang.mdl", vmodelname) == 0 && weapons & 1 << CS_WEAPON_FLASHBANG)
 							bCanPickup = FALSE;
 					}
 
@@ -1519,9 +1519,9 @@ void BotFindItem(bot_t* pBot)
 				// Found shield on ground ? (code courtesy of Wei Mingzhi)
 				else if (iPickType == PICKUP_SHIELD)
 				{
-					if ((pEdict->v.weapons & (1 << CS_WEAPON_ELITE))
+					if (pEdict->v.weapons & 1 << CS_WEAPON_ELITE
 						|| BotHasShield(pBot) || pBot->bIsVIP
-						|| (BotHasPrimaryWeapon(pBot) && (BotRateGroundWeapon(pBot, pent) <= 0))
+						|| BotHasPrimaryWeapon(pBot) && BotRateGroundWeapon(pBot, pent) <= 0
 						|| pBot->bIsChickenOrZombie)
 						bCanPickup = FALSE;
 				}
@@ -1533,14 +1533,14 @@ void BotFindItem(bot_t* pBot)
 					{
 						bCanPickup = FALSE;
 
-						if ((!pBot->bDefendedBomb) && (!pBot->bIsChickenOrZombie)) // KWo - 18.01.2011
+						if (!pBot->bDefendedBomb && !pBot->bIsChickenOrZombie) // KWo - 18.01.2011
 						{
 							iIndex = BotFindDefendWaypoint(pBot, vecEntityOrigin);
 							fTraveltime = GetTravelTime(pBot->pEdict->v.maxspeed, pEdict->v.origin, paths[iIndex]->origin);
-							if ((g_f_cv_c4timer / 2) > g_f_cv_maxcamptime) // KWo - 16.06.2008
+							if (g_f_cv_c4timer / 2 > g_f_cv_maxcamptime) // KWo - 16.06.2008
 								fTimeMidBlowup = g_fTimeBombPlanted + g_f_cv_maxcamptime;
 							else
-								fTimeMidBlowup = g_fTimeBombPlanted + (g_f_cv_c4timer / 2);
+								fTimeMidBlowup = g_fTimeBombPlanted + g_f_cv_c4timer / 2;
 
 							if (fTimeMidBlowup - fTraveltime - g_fTimeBombPlanted > 0.0) // KWo - 16.06.2008
 							{
@@ -1559,8 +1559,8 @@ void BotFindItem(bot_t* pBot)
 
 								pBot->iCampButtons |= IN_DUCK;
 							}
-							else if ((!g_b_cv_ffa) && (g_b_cv_radio)
-								&& ((pBot->bot_team == TEAM_CS_TERRORIST) && (g_iAliveTs > 1))) // KWo - 12.09.2008
+							else if (!g_b_cv_ffa && g_b_cv_radio
+								&& (pBot->bot_team == TEAM_CS_TERRORIST && g_iAliveTs > 1)) // KWo - 12.09.2008
 							{
 								BotPlayRadioMessage(pBot, RADIO_SHESGONNABLOW); // Issue an additional Radio Message
 								pBot->iCampButtons = 0; // KWo - 17.02.2008
@@ -1581,7 +1581,7 @@ void BotFindItem(bot_t* pBot)
 							{
 								for (h = 0; h < g_iNumHostages; h++)  // KWo - 17.05.2006
 								{
-									if ((bots[i].pHostages[h] == pent) && (HostagesData[h].UserEntIndex != 0))  // KWo - 13.09.2006
+									if (bots[i].pHostages[h] == pent && HostagesData[h].UserEntIndex != 0)  // KWo - 13.09.2006
 									{
 										bCanPickup = FALSE;
 										pBot->iPickupType = PICKUP_NONE;  // KWo - 13.09.2006
@@ -1603,8 +1603,8 @@ void BotFindItem(bot_t* pBot)
 						{
 							if (!(clients[i].iFlags & CLIENT_USED)
 								|| !(clients[i].iFlags & CLIENT_ALIVE)
-								|| (clients[i].iTeam != pBot->bot_team)
-								|| (clients[i].pEdict == pEdict))
+								|| clients[i].iTeam != pBot->bot_team
+								|| clients[i].pEdict == pEdict)
 								continue;
 
 							pPlayer = clients[i].pEdict;
@@ -1612,11 +1612,11 @@ void BotFindItem(bot_t* pBot)
 							// find the distance to the target waypoint
 							fDistance2 = (pPlayer->v.origin - vecEntityOrigin).Length();
 
-							if ((fDistance2 < 60) && (fabs(pPlayer->v.origin.z - vecEntityOrigin.z) < 40.0) && (fDistance > fDistance2)) // KWo - 05.09.2008
+							if (fDistance2 < 60 && fabs(pPlayer->v.origin.z - vecEntityOrigin.z) < 40.0 && fDistance > fDistance2) // KWo - 05.09.2008
 							{
 								bCanPickup = FALSE;
 
-								if ((!pBot->bDefendedBomb) && (!pBot->bIsChickenOrZombie)) // KWo - 18.01.2011
+								if (!pBot->bDefendedBomb && !pBot->bIsChickenOrZombie) // KWo - 18.01.2011
 								{
 									iIndex = BotFindDefendWaypoint(pBot, vecEntityOrigin);
 									fTraveltime = GetTravelTime(pBot->pEdict->v.maxspeed, pEdict->v.origin, paths[iIndex]->origin);
@@ -1655,10 +1655,10 @@ void BotFindItem(bot_t* pBot)
 						pBot->pItemIgnore[0] = pent;
 						bCanPickup = FALSE;
 
-						if (((pBot->pEdict->v.health * RANDOM_LONG(1, 100)) > 3000.0)
-							&& (BotHasCampWeapon(pBot)) && (pBot->current_weapon.iAmmo1 > 0)
-							&& (pBot->fTimeCamping + 10.0 < gpGlobals->time)
-							&& (!pBot->bIsChickenOrZombie)) // KWo - 18.01.2011
+						if (pBot->pEdict->v.health * RANDOM_LONG(1, 100) > 3000.0
+							&& BotHasCampWeapon(pBot) && pBot->current_weapon.iAmmo1 > 0
+							&& pBot->fTimeCamping + 10.0 < gpGlobals->time
+							&& !pBot->bIsChickenOrZombie) // KWo - 18.01.2011
 						{
 							// Push camp task on to stack
 							float fCampTime = RANDOM_FLOAT(30.0, 60.0); // KWo - 23.03.2008
@@ -1699,10 +1699,10 @@ void BotFindItem(bot_t* pBot)
 	{
 		for (i = 0; i < gpGlobals->maxClients; i++)
 		{
-			if (bots[i].is_used && !bots[i].bDead && (bots[i].pEdict != pEdict)) // KWo - 26.10.2006
+			if (bots[i].is_used && !bots[i].bDead && bots[i].pEdict != pEdict) // KWo - 26.10.2006
 			{
 				// forget it if another bot wants to pickup it...
-				if ((bots[i].pBotPickupItem == pPickupEntity) && (BotGetSafeTask(&bots[i])->iTask == TASK_PICKUPITEM))
+				if (bots[i].pBotPickupItem == pPickupEntity && BotGetSafeTask(&bots[i])->iTask == TASK_PICKUPITEM)
 				{
 					pBot->pBotPickupItem = NULL;
 					pBot->iPickupType = PICKUP_NONE;
@@ -1712,7 +1712,7 @@ void BotFindItem(bot_t* pBot)
 		}
 
 		// Check if Item is too high to reach
-		if (vecPickupOrigin.z > GetGunPosition(pEdict).z + ((pBot->iPickupType == PICKUP_HOSTAGE) ? 50.0 : 20.0)) // KWo - 08.03.2010
+		if (vecPickupOrigin.z > GetGunPosition(pEdict).z + (pBot->iPickupType == PICKUP_HOSTAGE ? 50.0 : 20.0)) // KWo - 08.03.2010
 		{
 			pBot->pBotPickupItem = NULL;
 			pBot->iPickupType = PICKUP_NONE;
@@ -1771,19 +1771,19 @@ void BotChangePitch(bot_t* pBot, float speed)
 	// the other negative, one negative and the other positive, or
 	// both negative.  handle each case separately...
 
-	if ((current >= 0) && (ideal >= 0))  // both positive
+	if (current >= 0 && ideal >= 0)  // both positive
 	{
 		if (current > ideal)
 			speed = -speed;
 	}
-	else if ((current >= 0) && (ideal < 0))
+	else if (current >= 0 && ideal < 0)
 	{
 		current_180 = current - 180;
 
 		if (current_180 <= ideal)
 			speed = -speed;
 	}
-	else if ((current < 0) && (ideal >= 0))
+	else if (current < 0 && ideal >= 0)
 	{
 		current_180 = current + 180;
 		if (current_180 <= ideal)
@@ -1839,19 +1839,19 @@ void BotChangeYaw(bot_t* pBot, float speed)
 	// the other negative, one negative and the other positive, or
 	// both negative.  handle each case separately...
 
-	if ((current >= 0) && (ideal >= 0))  // both positive
+	if (current >= 0 && ideal >= 0)  // both positive
 	{
 		if (current > ideal)
 			speed = -speed;
 	}
-	else if ((current >= 0) && (ideal < 0))
+	else if (current >= 0 && ideal < 0)
 	{
 		current_180 = current - 180;
 
 		if (current_180 <= ideal)
 			speed = -speed;
 	}
-	else if ((current < 0) && (ideal >= 0))
+	else if (current < 0 && ideal >= 0)
 	{
 		current_180 = current + 180;
 		if (current_180 <= ideal)
@@ -1890,7 +1890,7 @@ void BotCheckMessageQueue(bot_t* pBot)
 	// Get Message from Stack
 	iCurrentMSG = BotGetMessageQueue(pBot);
 
-	if ((iCurrentMSG == MSG_CS_RADIO) && ((g_b_cv_ffa) || !g_b_cv_radio)) // KWo - 03.02.2007
+	if (iCurrentMSG == MSG_CS_RADIO && (g_b_cv_ffa || !g_b_cv_radio)) // KWo - 03.02.2007
 	{
 		pBot->iRadioSelect = 0;
 		return;
@@ -1905,7 +1905,7 @@ void BotCheckMessageQueue(bot_t* pBot)
 		if (g_rgfLastRadioTime[pBot->bot_team - 1] + 3.0 < gpGlobals->time)
 		{
 			char szReport[80];
-			int iSize = sizeof(szReport);
+			int iSize = sizeof szReport;
 			/*
 						// If same message like previous just do a yes/no
 						if ((pBot->iRadioSelect != RADIO_AFFIRMATIVE)
@@ -1982,18 +1982,18 @@ void BotCheckMessageQueue(bot_t* pBot)
 					break;
 				}
 			}
-			if ((pBot->iRadioSelect < 10) && (RANDOM_LONG(1, 100) < 10)) // KWo - 06.03.2010
+			if (pBot->iRadioSelect < 10 && RANDOM_LONG(1, 100) < 10) // KWo - 06.03.2010
 			{
 				FakeClientCommand(pBot->pEdict, "radio1;menuselect %d\n", pBot->iRadioSelect);
 				bRadioAnswer = TRUE; // KWo - 20.03.2010
 			}
-			else if ((pBot->iRadioSelect >= 10) && (pBot->iRadioSelect < 20) && (RANDOM_LONG(1, 100) < 10)) // KWo - 06.03.2010
+			else if (pBot->iRadioSelect >= 10 && pBot->iRadioSelect < 20 && RANDOM_LONG(1, 100) < 10) // KWo - 06.03.2010
 			{
 				FakeClientCommand(pBot->pEdict, "radio2;menuselect %d\n", pBot->iRadioSelect - 10);
 				bRadioAnswer = TRUE; // KWo - 20.03.2010
 			}
-			else if ((pBot->iRadioSelect >= 20) && (RANDOM_LONG(1, 100) < 10)
-				|| (pBot->iRadioSelect == 21)) // KWo - 20.03.2010
+			else if (pBot->iRadioSelect >= 20 && RANDOM_LONG(1, 100) < 10
+				|| pBot->iRadioSelect == 21) // KWo - 20.03.2010
 			{
 				FakeClientCommand(pBot->pEdict, "radio3;menuselect %d\n", pBot->iRadioSelect - 20);
 				bRadioAnswer = TRUE; // KWo - 20.03.2010
@@ -2028,19 +2028,19 @@ void BotCheckMessageQueue(bot_t* pBot)
 		iEntIndex = ENTINDEX(pBot->pEdict);
 
 		// Add this so the Chat Parser doesn't get confused
-		snprintf(szMessage, sizeof(szMessage), "%s:%s", STRING(pBot->pEdict->v.netname), pBot->szMiscStrings);
+		snprintf(szMessage, sizeof szMessage, "%s:%s", STRING(pBot->pEdict->v.netname), pBot->szMiscStrings);
 
 		for (bot_index = 0; bot_index < gpGlobals->maxClients; bot_index++)
 		{
 			bot_t* pOtherBot = &bots[bot_index];
 
-			if (pOtherBot->is_used && !FNullEnt(pOtherBot->pEdict) && (pOtherBot != pBot))
+			if (pOtherBot->is_used && !FNullEnt(pOtherBot->pEdict) && pOtherBot != pBot)
 			{
 				if (!pOtherBot->bDead)
 				{
 					pOtherBot->SaytextBuffer.iEntityIndex = iEntIndex;
-					strncpy(pOtherBot->SaytextBuffer.szSayText, szMessage, sizeof(pOtherBot->SaytextBuffer.szSayText));
-					pOtherBot->SaytextBuffer.szSayText[sizeof(pOtherBot->SaytextBuffer.szSayText) - 1] = 0;
+					strncpy(pOtherBot->SaytextBuffer.szSayText, szMessage, sizeof pOtherBot->SaytextBuffer.szSayText);
+					pOtherBot->SaytextBuffer.szSayText[sizeof pOtherBot->SaytextBuffer.szSayText - 1] = 0;
 				}
 
 				pOtherBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pOtherBot->SaytextBuffer.fChatDelay;
@@ -2063,7 +2063,7 @@ void BotCheckReload(bot_t* pBot)  // bluebyte
 	int iMaxClip = 0;
 	int iNum = 0; // KWo - 04.04.2010
 
-	if ((iId > 0) && (iId < MAX_WEAPONS))
+	if (iId > 0 && iId < MAX_WEAPONS)
 	{
 		iMaxClip = weapon_maxClip[iId];
 		iNum = weapon_selectIndex[iId]; // KWo - 05.04.2010
@@ -2071,28 +2071,28 @@ void BotCheckReload(bot_t* pBot)  // bluebyte
 	else
 		return;
 
-	if ((((WeaponIsPrimaryGun(iId)) && (pBot->current_weapon.iAmmo1 == 0))
-		|| ((WeaponIsPistol(iId)) && (pBot->current_weapon.iAmmo2 == 0)))
-		|| (pBot->current_weapon.iClip == iMaxClip)
-		|| (iMaxClip == 0) || WeaponIsNade(iId))
+	if (WeaponIsPrimaryGun(iId) && pBot->current_weapon.iAmmo1 == 0
+		|| WeaponIsPistol(iId) && pBot->current_weapon.iAmmo2 == 0
+		|| pBot->current_weapon.iClip == iMaxClip
+		|| iMaxClip == 0 || WeaponIsNade(iId))
 	{
 		pBot->bIsReloading = FALSE;
 		pBot->f_reloadingtime = 0.0;
 		return;
 	}
 
-	if (!pBot->bIsReloading && FNullEnt(pBot->pBotEnemy) && (weapon_defs[iId].iAmmo1 != -1)
-		&& ((pBot->current_weapon.iAmmo1 > 0) && WeaponIsPrimaryGun(iId) || (pBot->current_weapon.iAmmo2 > 0) && WeaponIsPistol(iId))
+	if (!pBot->bIsReloading && FNullEnt(pBot->pBotEnemy) && weapon_defs[iId].iAmmo1 != -1
+		&& (pBot->current_weapon.iAmmo1 > 0 && WeaponIsPrimaryGun(iId) || pBot->current_weapon.iAmmo2 > 0 && WeaponIsPistol(iId))
 		&& (!(pBot->iStates & STATE_SEEINGENEMY) && !(pBot->iStates & STATE_SUSPECTENEMY)
-			&& !(pBot->iStates & STATE_HEARINGENEMY) && (pBot->f_bot_see_enemy_time + 4.0 < gpGlobals->time)
-			&& (pBot->f_heard_sound_time + 4.0 < gpGlobals->time)
-			|| (!(pBot->iStates & STATE_SEEINGENEMY) && (pBot->f_bot_see_enemy_time + 1.0 < gpGlobals->time) && g_bRoundEnded)
-			|| ((g_iAliveCTs == 0) && (pBot->bot_team == TEAM_CS_TERRORIST))
-			|| ((g_iAliveTs == 0) && (pBot->bot_team == TEAM_CS_COUNTER)))) // 30.09.2010
+			&& !(pBot->iStates & STATE_HEARINGENEMY) && pBot->f_bot_see_enemy_time + 4.0 < gpGlobals->time
+			&& pBot->f_heard_sound_time + 4.0 < gpGlobals->time
+			|| !(pBot->iStates & STATE_SEEINGENEMY) && pBot->f_bot_see_enemy_time + 1.0 < gpGlobals->time && g_bRoundEnded
+			|| g_iAliveCTs == 0 && pBot->bot_team == TEAM_CS_TERRORIST
+			|| g_iAliveTs == 0 && pBot->bot_team == TEAM_CS_COUNTER)) // 30.09.2010
 	{
 		// bluebyte: we should reload more frequently
-		if (((pBot->current_weapon.iClip < (0.8 * iMaxClip)) || (pBot->f_spawn_time + 5.0 > gpGlobals->time))
-			&& (pBot->f_reloadingtime == 0.0) && (pBot->f_spawn_time + 2.0 < gpGlobals->time))  // KWo - 10.07.2008
+		if ((pBot->current_weapon.iClip < 0.8 * iMaxClip || pBot->f_spawn_time + 5.0 > gpGlobals->time)
+			&& pBot->f_reloadingtime == 0.0 && pBot->f_spawn_time + 2.0 < gpGlobals->time)  // KWo - 10.07.2008
 		{
 			pBot->f_reloadingtime = gpGlobals->time + cs_weapon_select[iNum].primary_charge_delay + 0.2; // KWo - 04.04.2010
 			pBot->pEdict->v.button |= IN_RELOAD;   // reload
@@ -2100,7 +2100,7 @@ void BotCheckReload(bot_t* pBot)  // bluebyte
 
 			if (g_b_DebugCombat)
 			{
-				if ((pBot->bIsReloading) && (iId >= 0) && (iId < MAX_WEAPONS))
+				if (pBot->bIsReloading && iId >= 0 && iId < MAX_WEAPONS)
 				{
 					ALERT(at_logged, "[DEBUG] BotCheckReload - bot %s started to reload the weapon - %s, clip = %d, Ammo1 = %d, Ammo2 = %d, charge time = %.2f, time = %.2f.\n",
 						pBot->name, weapon_defs[iId].szClassname, pBot->current_weapon.iClip, pBot->current_weapon.iAmmo1, pBot->current_weapon.iAmmo2, cs_weapon_select[iNum].primary_charge_delay, gpGlobals->time);
@@ -2108,14 +2108,14 @@ void BotCheckReload(bot_t* pBot)  // bluebyte
 			}
 		}
 	}
-	else if (pBot->bIsReloading && (pBot->f_reloadingtime != 0.0)
-		&& (pBot->f_reloadingtime < gpGlobals->time) && (pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time)) // KWo - 10.02.2008
+	else if (pBot->bIsReloading && pBot->f_reloadingtime != 0.0
+		&& pBot->f_reloadingtime < gpGlobals->time && pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time) // KWo - 10.02.2008
 	{
 		pBot->bIsReloading = FALSE;
 		pBot->f_reloadingtime = 0.0;
-		if ((WeaponIsPrimaryGun(iId)) && (pBot->current_weapon.iAmmo1 > 0))
+		if (WeaponIsPrimaryGun(iId) && pBot->current_weapon.iAmmo1 > 0)
 			pBot->current_weapon.iAmmo1 = 0;
-		if ((WeaponIsPistol(iId)) && (pBot->current_weapon.iAmmo2 > 0))
+		if (WeaponIsPistol(iId) && pBot->current_weapon.iAmmo2 > 0)
 			pBot->current_weapon.iAmmo2 = 0;
 		pBot->m_rgAmmo[weapon_defs[iId].iAmmo1] = 0;
 
@@ -2125,7 +2125,7 @@ void BotCheckReload(bot_t* pBot)  // bluebyte
 		if (g_b_DebugCombat)
 		{
 			ALERT(at_logged, "[DEBUG] BotCheckReload - Bot %s was reloading the weapon %s too long time; time = %f.\n",
-				pBot->name, ((iId >= 0) && (iId < MAX_WEAPONS)) ? weapon_defs[iId].szClassname : "unknown", gpGlobals->time);
+				pBot->name, iId >= 0 && iId < MAX_WEAPONS ? weapon_defs[iId].szClassname : "unknown", gpGlobals->time);
 		}
 	}
 	return;
@@ -2157,8 +2157,8 @@ void BotBuyStuff(bot_t* pBot)
 	}
 
 	// Prevent VIP from buying
-	if ((g_iMapType & MAP_AS)
-		&& (strcmp("vip", INFOKEY_VALUE(GET_INFOKEYBUFFER(pEdict), "model")) == 0))
+	if (g_iMapType & MAP_AS
+		&& strcmp("vip", INFOKEY_VALUE(GET_INFOKEYBUFFER(pEdict), "model")) == 0)
 	{
 		pBot->iBuyCount = 0;
 		pBot->bIsVIP = TRUE;
@@ -2176,9 +2176,9 @@ void BotBuyStuff(bot_t* pBot)
 	// Needs a Weapon ?
 	if (pBot->iBuyCount == 1)
 	{
-		if (((BotHasPrimaryWeapon(pBot) || BotHasShield(pBot)) && (pBot->bot_money < 3700))
-			|| (g_i_MapBuying == 3) || ((pBot->bot_team == TEAM_CS_TERRORIST) && (g_i_MapBuying == 1))
-			|| ((pBot->bot_team == TEAM_CS_COUNTER) && (g_i_MapBuying == 2))
+		if ((BotHasPrimaryWeapon(pBot) || BotHasShield(pBot)) && pBot->bot_money < 3700
+			|| g_i_MapBuying == 3 || pBot->bot_team == TEAM_CS_TERRORIST && g_i_MapBuying == 1
+			|| pBot->bot_team == TEAM_CS_COUNTER && g_i_MapBuying == 2
 			/* ||  g_iMapType & MAP_AWP || g_iMapType & MAP_AIM */ || pBot->bIsChickenOrZombie)  // KWo - 07.06.2010
 		{
 			pBot->iBuyCount++; // only buy ammo & items
@@ -2186,8 +2186,8 @@ void BotBuyStuff(bot_t* pBot)
 			BotCheckReload(pBot); // KWo - 31.03.2008
 			return;
 		}
-		if ((BotHasPrimaryWeapon(pBot) || ((pBot->bot_personality != 2) && BotHasShield(pBot)))
-			&& (pBot->bot_money >= 3700) && (!g_b_cv_csdm_active))  // KWo - 15.04.2008
+		if ((BotHasPrimaryWeapon(pBot) || pBot->bot_personality != 2 && BotHasShield(pBot))
+			&& pBot->bot_money >= 3700 && !g_b_cv_csdm_active)  // KWo - 15.04.2008
 		{
 			// Select the Priority Tab for this Personality
 			int* ptrWeaponTab = ptrWeaponPrefs[pBot->bot_personality];
@@ -2203,7 +2203,7 @@ void BotBuyStuff(bot_t* pBot)
 				iWeaponPriorityIndex--;
 				assert((*ptrWeaponTab > -1) && (*ptrWeaponTab < NUM_WEAPONS));
 				pBot->pSelected_weapon = &cs_weapon_select[*ptrWeaponTab];
-				bWeaponRestricted = (g_iWeaponRestricted[*ptrWeaponTab] != 0);   // KWo - 10.03.2006
+				bWeaponRestricted = g_iWeaponRestricted[*ptrWeaponTab] != 0;   // KWo - 10.03.2006
 				iCount++;
 
 				if (bWeaponRestricted)   // KWo - 10.03.2006
@@ -2212,21 +2212,21 @@ void BotBuyStuff(bot_t* pBot)
 				// Weapon available for every Team ?
 				if (g_iMapType & MAP_AS)
 				{
-					if ((pBot->pSelected_weapon->iTeamAS != 2)
-						&& (pBot->pSelected_weapon->iTeamAS != pBot->bot_team - 1))
+					if (pBot->pSelected_weapon->iTeamAS != 2
+						&& pBot->pSelected_weapon->iTeamAS != pBot->bot_team - 1)
 						continue;
 				}
 				else
 				{
-					if ((pBot->pSelected_weapon->iTeamStandard != 2)
-						&& (pBot->pSelected_weapon->iTeamStandard != pBot->bot_team - 1))
+					if (pBot->pSelected_weapon->iTeamStandard != 2
+						&& pBot->pSelected_weapon->iTeamStandard != pBot->bot_team - 1)
 						continue;
 				}
 
-				if ((pBot->pSelected_weapon->iPrice < pBot->bot_money + 500)
-					&& (iWeaponPriorityIndex > iCarriedWeapon)
-					&& (cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iCarriedWeapon]].iPrice
-						< cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iWeaponPriorityIndex]].iPrice)) // KWo - 05.07.2008
+				if (pBot->pSelected_weapon->iPrice < pBot->bot_money + 500
+					&& iWeaponPriorityIndex > iCarriedWeapon
+					&& cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iCarriedWeapon]].iPrice
+					< cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iWeaponPriorityIndex]].iPrice) // KWo - 05.07.2008
 				{
 					iBuyChoices[iFoundWeapons++] = *ptrWeaponTab;
 
@@ -2236,10 +2236,10 @@ void BotBuyStuff(bot_t* pBot)
 							cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iCarriedWeapon]].weapon_name, cs_weapon_select[*ptrWeaponTab].weapon_name);
 					}
 				}
-			} while ((iCount < NUM_WEAPONS) && (iFoundWeapons < 4) && (iWeaponPriorityIndex > iCarriedWeapon));
+			} while (iCount < NUM_WEAPONS && iFoundWeapons < 4 && iWeaponPriorityIndex > iCarriedWeapon);
 		}
 
-		else if ((pBot->bot_money > 650) && (!BotHasPrimaryWeapon(pBot)) && (!BotHasShield(pBot) && (!g_b_cv_csdm_active))) // KWo - 18.01.2011
+		else if (pBot->bot_money > 650 && !BotHasPrimaryWeapon(pBot) && (!BotHasShield(pBot) && !g_b_cv_csdm_active)) // KWo - 18.01.2011
 		{
 			// Select the Priority Tab for this Personality
 			int* ptrWeaponTab = ptrWeaponPrefs[pBot->bot_personality];
@@ -2252,7 +2252,7 @@ void BotBuyStuff(bot_t* pBot)
 				ptrWeaponTab--;
 				assert((*ptrWeaponTab > -1) && (*ptrWeaponTab < NUM_WEAPONS));
 				pBot->pSelected_weapon = &cs_weapon_select[*ptrWeaponTab];
-				bWeaponRestricted = (g_iWeaponRestricted[*ptrWeaponTab] != 0);   // KWo - 10.03.2006
+				bWeaponRestricted = g_iWeaponRestricted[*ptrWeaponTab] != 0;   // KWo - 10.03.2006
 				iCount++;
 
 				if (bWeaponRestricted)   // KWo - 10.03.2006
@@ -2261,22 +2261,22 @@ void BotBuyStuff(bot_t* pBot)
 				// Weapon available for every Team ?
 				if (g_iMapType & MAP_AS)
 				{
-					if ((pBot->pSelected_weapon->iTeamAS != 2)
-						&& (pBot->pSelected_weapon->iTeamAS != pBot->bot_team - 1))
+					if (pBot->pSelected_weapon->iTeamAS != 2
+						&& pBot->pSelected_weapon->iTeamAS != pBot->bot_team - 1)
 						continue;
 				}
 				else
 				{
-					if ((pBot->pSelected_weapon->iTeamStandard != 2)
-						&& (pBot->pSelected_weapon->iTeamStandard != pBot->bot_team - 1))
+					if (pBot->pSelected_weapon->iTeamStandard != 2
+						&& pBot->pSelected_weapon->iTeamStandard != pBot->bot_team - 1)
 						continue;
 				}
 
 				if (pBot->pSelected_weapon->iPrice < pBot->bot_money + 100)
 					iBuyChoices[iFoundWeapons++] = *ptrWeaponTab;
-			} while ((iCount < NUM_WEAPONS) && (iFoundWeapons < 4));
+			} while (iCount < NUM_WEAPONS && iFoundWeapons < 4);
 
-			if ((pBot->bot_money < 900) && (RANDOM_LONG(0, 10) < 3)) // KWo - 31.03.2008
+			if (pBot->bot_money < 900 && RANDOM_LONG(0, 10) < 3) // KWo - 31.03.2008
 				iFoundWeapons = 0; // bot decided to save money for a better primary weapon in the next round
 		}
 		// Found a desired weapon ?
@@ -2302,17 +2302,17 @@ void BotBuyStuff(bot_t* pBot)
 	}
 	else if (pBot->iBuyCount == 2) // KWo - 18.01.2011
 	{
-		if (((BotHasSecondaryWeapon(pBot)) && (pBot->bot_money < 4000) && (!BotHasSniperWeapon(pBot)) && (!BotHasShield(pBot)))
-			|| (g_i_MapBuying == 3) || ((pBot->bot_team == TEAM_CS_TERRORIST) && (g_i_MapBuying == 1))
-			|| ((pBot->bot_team == TEAM_CS_COUNTER) && (g_i_MapBuying == 2))
+		if (BotHasSecondaryWeapon(pBot) && pBot->bot_money < 4000 && !BotHasSniperWeapon(pBot) && !BotHasShield(pBot)
+			|| g_i_MapBuying == 3 || pBot->bot_team == TEAM_CS_TERRORIST && g_i_MapBuying == 1
+			|| pBot->bot_team == TEAM_CS_COUNTER && g_i_MapBuying == 2
 			/* ||  g_iMapType & MAP_AWP || g_iMapType & MAP_AIM */ || pBot->bIsChickenOrZombie)
 		{
 			pBot->iBuyCount++;
 			return;
 		}
-		if ((((BotHasSecondaryWeapon(pBot)) && (pBot->bot_money >= 4000))
-			|| (((BotHasSniperWeapon(pBot)) || (BotHasShield(pBot))) && (pBot->bot_money >= 1000)))
-			&& (!g_b_cv_csdm_active))
+		if ((BotHasSecondaryWeapon(pBot) && pBot->bot_money >= 4000
+			|| (BotHasSniperWeapon(pBot) || BotHasShield(pBot)) && pBot->bot_money >= 1000)
+			&& !g_b_cv_csdm_active)
 		{
 			// Select the Priority Tab for this Personality
 			int* ptrWeaponTab = ptrWeaponPrefs[pBot->bot_personality];
@@ -2328,7 +2328,7 @@ void BotBuyStuff(bot_t* pBot)
 				iWeaponPriorityIndex--;
 				assert((*ptrWeaponTab > -1) && (*ptrWeaponTab < NUM_WEAPONS));
 				pBot->pSelected_weapon = &cs_weapon_select[*ptrWeaponTab];
-				bWeaponRestricted = (g_iWeaponRestricted[*ptrWeaponTab] != 0);
+				bWeaponRestricted = g_iWeaponRestricted[*ptrWeaponTab] != 0;
 				iCount++;
 
 				if (bWeaponRestricted)
@@ -2337,24 +2337,24 @@ void BotBuyStuff(bot_t* pBot)
 				// Weapon available for every Team ?
 				if (g_iMapType & MAP_AS)
 				{
-					if ((pBot->pSelected_weapon->iTeamAS != 2)
-						&& (pBot->pSelected_weapon->iTeamAS != pBot->bot_team - 1))
+					if (pBot->pSelected_weapon->iTeamAS != 2
+						&& pBot->pSelected_weapon->iTeamAS != pBot->bot_team - 1)
 						continue;
 				}
 				else
 				{
-					if ((pBot->pSelected_weapon->iTeamStandard != 2)
-						&& (pBot->pSelected_weapon->iTeamStandard != pBot->bot_team - 1))
+					if (pBot->pSelected_weapon->iTeamStandard != 2
+						&& pBot->pSelected_weapon->iTeamStandard != pBot->bot_team - 1)
 						continue;
 				}
 
 				if (!WeaponIsPistol(pBot->pSelected_weapon->iId))
 					continue;
 
-				if ((pBot->pSelected_weapon->iPrice < pBot->bot_money + 500)
-					&& (iWeaponPriorityIndex > iCarriedWeapon)
-					&& (cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iCarriedWeapon]].iPrice
-						< cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iWeaponPriorityIndex]].iPrice))
+				if (pBot->pSelected_weapon->iPrice < pBot->bot_money + 500
+					&& iWeaponPriorityIndex > iCarriedWeapon
+					&& cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iCarriedWeapon]].iPrice
+					< cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iWeaponPriorityIndex]].iPrice)
 				{
 					iBuyChoices[iFoundWeapons++] = *ptrWeaponTab;
 
@@ -2364,10 +2364,10 @@ void BotBuyStuff(bot_t* pBot)
 							cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iCarriedWeapon]].weapon_name, cs_weapon_select[*ptrWeaponTab].weapon_name);
 					}
 				}
-			} while ((iCount < NUM_WEAPONS) && (iFoundWeapons < 4) && (iWeaponPriorityIndex > iCarriedWeapon));
+			} while (iCount < NUM_WEAPONS && iFoundWeapons < 4 && iWeaponPriorityIndex > iCarriedWeapon);
 		}
 
-		else if ((pBot->bot_money > 650) && (!BotHasSecondaryWeapon(pBot)) && (!g_b_cv_csdm_active))
+		else if (pBot->bot_money > 650 && !BotHasSecondaryWeapon(pBot) && !g_b_cv_csdm_active)
 		{
 			// Select the Priority Tab for this Personality
 			int* ptrWeaponTab = ptrWeaponPrefs[pBot->bot_personality];
@@ -2380,7 +2380,7 @@ void BotBuyStuff(bot_t* pBot)
 				ptrWeaponTab--;
 				assert((*ptrWeaponTab > -1) && (*ptrWeaponTab < NUM_WEAPONS));
 				pBot->pSelected_weapon = &cs_weapon_select[*ptrWeaponTab];
-				bWeaponRestricted = (g_iWeaponRestricted[*ptrWeaponTab] != 0);
+				bWeaponRestricted = g_iWeaponRestricted[*ptrWeaponTab] != 0;
 				iCount++;
 
 				if (bWeaponRestricted)
@@ -2389,14 +2389,14 @@ void BotBuyStuff(bot_t* pBot)
 				// Weapon available for every Team ?
 				if (g_iMapType & MAP_AS)
 				{
-					if ((pBot->pSelected_weapon->iTeamAS != 2)
-						&& (pBot->pSelected_weapon->iTeamAS != pBot->bot_team - 1))
+					if (pBot->pSelected_weapon->iTeamAS != 2
+						&& pBot->pSelected_weapon->iTeamAS != pBot->bot_team - 1)
 						continue;
 				}
 				else
 				{
-					if ((pBot->pSelected_weapon->iTeamStandard != 2)
-						&& (pBot->pSelected_weapon->iTeamStandard != pBot->bot_team - 1))
+					if (pBot->pSelected_weapon->iTeamStandard != 2
+						&& pBot->pSelected_weapon->iTeamStandard != pBot->bot_team - 1)
 						continue;
 				}
 
@@ -2405,9 +2405,9 @@ void BotBuyStuff(bot_t* pBot)
 
 				if (pBot->pSelected_weapon->iPrice < pBot->bot_money + 100)
 					iBuyChoices[iFoundWeapons++] = *ptrWeaponTab;
-			} while ((iCount < NUM_WEAPONS) && (iFoundWeapons < 4));
+			} while (iCount < NUM_WEAPONS && iFoundWeapons < 4);
 
-			if ((pBot->bot_money < 900) && (RANDOM_LONG(0, 10) < 3))
+			if (pBot->bot_money < 900 && RANDOM_LONG(0, 10) < 3)
 				iFoundWeapons = 0; // bot decided to save money for a better weapon in the next round
 		}
 		// Found a desired weapon ?
@@ -2456,7 +2456,7 @@ void BotBuyStuff(bot_t* pBot)
 					else
 						FakeClientCommand(pEdict, "primammo\n");
 				}
-				if ((g_iEquipAmmoRestricted[PB_WEAPON_AMMO2] == 0) && (pBot->iBuyCount < 4))  // KWo - 18.01.2011
+				if (g_iEquipAmmoRestricted[PB_WEAPON_AMMO2] == 0 && pBot->iBuyCount < 4)  // KWo - 18.01.2011
 				{
 					if (g_bIsOldCS15)
 						FakeClientCommand(pEdict, "buyammo2\n");
@@ -2476,9 +2476,9 @@ void BotBuyStuff(bot_t* pBot)
 		// Care first about buying Armor
 		if (pBot->iBuyCount == 5)
 		{
-			if ((pBot->pEdict->v.armorvalue <= 40) && (pBot->bot_money >= 650))
+			if (pBot->pEdict->v.armorvalue <= 40 && pBot->bot_money >= 650)
 			{
-				if ((pBot->bot_money >= 1000) && (g_iEquipAmmoRestricted[PB_WEAPON_VESTHELM] == 0))   // KWo - 10.03.2006
+				if (pBot->bot_money >= 1000 && g_iEquipAmmoRestricted[PB_WEAPON_VESTHELM] == 0)   // KWo - 10.03.2006
 				{
 					if (g_bIsOldCS15)
 						FakeClientCommand(pEdict, "buy;menuselect 8;menuselect 2\n");
@@ -2495,19 +2495,19 @@ void BotBuyStuff(bot_t* pBot)
 			}
 		}
 
-		if ((pBot->iBuyCount == 6) && (pBot->bot_money >= 300))  // KWo - 27.05.2008
+		if (pBot->iBuyCount == 6 && pBot->bot_money >= 300)  // KWo - 27.05.2008
 		{
 			int iGrenadeType = RANDOM_LONG(1, 100);
 
 			// Focus on HE Grenades
-			if ((iGrenadeType < 75) && (g_iEquipAmmoRestricted[PB_WEAPON_HEGRENADE] == 0))   // KWo - 10.03.2006
+			if (iGrenadeType < 75 && g_iEquipAmmoRestricted[PB_WEAPON_HEGRENADE] == 0)   // KWo - 10.03.2006
 			{
 				if (g_bIsOldCS15)
 					FakeClientCommand(pEdict, "buy;menuselect 8;menuselect 4\n");
 				else
 					FakeClientCommand(pEdict, "hegren\n");
 			}
-			else if ((iGrenadeType < 82) && (g_iEquipAmmoRestricted[PB_WEAPON_SMOKEGRENADE] == 0))   // KWo - 10.03.2006
+			else if (iGrenadeType < 82 && g_iEquipAmmoRestricted[PB_WEAPON_SMOKEGRENADE] == 0)   // KWo - 10.03.2006
 			{
 				if (g_bIsOldCS15)
 					FakeClientCommand(pEdict, "buy;menuselect 8;menuselect 5\n");
@@ -2526,8 +2526,8 @@ void BotBuyStuff(bot_t* pBot)
 		if (pBot->iBuyCount == 7)  // KWo - 27.05.2008
 		{
 			// If Defusion Map & Counter buy Defusion Kit
-			if ((g_iMapType & MAP_DE) && (pBot->bot_team == TEAM_CS_COUNTER)
-				&& !pBot->b_has_defuse_kit && (pBot->bot_money >= 200) && (g_iEquipAmmoRestricted[PB_WEAPON_DEFUSER] == 0))   // KWo - 10.03.2006
+			if (g_iMapType & MAP_DE && pBot->bot_team == TEAM_CS_COUNTER
+				&& !pBot->b_has_defuse_kit && pBot->bot_money >= 200 && g_iEquipAmmoRestricted[PB_WEAPON_DEFUSER] == 0)   // KWo - 10.03.2006
 			{
 				if (g_bIsOldCS15)
 					FakeClientCommand(pEdict, "buy;menuselect 8;menuselect 6\n");
@@ -2536,8 +2536,8 @@ void BotBuyStuff(bot_t* pBot)
 			}
 			// If the map is dark, the bot needs a nightgoogles...
 			fLightLevel = UTIL_IlluminationOf(pEdict); // KWo - 13.01.2012
-			if (((((g_f_cv_skycolor > 50.0) && (fLightLevel < 15.0)) || ((g_f_cv_skycolor <= 50.0) && (fLightLevel < 40.0)))
-				&& !BotHasNvg(pBot)) && (pBot->bot_money >= 1250) && (g_iEquipAmmoRestricted[PB_WEAPON_NVGS] == 0)) // KWo - 13.01.2012
+			if ((g_f_cv_skycolor > 50.0 && fLightLevel < 15.0 || g_f_cv_skycolor <= 50.0 && fLightLevel < 40.0)
+				&& !BotHasNvg(pBot) && pBot->bot_money >= 1250 && g_iEquipAmmoRestricted[PB_WEAPON_NVGS] == 0) // KWo - 13.01.2012
 			{
 				if (g_bIsOldCS15)
 					FakeClientCommand(pEdict, "buy;menuselect 8;menuselect 7\n");
@@ -2595,13 +2595,13 @@ void BotSetConditions(bot_t* pBot)
 	vLastEnLookDir.x = 90.0;      // KWo - 01.10.2010
 	bNewEnemy = FALSE;            // KWo - 13.10.2011
 
-	if ((pBot->iAimFlags & AIM_ENTITY) && (BotGetSafeTask(pBot)->iTask != TASK_PICKUPITEM))  // KWo - 27.10.2006
+	if (pBot->iAimFlags & AIM_ENTITY && BotGetSafeTask(pBot)->iTask != TASK_PICKUPITEM)  // KWo - 27.10.2006
 		pBot->iAimFlags = AIM_ENTITY;
-	else if ((pBot->iAimFlags & AIM_LASTENEMY) && (pBot->vecLastEnemyOrigin != g_vecZero)
-		&& ((pBot->fLastHeardEnOrgUpdateTime >= gpGlobals->time)
-			|| (pBot->fLastSeenEnOrgUpdateTime >= gpGlobals->time)
-			|| (pBot->f_sound_update_time >= gpGlobals->time)
-			|| (pBot->f_bot_see_enemy_time + 2.0 < gpGlobals->time))) // KWo - 29.05.2010
+	else if (pBot->iAimFlags & AIM_LASTENEMY && pBot->vecLastEnemyOrigin != g_vecZero
+		&& (pBot->fLastHeardEnOrgUpdateTime >= gpGlobals->time
+			|| pBot->fLastSeenEnOrgUpdateTime >= gpGlobals->time
+			|| pBot->f_sound_update_time >= gpGlobals->time
+			|| pBot->f_bot_see_enemy_time + 2.0 < gpGlobals->time)) // KWo - 29.05.2010
 		pBot->iAimFlags = AIM_LASTENEMY;
 	else
 		pBot->iAimFlags = 0;
@@ -2662,7 +2662,7 @@ void BotSetConditions(bot_t* pBot)
 	// Did Bot just kill an Enemy ?
 	if (!FNullEnt(pBot->pLastVictim))
 	{
-		if ((UTIL_GetTeam(pBot->pLastVictim) != pBot->bot_team) || g_b_cv_ffa)  // KWo - 05.10.2006
+		if (UTIL_GetTeam(pBot->pLastVictim) != pBot->bot_team || g_b_cv_ffa)  // KWo - 05.10.2006
 		{
 			// Add some agression because we just killed somebody MUWHAHA !!
 			pBot->fAgressionLevel += 0.1;
@@ -2673,7 +2673,7 @@ void BotSetConditions(bot_t* pBot)
 			iRandomMessage = RANDOM_LONG(0, 100);
 			if (g_b_cv_chat) // KWo - 06.04.2006
 			{
-				if ((iRandomMessage > 20) && (iRandomMessage < 30)) // KWo - 06.03.2010
+				if (iRandomMessage > 20 && iRandomMessage < 30) // KWo - 06.03.2010
 				{
 					BotPrepareChatMessage(pBot, szKillChat[RANDOM_LONG(0, iNumKillChats - 1)]);
 					BotPushMessageQueue(pBot, MSG_CS_SAY);
@@ -2681,9 +2681,9 @@ void BotSetConditions(bot_t* pBot)
 			}
 
 			// Sometimes give some radio message
-			if ((iRandomMessage < 20) && (!g_b_cv_ffa) && (g_b_cv_radio)
-				&& (((pBot->bot_team == TEAM_CS_COUNTER) && (g_iAliveCTs > 1))
-					|| ((pBot->bot_team == TEAM_CS_TERRORIST) && (g_iAliveTs > 1)))) // KWo - 06.03.2010
+			if (iRandomMessage < 20 && !g_b_cv_ffa && g_b_cv_radio
+				&& (pBot->bot_team == TEAM_CS_COUNTER && g_iAliveCTs > 1
+					|| pBot->bot_team == TEAM_CS_TERRORIST && g_iAliveTs > 1)) // KWo - 06.03.2010
 				BotPlayRadioMessage(pBot, RADIO_ENEMYDOWN);
 		}
 
@@ -2694,9 +2694,9 @@ void BotSetConditions(bot_t* pBot)
 	if (!FNullEnt(pBot->pLastEnemy))
 	{
 		iEnemyIndex = ENTINDEX(pBot->pLastEnemy) - 1; // KWo - 15.03.2010
-		if ((iEnemyIndex >= 0) && (iEnemyIndex < gpGlobals->maxClients))
+		if (iEnemyIndex >= 0 && iEnemyIndex < gpGlobals->maxClients)
 		{
-			if (!IsAlive(pBot->pLastEnemy) && (clients[iEnemyIndex].fDeathTime < gpGlobals->time))
+			if (!IsAlive(pBot->pLastEnemy) && clients[iEnemyIndex].fDeathTime < gpGlobals->time)
 			{
 				pBot->pLastEnemy = NULL;
 			}
@@ -2729,9 +2729,9 @@ void BotSetConditions(bot_t* pBot)
 	   // is far too sensitive and unreliable
 
 	   // Don't listen if seeing enemy, just checked for sounds or being blinded ('cause its inhuman)
-	if (!g_bIgnoreEnemies && (pBot->f_sound_update_time < gpGlobals->time)
+	if (!g_bIgnoreEnemies && pBot->f_sound_update_time < gpGlobals->time
 		//        && (pBot->f_bot_see_new_enemy_time + 0.5 < gpGlobals->time) // ??
-		&& (pBot->f_blind_time < gpGlobals->time)) // KWo - 11.07.2008
+		&& pBot->f_blind_time < gpGlobals->time) // KWo - 11.07.2008
 	{
 		pBot->f_sound_update_time = gpGlobals->time + 0.05 + (100.f - (float)pBot->bot_skill) * 0.01 * g_f_cv_timer_sound;  // KWo - 12.10.2006
 
@@ -2745,7 +2745,7 @@ void BotSetConditions(bot_t* pBot)
 				clients[g_i_botthink_index].fMaxTimeSoundLasting = 0.5;
 			//         fBotOwnSoundLast = (clients[g_i_botthink_index].fHearingDistance * (0.2)) * (clients[g_i_botthink_index].fTimeSoundLasting - gpGlobals->time)/clients[g_i_botthink_index].fMaxTimeSoundLasting;
 			if (clients[g_i_botthink_index].fTimeSoundLasting + 1.8 < gpGlobals->time)
-				fBotOwnSoundLast = (0.2) * (clients[g_i_botthink_index].fHearingDistance / 1024.0); // KWo - 12.09.2008
+				fBotOwnSoundLast = 0.2 * (clients[g_i_botthink_index].fHearingDistance / 1024.0); // KWo - 12.09.2008
 		}
 
 		/*
@@ -2765,12 +2765,12 @@ void BotSetConditions(bot_t* pBot)
 		if (!FNullEnt(pEdict->v.dmg_inflictor)) // KWo - 10.04.2010
 		{
 			ind = ENTINDEX(pEdict->v.dmg_inflictor) - 1;
-			if ((ind >= 0) && (ind < gpGlobals->maxClients) && (ind != g_i_botthink_index)) // KWo - 29.09.2010
+			if (ind >= 0 && ind < gpGlobals->maxClients && ind != g_i_botthink_index) // KWo - 29.09.2010
 			{
-				if ((clients[ind].iFlags & CLIENT_ALIVE) && (pEdict->v.dmgtime + 1.5 > gpGlobals->time)) // KWo - 19.01.2011
+				if (clients[ind].iFlags & CLIENT_ALIVE && pEdict->v.dmgtime + 1.5 > gpGlobals->time) // KWo - 19.01.2011
 				{
-					if ((FNullEnt(pBot->pBotEnemy)) || (pBot->f_bot_see_enemy_time + 1.0 < gpGlobals->time)
-						&& (pBot->pLastEnemy != pPlayer))
+					if (FNullEnt(pBot->pBotEnemy) || pBot->f_bot_see_enemy_time + 1.0 < gpGlobals->time
+						&& pBot->pLastEnemy != pPlayer)
 					{
 						iHearEnemyIndex = ind;
 						pPlayer = pEdict->v.dmg_inflictor;
@@ -2793,10 +2793,10 @@ void BotSetConditions(bot_t* pBot)
 				}
 				else
 				{
-					if ((pBot->pBotEnemy == pEdict->v.dmg_inflictor)
-						&& (((clients[ind].iTeam == pBot->bot_team) && (!g_b_cv_ffa))
-							|| !(clients[ind].iFlags & CLIENT_ALIVE) && (clients[ind].fDeathTime < gpGlobals->time)
-							|| (pBot->f_bot_see_enemy_time + 7.0 < gpGlobals->time)))    // 15.10.2011
+					if (pBot->pBotEnemy == pEdict->v.dmg_inflictor
+						&& (clients[ind].iTeam == pBot->bot_team && !g_b_cv_ffa
+							|| !(clients[ind].iFlags & CLIENT_ALIVE) && clients[ind].fDeathTime < gpGlobals->time
+							|| pBot->f_bot_see_enemy_time + 7.0 < gpGlobals->time))    // 15.10.2011
 					{
 						pEdict->v.dmg_inflictor = NULL;
 						pBot->pBotEnemy = NULL;
@@ -2811,8 +2811,8 @@ void BotSetConditions(bot_t* pBot)
 		{
 			if (!(clients[ind].iFlags & CLIENT_USED)
 				|| !(clients[ind].iFlags & CLIENT_ALIVE)
-				|| (clients[ind].pEdict == pEdict)
-				|| (clients[ind].fTimeSoundLasting < gpGlobals->time))
+				|| clients[ind].pEdict == pEdict
+				|| clients[ind].fTimeSoundLasting < gpGlobals->time)
 				continue;
 
 			fDistance = (clients[ind].vecSoundPosition - pEdict->v.origin).Length();
@@ -2852,7 +2852,7 @@ void BotSetConditions(bot_t* pBot)
 
 			fVolume = fHearingDistance / fDistance; // KWo - 12.09.2008
 
-			if ((clients[ind].iTeam == pBot->bot_team) && !(g_b_cv_ffa)) // KWo - 16.10.2006
+			if (clients[ind].iTeam == pBot->bot_team && !g_b_cv_ffa) // KWo - 16.10.2006
 				fVolume = 0.3 * fVolume;
 
 			if (fVolume < fBotOwnSoundLast) // KWo - 12.10.2006
@@ -2869,7 +2869,7 @@ void BotSetConditions(bot_t* pBot)
 
 		if (iHearEnemyIndex >= 0)
 		{
-			if ((clients[iHearEnemyIndex].iTeam != pBot->bot_team) || (g_b_cv_ffa)) // KWo - 12.10.2006
+			if (clients[iHearEnemyIndex].iTeam != pBot->bot_team || g_b_cv_ffa) // KWo - 12.10.2006
 			// Despite its name it also checks for sounds...
 			// NOTE: This only checks if sounds could be heard from
 			// this position in theory but doesn't care for Volume or
@@ -2882,10 +2882,10 @@ void BotSetConditions(bot_t* pBot)
 		// Did the Bot hear someone ?
 		if (!FNullEnt(pPlayer))
 		{
-			if (((iHearEnemyDistance < 2000) || BotUsesSniper(pBot))) // KWo - 11.07.2008
+			if (iHearEnemyDistance < 2000 || BotUsesSniper(pBot)) // KWo - 11.07.2008
 			{
 				// Didn't Bot already have an enemy ? Take this one...
-				if ((pBot->vecLastEnemyOrigin == g_vecZero) || (pBot->pLastEnemy == NULL)) // KWo - 15.08.2007
+				if (pBot->vecLastEnemyOrigin == g_vecZero || pBot->pLastEnemy == NULL) // KWo - 15.08.2007
 				{
 					if (pBot->f_bot_see_new_enemy_time + 1.0 < gpGlobals->time)             // KWo - 11.07.2008
 					{
@@ -2929,8 +2929,8 @@ void BotSetConditions(bot_t* pBot)
 						if (iHearEnemyDistance < 600)    // KWo - 08.04.2010
 							pBot->iStates |= STATE_SUSPECTENEMY;
 
-						if ((pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time)
-							&& (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time))      // KWo - 14.07.2008
+						if (pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time
+							&& pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)      // KWo - 14.07.2008
 						{
 							pBot->vecLastEnemyOrigin = pPlayer->v.origin;
 							pBot->vecLastEnemyOrigin.x += RANDOM_FLOAT(-300.0, 300.0);   // KWo - 05.05.2007
@@ -2948,10 +2948,10 @@ void BotSetConditions(bot_t* pBot)
 					{
 						// If Bot had an enemy but the heard one is nearer, take it instead
 						fDistance = (pBot->vecLastEnemyOrigin - pEdict->v.origin).Length();
-						if ((0.8 * fDistance > (pPlayer->v.origin - pEdict->v.origin).Length())  // KWo - 16.12.2007
-							&& (pBot->f_bot_see_new_enemy_time + 1.0 < gpGlobals->time))
+						if (0.8 * fDistance > (pPlayer->v.origin - pEdict->v.origin).Length()  // KWo - 16.12.2007
+							&& pBot->f_bot_see_new_enemy_time + 1.0 < gpGlobals->time)
 						{
-							if ((pBot->iStates & STATE_SEEINGENEMY) && (pBot->f_bot_see_enemy_time + 1.0 > gpGlobals->time)) // KWo - 09.04.2010
+							if (pBot->iStates & STATE_SEEINGENEMY && pBot->f_bot_see_enemy_time + 1.0 > gpGlobals->time) // KWo - 09.04.2010
 							{
 								pBot->f_heard_sound_time = gpGlobals->time;
 								pBot->iStates |= STATE_HEARINGENEMY;
@@ -2982,8 +2982,8 @@ void BotSetConditions(bot_t* pBot)
 
 								goto endhearing;
 							}
-							else if ((pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time)
-								&& (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time))
+							else if (pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time
+								&& pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)
 							{
 								pBot->f_heard_sound_time = gpGlobals->time;
 								pBot->iStates |= STATE_HEARINGENEMY;
@@ -3061,9 +3061,9 @@ void BotSetConditions(bot_t* pBot)
 
 	shootthruwcheck:
 
-		if (!FNullEnt(pBot->pLastEnemy) && (pBot->f_heard_sound_time + 1.5 >= gpGlobals->time)
-			&& (pBot->fShootThruHeardCheckTime < gpGlobals->time)
-			&& !(pBot->iStates & STATE_SEEINGENEMY) && (pBot->vecLastEnemyOrigin != g_vecZero)) // KWo - 13.08.2008
+		if (!FNullEnt(pBot->pLastEnemy) && pBot->f_heard_sound_time + 1.5 >= gpGlobals->time
+			&& pBot->fShootThruHeardCheckTime < gpGlobals->time
+			&& !(pBot->iStates & STATE_SEEINGENEMY) && pBot->vecLastEnemyOrigin != g_vecZero) // KWo - 13.08.2008
 		{
 			vLastEnLookDir = UTIL_VecToAngles(pBot->vecLastEnemyOrigin - GetGunPosition(pEdict)); // KWo - 01.10.2010
 			vLastEnLookDir.x = -vLastEnLookDir.x;  // KWo - 01.10.2010
@@ -3071,10 +3071,10 @@ void BotSetConditions(bot_t* pBot)
 			{
 				iShootThruFreq = BotAimTab[pBot->bot_skill / 20].iHeardShootThruProb;
 				pBot->fShootThruHeardCheckTime = gpGlobals->time + 1.0;
-				if ((g_b_cv_shootthruwalls) && WeaponShootsThru(pBot->current_weapon.iId)
-					&& (RANDOM_LONG(1, 100) <= iShootThruFreq))
+				if (g_b_cv_shootthruwalls && WeaponShootsThru(pBot->current_weapon.iId)
+					&& RANDOM_LONG(1, 100) <= iShootThruFreq)
 				{
-					if ((BotLastEnemyShootable(pBot)) && IsShootableThruObstacle(pEdict, pBot->vecLastEnemyOrigin))
+					if (BotLastEnemyShootable(pBot) && IsShootableThruObstacle(pEdict, pBot->vecLastEnemyOrigin))
 					{
 						pBot->fChangeAimDirectionTime = gpGlobals->time + 1.2;
 						pBot->bShootThruHeard = TRUE;
@@ -3096,13 +3096,13 @@ void BotSetConditions(bot_t* pBot)
 				pBot->bShootThruHeard = FALSE;
 			}
 		}
-		if (!FNullEnt(pBot->pLastEnemy) && (pBot->bShootThruHeard)) // KWo - 13.07.2008
+		if (!FNullEnt(pBot->pLastEnemy) && pBot->bShootThruHeard) // KWo - 13.07.2008
 		{
 			pBot->iAimFlags |= AIM_LASTENEMY;
 			pBot->iStates |= STATE_SUSPECTENEMY;
-			if ((pBot->f_bot_see_enemy_time + 1.0 < gpGlobals->time)
-				&& (pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time)
-				&& (pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time))
+			if (pBot->f_bot_see_enemy_time + 1.0 < gpGlobals->time
+				&& pBot->fLastHeardEnOrgUpdateTime < gpGlobals->time
+				&& pBot->fLastSeenEnOrgUpdateTime < gpGlobals->time)
 			{
 				pBot->vecLastEnemyOrigin.x += RANDOM_FLOAT(-300.0, 300.0);
 				pBot->vecLastEnemyOrigin.y += RANDOM_FLOAT(-300.0, 300.0);
@@ -3123,7 +3123,7 @@ void BotSetConditions(bot_t* pBot)
 		{
 			pBot->iStates &= ~STATE_HEARINGENEMY;
 			pBot->bShootThruHeard = false;
-			if ((FNullEnt(pBot->pBotEnemy)) && (pBot->f_bot_see_enemy_time + 10.0 < gpGlobals->time)) // KWo - 29.05.2010
+			if (FNullEnt(pBot->pBotEnemy) && pBot->f_bot_see_enemy_time + 10.0 < gpGlobals->time) // KWo - 29.05.2010
 			{
 				pBot->vecLastEnemyOrigin = g_vecZero;
 				pBot->pLastEnemy = NULL;
@@ -3134,21 +3134,21 @@ void BotSetConditions(bot_t* pBot)
 
 endhearing:
 
-	if ((!FNullEnt(pBot->pLastEnemy)) && (pBot->vecLastEnemyOrigin != g_vecZero))
+	if (!FNullEnt(pBot->pLastEnemy) && pBot->vecLastEnemyOrigin != g_vecZero)
 		pBot->iAimFlags |= AIM_LASTENEMY;
 
-	if ((pBot->iAimFlags & AIM_LASTENEMY) && (!FNullEnt(pBot->pLastEnemy))
-		&& (pBot->vecLastEnemyOrigin != g_vecZero)
+	if (pBot->iAimFlags & AIM_LASTENEMY && !FNullEnt(pBot->pLastEnemy)
+		&& pBot->vecLastEnemyOrigin != g_vecZero
 		&& !(pBot->iAimFlags & AIM_ENEMY)) // KWo - 11.01.2012
 	{
 		TRACE_LINE(GetGunPosition(pEdict), pBot->vecLastEnemyOrigin, ignore_monsters, pEdict, &tr);
 		fDistance = (pEdict->v.origin - pBot->vecLastEnemyOrigin).Length();
 
-		if (((fDistance >= 300.0) && FNullEnt(pBot->pBotEnemy)
-			&& (pBot->f_bot_see_enemy_time + 2.0 < gpGlobals->time) && (tr.flFraction <= 0.2)
-			&& (FStrEq(STRING(tr.pHit->v.classname), "worldspawn"))
-			&& !(pBot->bShootThruSeen) && !(pBot->bShootThruHeard))
-			|| (!(pBot->bShootThruSeen) && (fabs(vLastEnLookDir.x) >= 45.0)))     // KWo - 01.10.2010
+		if (fDistance >= 300.0 && FNullEnt(pBot->pBotEnemy)
+			&& pBot->f_bot_see_enemy_time + 2.0 < gpGlobals->time && tr.flFraction <= 0.2
+			&& FStrEq(STRING(tr.pHit->v.classname), "worldspawn")
+			&& !pBot->bShootThruSeen && !pBot->bShootThruHeard
+			|| !pBot->bShootThruSeen && fabs(vLastEnLookDir.x) >= 45.0)     // KWo - 01.10.2010
 		{
 			pBot->iAimFlags &= ~AIM_LASTENEMY;
 		}
@@ -3159,7 +3159,7 @@ endhearing:
 		pBot->iAimFlags &= ~AIM_LASTENEMY;
 
 	// Clear suspected Flag
-	if ((pBot->f_bot_see_enemy_time + 8.0 < gpGlobals->time) && (pBot->f_heard_sound_time + 10.0 < gpGlobals->time)) // KWo - 10.07.2008
+	if (pBot->f_bot_see_enemy_time + 8.0 < gpGlobals->time && pBot->f_heard_sound_time + 10.0 < gpGlobals->time) // KWo - 10.07.2008
 		pBot->iStates &= ~STATE_SUSPECTENEMY;
 }
 
@@ -3195,10 +3195,10 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 	bUsingGrenade = pBot->bUsingGrenade;
 	bThrowGrenade = FALSE;
 	iTask = BotGetSafeTask(pBot)->iTask;
-	if ((pBot->f_grenade_check_time < gpGlobals->time)
-		&& (iTask != TASK_THROWHEGRENADE) && (iTask != TASK_THROWFLASHBANG)
-		&& (iTask != TASK_THROWSMOKEGRENADE) && (!g_bIgnoreEnemies) && (!pBot->bIsReloading)
-		&& (pBot->current_weapon.iId != CS_WEAPON_INSWITCH) && (!g_b_cv_jasonmode)
+	if (pBot->f_grenade_check_time < gpGlobals->time
+		&& iTask != TASK_THROWHEGRENADE && iTask != TASK_THROWFLASHBANG
+		&& iTask != TASK_THROWSMOKEGRENADE && !g_bIgnoreEnemies && !pBot->bIsReloading
+		&& pBot->current_weapon.iId != CS_WEAPON_INSWITCH && !g_b_cv_jasonmode
 		/* && (strncmp ("zomb", pBot->sz_BotModelName, 4) != 0) */) // KWo - 14.06.2008
 	{
 		// Check again in some seconds
@@ -3206,7 +3206,7 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 
 		iWeapons = pBot->pEdict->v.weapons; // KWo - 21.03.2006
 		bWantThrowFlashbang = FALSE; // KWo - 21.03.2006
-		if ((pBot->current_weapon.iId != CS_WEAPON_HEGRENADE) && (iWeapons & (1 << CS_WEAPON_FLASHBANG))) // KWo - 20.06.2006
+		if (pBot->current_weapon.iId != CS_WEAPON_HEGRENADE && iWeapons & 1 << CS_WEAPON_FLASHBANG) // KWo - 20.06.2006
 			bWantThrowFlashbang = BotCheckCorridor(pBot); // KWo - 21.03.2006
 
 		if (bWantThrowFlashbang) // KWo - 21.03.2006
@@ -3216,7 +3216,7 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 			if (g_b_DebugSensing)
 				ALERT(at_logged, "[DEBUG] Bot %s wants to throw a flashbang .\n", pBot->name);
 
-			if ((pBot->prev_wpt_index[0] < 0) || (pBot->prev_wpt_index[0] >= g_iNumWaypoints))
+			if (pBot->prev_wpt_index[0] < 0 || pBot->prev_wpt_index[0] >= g_iNumWaypoints)
 				bThrowGrenade = FALSE;
 			if (bThrowGrenade)
 			{
@@ -3246,7 +3246,7 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 			else if (pBot->current_weapon.iId != CS_WEAPON_FLASHBANG)
 				pBot->iStates &= ~STATE_THROWFLASHBANG;
 		}
-		else if ((!FNullEnt(pBot->pLastEnemy)) && (pBot->vecLastEnemyOrigin != g_vecZero)) // KWo - 23.07.2007
+		else if (!FNullEnt(pBot->pLastEnemy) && pBot->vecLastEnemyOrigin != g_vecZero) // KWo - 23.07.2007
 		{
 			if (IsAlive(pBot->pLastEnemy)) // KWo - 06.08.2006
 			{
@@ -3257,7 +3257,7 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 
 				iGrenadeType = BotCheckGrenades(pBot);
 
-				if ((iGrenadeType == CS_WEAPON_HEGRENADE) || (iGrenadeType == CS_WEAPON_SMOKEGRENADE)) // KWo - 11.04.2010
+				if (iGrenadeType == CS_WEAPON_HEGRENADE || iGrenadeType == CS_WEAPON_SMOKEGRENADE) // KWo - 11.04.2010
 				{
 					fDistance = (pBot->vecLastEnemyOrigin - pEdict->v.origin).Length();
 
@@ -3277,9 +3277,9 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 						if (IsAlive(pBot->pLastEnemy))
 							iEnWepID = clients[iEnemyIndex].iCurrentWeaponId;
 
-						if ((iNumTeamnates == 0) && (fDistance > 500) && (fDistance < 1600)
-							&& ((!WeaponIsPrimaryGun(iEnWepID))
-								|| ((fEnemyDot < 0.7) && (pBot->pLastEnemy->v.oldbuttons & IN_ATTACK))
+						if (iNumTeamnates == 0 && fDistance > 500 && fDistance < 1600
+							&& (!WeaponIsPrimaryGun(iEnWepID)
+								|| fEnemyDot < 0.7 && pBot->pLastEnemy->v.oldbuttons & IN_ATTACK
 								/* || (fEnemyDot < 0.4) */))
 						{
 							vPredict = pBot->pLastEnemy->v.velocity * fDistance / 400.0;  // KWo - 18.06.2006
@@ -3300,11 +3300,11 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 								bThrowGrenade = TRUE;
 						}
 					}
-					else if ((pBot->iStates & STATE_SUSPECTENEMY)
-						&& ((pBot->f_bot_see_enemy_time + 4.0 > gpGlobals->time)
-							|| (pBot->f_heard_sound_time + 4.0 > gpGlobals->time)))
+					else if (pBot->iStates & STATE_SUSPECTENEMY
+						&& (pBot->f_bot_see_enemy_time + 4.0 > gpGlobals->time
+							|| pBot->f_heard_sound_time + 4.0 > gpGlobals->time))
 					{
-						if ((iNumTeamnates == 0) && (fDistance > 500) && (fDistance < 1600))
+						if (iNumTeamnates == 0 && fDistance > 500 && fDistance < 1600)
 						{
 							vPredict = pBot->pLastEnemy->v.velocity * fDistance / 400.0;  // KWo - 18.06.2006
 							vPredict.z = 0.0;
@@ -3328,7 +3328,7 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 								pBot->vecThrow = paths[rgiWptTab[iCount--]]->origin;
 								vSourceThrow = VecCheckThrow(pBot, GetGunPosition(pEdict), pBot->vecThrow, 1.0);
 
-								if ((vSourceThrow).Length() < 10.0)
+								if (vSourceThrow.Length() < 10.0)
 									vSourceThrow = VecCheckToss(pBot, GetGunPosition(pEdict), pBot->vecThrow);
 								if (vSourceThrow != g_vecZero)
 									pBot->vecThrow = pBot->vecThrow + Vector(0.0, 0.0, 110.0);
@@ -3344,16 +3344,16 @@ void BotCheckGrenadeThrow(bot_t* pBot) // KWo - 11.04.2010
 					{
 						fRandom = RANDOM_FLOAT(0.0, 100.0);
 
-						if ((iWeapons & (1 << CS_WEAPON_HEGRENADE)) && (iWeapons & (1 << CS_WEAPON_SMOKEGRENADE)))
+						if (iWeapons & 1 << CS_WEAPON_HEGRENADE && iWeapons & 1 << CS_WEAPON_SMOKEGRENADE)
 						{
-							if ((fRandom > 20) || (pBot->current_weapon.iId == CS_WEAPON_HEGRENADE)) // KWo - 20.06.2006
+							if (fRandom > 20 || pBot->current_weapon.iId == CS_WEAPON_HEGRENADE) // KWo - 20.06.2006
 								iGrenadeType = CS_WEAPON_HEGRENADE;
 							else
 								iGrenadeType = CS_WEAPON_SMOKEGRENADE;
 						}
-						if ((iWeapons & (1 << CS_WEAPON_HEGRENADE)) && !(iWeapons & (1 << CS_WEAPON_SMOKEGRENADE)))
+						if (iWeapons & 1 << CS_WEAPON_HEGRENADE && !(iWeapons & 1 << CS_WEAPON_SMOKEGRENADE))
 							iGrenadeType = CS_WEAPON_HEGRENADE;
-						if (!(iWeapons & (1 << CS_WEAPON_HEGRENADE)) && (iWeapons & (1 << CS_WEAPON_SMOKEGRENADE)))
+						if (!(iWeapons & 1 << CS_WEAPON_HEGRENADE) && iWeapons & 1 << CS_WEAPON_SMOKEGRENADE)
 							iGrenadeType = CS_WEAPON_SMOKEGRENADE;
 
 						// Care about different Grenades
@@ -3521,13 +3521,13 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 		iAliveEnemies = g_iAliveTs;
 	}
 
-	if ((g_iMapType & MAP_DE) && (pBot->bot_team == TEAM_CS_TERRORIST)
-		&& (pEdict->v.weapons & (1 << CS_WEAPON_C4)) && (g_i_botthink_index == g_iFrameCounter)
-		&& (pBot->chosengoal_index >= 0) && (pBot->chosengoal_index < g_iNumWaypoints)) // KWo - 26.04.2008
+	if (g_iMapType & MAP_DE && pBot->bot_team == TEAM_CS_TERRORIST
+		&& pEdict->v.weapons & 1 << CS_WEAPON_C4 && g_i_botthink_index == g_iFrameCounter
+		&& pBot->chosengoal_index >= 0 && pBot->chosengoal_index < g_iNumWaypoints) // KWo - 26.04.2008
 	{
-		if ((BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION) && (BotGetSafeTask(pBot)->fDesire < TASKPRI_HIDE)
-			&& (g_iDebugGoalIndex == -1) && (paths[pBot->chosengoal_index]->flags & W_FL_GOAL)
-			&& ((paths[pBot->chosengoal_index]->origin - pEdict->v.origin).Length() < 800.0))
+		if (BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION && BotGetSafeTask(pBot)->fDesire < TASKPRI_HIDE
+			&& g_iDebugGoalIndex == -1 && paths[pBot->chosengoal_index]->flags & W_FL_GOAL
+			&& (paths[pBot->chosengoal_index]->origin - pEdict->v.origin).Length() < 800.0)
 		{
 			if (IsGroupOfEnemies(pBot, paths[pBot->chosengoal_index]->origin))
 			{
@@ -3572,21 +3572,21 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 		}
 	}
 
-	if ((g_bBombPlanted) && (g_vecBomb == g_vecZero))
+	if (g_bBombPlanted && g_vecBomb == g_vecZero)
 		g_vecBomb = GetBombPosition();
 
-	if ((g_bBombPlanted) && (((pBot->bot_team == TEAM_CS_TERRORIST)
-		&& (gpGlobals->time > g_fTimeBombPlanted + g_f_cv_c4timer - 15.0))
-		|| (((pEdict->v.origin - g_vecBomb).Length() > 80) && (pBot->bot_team == TEAM_CS_COUNTER) && (!g_bBombDefusing)
-			&& (((!pBot->b_has_defuse_kit) && (gpGlobals->time > g_fTimeBombPlanted + g_f_cv_c4timer - 15.0))
-				|| (gpGlobals->time > g_fTimeBombPlanted + g_f_cv_c4timer - 7.0)))))  // KWo - 16.09.2008
+	if (g_bBombPlanted && (pBot->bot_team == TEAM_CS_TERRORIST
+		&& gpGlobals->time > g_fTimeBombPlanted + g_f_cv_c4timer - 15.0
+		|| (pEdict->v.origin - g_vecBomb).Length() > 80 && pBot->bot_team == TEAM_CS_COUNTER && !g_bBombDefusing
+		&& (!pBot->b_has_defuse_kit && gpGlobals->time > g_fTimeBombPlanted + g_f_cv_c4timer - 15.0
+			|| gpGlobals->time > g_fTimeBombPlanted + g_f_cv_c4timer - 7.0)))  // KWo - 16.09.2008
 	{
-		if ((BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION) && (BotGetSafeTask(pBot)->fDesire < TASKPRI_HIDE)
-			&& (g_iDebugGoalIndex == -1) && ((pEdict->v.origin - g_vecBomb).Length() < BOMBMAXHEARDISTANCE))
+		if (BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION && BotGetSafeTask(pBot)->fDesire < TASKPRI_HIDE
+			&& g_iDebugGoalIndex == -1 && (pEdict->v.origin - g_vecBomb).Length() < BOMBMAXHEARDISTANCE)
 		{
 			// KWo - it's time to run away... :)
 			iApproach = (int)(pBot->pEdict->v.health * pBot->fAgressionLevel);
-			if ((iApproach < 50) || (pBot->pBotEnemy == NULL) || (pBot->bot_team == TEAM_CS_COUNTER))
+			if (iApproach < 50 || pBot->pBotEnemy == NULL || pBot->bot_team == TEAM_CS_COUNTER)
 			{
 				TempTask = taskFilters[TASK_MOVETOPOSITION];
 				TempTask.fDesire = TASKPRI_HIDE;
@@ -3594,7 +3594,7 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 				iSearch = 0;
 				iAwayIndex = RANDOM_LONG(0, g_iNumWaypoints - 1);
 
-				while ((iSearch < 20) && ((paths[iAwayIndex]->origin - g_vecBomb).Length() < BOMBMAXHEARDISTANCE))
+				while (iSearch < 20 && (paths[iAwayIndex]->origin - g_vecBomb).Length() < BOMBMAXHEARDISTANCE)
 				{
 					iSearch++;
 					iAwayIndex = RANDOM_LONG(0, g_iNumWaypoints - 1);
@@ -3607,23 +3607,23 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 					ALERT(at_logged, "[DEBUG] Bot %s will run away from bomb explosion area...\n", pBot->name);
 			}
 		}
-		else if ((BotGetSafeTask(pBot)->iTask == TASK_MOVETOPOSITION) && (BotGetSafeTask(pBot)->fDesire == TASKPRI_HIDE))
+		else if (BotGetSafeTask(pBot)->iTask == TASK_MOVETOPOSITION && BotGetSafeTask(pBot)->fDesire == TASKPRI_HIDE)
 		{
 			//         taskFilters[TASK_MOVETOPOSITION].fDesire = TASKPRI_HIDE;
 			pBot->iCampButtons = 0; // KWo - 17.02.2008
 		}
 	}
 
-	if ((pBot->current_weapon.iId == CS_WEAPON_KNIFE) && (!FNullEnt(pBot->pBotEnemy)) && (pBot->bIsChickenOrZombie)
-		&& ((BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION) || (BotGetSafeTask(pBot)->fDesire != TASKPRI_HIDE))) // KWo - 14.06.2008
+	if (pBot->current_weapon.iId == CS_WEAPON_KNIFE && !FNullEnt(pBot->pBotEnemy) && pBot->bIsChickenOrZombie
+		&& (BotGetSafeTask(pBot)->iTask != TASK_MOVETOPOSITION || BotGetSafeTask(pBot)->fDesire != TASKPRI_HIDE)) // KWo - 14.06.2008
 	{
 		if (/* (fabs(pBot->pBotEnemy->v.origin.z - pEdict->v.origin.z) > 45.0)
 		   && ((pBot->pBotEnemy->v.origin - pBot->pEdict->v.origin).Length2D() < 256.0) */
-			((pBot->pBotEnemy->v.origin - pBot->pEdict->v.origin).Length2D() > 100.0)
-			&& (pBot->iStates & STATE_SEEINGENEMY))
+			(pBot->pBotEnemy->v.origin - pBot->pEdict->v.origin).Length2D() > 100.0
+			&& pBot->iStates & STATE_SEEINGENEMY)
 		{
 			iTempWp = WaypointFindNearestToMove(pBot->pBotEnemy, pBot->pBotEnemy->v.origin);
-			if ((iTempWp >= 0) && (iTempWp < g_iNumWaypoints) && (iTempWp != pBot->curr_wpt_index))
+			if (iTempWp >= 0 && iTempWp < g_iNumWaypoints && iTempWp != pBot->curr_wpt_index)
 			{
 				if (fabs(paths[iTempWp]->origin.z - pBot->pBotEnemy->v.origin.z) < 15.0)
 				{
@@ -3637,7 +3637,7 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 	}
 
 	// Bot found some Item to use ?
-	if ((pBot->pBotPickupItem) && (pBot->iPickupType != PICKUP_NONE)) // 16.09.2006
+	if (pBot->pBotPickupItem && pBot->iPickupType != PICKUP_NONE) // 16.09.2006
 	{
 		pItem = pBot->pBotPickupItem;
 
@@ -3648,8 +3648,8 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 
 		fDistance = (vecPickme - pEdict->v.origin).Length();
 		fDistance = 500.0 - fDistance;
-		if (((pBot->iPickupType == PICKUP_PLANTED_C4) && (pBot->bot_team == TEAM_CS_COUNTER))
-			|| ((pBot->iPickupType == PICKUP_DROPPED_C4) && (pBot->bot_team == TEAM_CS_TERRORIST))) // KWo - 05.09.2008
+		if (pBot->iPickupType == PICKUP_PLANTED_C4 && pBot->bot_team == TEAM_CS_COUNTER
+			|| pBot->iPickupType == PICKUP_DROPPED_C4 && pBot->bot_team == TEAM_CS_TERRORIST) // KWo - 05.09.2008
 			fDistance = fDistance * 0.4;
 		else
 			fDistance = fDistance * 0.2;
@@ -3665,17 +3665,17 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 				iId = pWeaponTab[*ptrWeaponTab].iId;
 				if (iId == CS_WEAPON_KNIFE)
 					fDistance = TASKPRI_SEEKCOVER;
-				else if (((pBot->f_shoot_time + 3.0 > gpGlobals->time) || (pBot->f_bot_see_enemy_time + 3.0 > gpGlobals->time))
-					&& (iAliveEnemies > 0) && (!g_bIgnoreEnemies)) // KWo - 13.08.2008
+				else if ((pBot->f_shoot_time + 3.0 > gpGlobals->time || pBot->f_bot_see_enemy_time + 3.0 > gpGlobals->time)
+					&& iAliveEnemies > 0 && !g_bIgnoreEnemies) // KWo - 13.08.2008
 					fDistance = 0.0;
 				else if (fDistance > 60.0)
 					fDistance = 60.0;
 			}
-			else if ((pBot->iPickupType == PICKUP_PLANTED_C4) && (pBot->bot_team == TEAM_CS_COUNTER)) // KWo - 13.08.2008
+			else if (pBot->iPickupType == PICKUP_PLANTED_C4 && pBot->bot_team == TEAM_CS_COUNTER) // KWo - 13.08.2008
 			{
 				iFriendlyNum = NumTeammatesNearPos(pBot, pEdict->v.origin, 500);    // KWo - 06.07.2008
 				iEnemyNum = NumEnemiesNearPos(pBot, g_vecBomb, 800);                // KWo - 06.07.2008
-				if (((float)iEnemyNum > 0.8 * (float)iFriendlyNum) && (!g_bIgnoreEnemies) && (g_iAliveTs != 0)) // KWo - 06.07.2008
+				if ((float)iEnemyNum > 0.8 * (float)iFriendlyNum && !g_bIgnoreEnemies && g_iAliveTs != 0) // KWo - 06.07.2008
 				{
 					fDistance = 0.0;
 
@@ -3697,8 +3697,8 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 	}
 
 	// Calculate Desire to Attack
-	if ((pBot->iStates & STATE_SEEINGENEMY) && (taskFilters[TASK_PICKUPITEM].fDesire < TASKPRI_ATTACK)
-		&& (taskFilters[TASK_MOVETOPOSITION].fDesire < TASKPRI_HIDE)) // KWo - 13.07.2007
+	if (pBot->iStates & STATE_SEEINGENEMY && taskFilters[TASK_PICKUPITEM].fDesire < TASKPRI_ATTACK
+		&& taskFilters[TASK_MOVETOPOSITION].fDesire < TASKPRI_HIDE) // KWo - 13.07.2007
 	{
 		if (BotReactOnEnemy(pBot))
 			taskFilters[TASK_ATTACK].fDesire = TASKPRI_ATTACK;
@@ -3709,14 +3709,14 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 		taskFilters[TASK_ATTACK].fDesire = 0;
 
 	// Calculate Desires to seek Cover or Hunt
-	if ((!FNullEnt(pBot->pLastEnemy)) && (pBot->vecLastEnemyOrigin != g_vecZero))
+	if (!FNullEnt(pBot->pLastEnemy) && pBot->vecLastEnemyOrigin != g_vecZero)
 	{
 		fDistance = (pBot->vecLastEnemyOrigin - pEdict->v.origin).Length();
 		if (pBot->pEdict->v.health > 70.0)
 			fRetreatLevel = 0.0;
 		else
 			fRetreatLevel = (70.0 - pBot->pEdict->v.health) * fTempFear;
-		if ((pBot->bot_team == TEAM_CS_COUNTER) && (g_bBombPlanted)) // KWo - 07.10.2010
+		if (pBot->bot_team == TEAM_CS_COUNTER && g_bBombPlanted) // KWo - 07.10.2010
 			fRetreatLevel = 0.0;
 
 		fTimeSeen = pBot->f_bot_see_enemy_time - gpGlobals->time;
@@ -3742,13 +3742,13 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 		if (IsAlive(pBot->pLastEnemy))
 			iEnWepID = clients[iEnemyIndex].iCurrentWeaponId;
 
-		if ((((pBot->current_weapon.iId == CS_WEAPON_KNIFE) && (iEnWepID != CS_WEAPON_KNIFE)
-			&& (pBot->vecLastEnemyOrigin.z - pBot->pEdict->v.origin.z > 45.0) && (!pBot->bOnLadder)
-			&& ((pBot->vecLastEnemyOrigin - pBot->pEdict->v.origin).Length2D() < 200.0)
-			&& (!pBot->bIsChickenOrZombie) && (!g_b_cv_jasonmode))
-			|| (pBot->bIsReloading)
-			|| WeaponIsSniper(iEnWepID) && (GetShootingConeDeviation(pBot->pLastEnemy, &pEdict->v.origin) > 0.95))
-			&& (pBot->f_bot_see_enemy_time + 3.0 > gpGlobals->time)) // KWo - 18.03.2010
+		if ((pBot->current_weapon.iId == CS_WEAPON_KNIFE && iEnWepID != CS_WEAPON_KNIFE
+				&& pBot->vecLastEnemyOrigin.z - pBot->pEdict->v.origin.z > 45.0 && !pBot->bOnLadder
+				&& (pBot->vecLastEnemyOrigin - pBot->pEdict->v.origin).Length2D() < 200.0
+				&& !pBot->bIsChickenOrZombie && !g_b_cv_jasonmode
+			|| pBot->bIsReloading
+			|| WeaponIsSniper(iEnWepID) && GetShootingConeDeviation(pBot->pLastEnemy, &pEdict->v.origin) > 0.95)
+			&& pBot->f_bot_see_enemy_time + 3.0 > gpGlobals->time) // KWo - 18.03.2010
 		{
 			taskFilters[TASK_SEEKCOVER].fDesire = TASKPRI_SEEKCOVER;
 
@@ -3765,23 +3765,23 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 
 		// If half of the Round is over, allow hunting
 		// FIXME: It probably should be also team/map dependant
-		if (((pBot->bot_personality != 2) && (!FNullEnt(pBot->pBotEnemy)
-			&& (pBot->f_bot_see_enemy_time + 3.0 > gpGlobals->time)
-			&& (pBot->f_bot_see_enemy_time + 0.3 < gpGlobals->time)
-			&& (!pBot->bIsVIP))
-			|| (g_b_cv_jasonmode) || (pBot->bIsChickenOrZombie))
-			&& (!g_bBombPlanted) && !BotHasHostage(pBot) && !pBot->bUsingGrenade && (fDistance > 112)
+		if ((pBot->bot_personality != 2 && (!FNullEnt(pBot->pBotEnemy)
+			&& pBot->f_bot_see_enemy_time + 3.0 > gpGlobals->time
+			&& pBot->f_bot_see_enemy_time + 0.3 < gpGlobals->time
+			&& !pBot->bIsVIP)
+			|| g_b_cv_jasonmode || pBot->bIsChickenOrZombie)
+			&& !g_bBombPlanted && !BotHasHostage(pBot) && !pBot->bUsingGrenade && fDistance > 112
 			&& FNullEnt(pBot->pLift)
-			&& ((g_fTimeRoundMid < gpGlobals->time)
-				|| (((pBot->bot_team == TEAM_CS_TERRORIST) && (g_iMapType & MAP_DE))
-					|| ((pBot->bot_team == TEAM_CS_COUNTER)
-						&& ((g_iMapType & MAP_AS) || (g_iMapType & MAP_CS)))
-					&& (pBot->f_spawn_time + 10.0 < gpGlobals->time))
-				|| ((iAliveTeamnates >= 2 * iAliveEnemies) || (g_b_cv_jasonmode) || (pBot->bIsChickenOrZombie)))
-			&& (iAliveEnemies > 0) && (!(pEdict->v.weapons & (1 << CS_WEAPON_C4))))  // KWo - 04.10.2010
+			&& (g_fTimeRoundMid < gpGlobals->time
+				|| (pBot->bot_team == TEAM_CS_TERRORIST && g_iMapType & MAP_DE
+					|| pBot->bot_team == TEAM_CS_COUNTER
+					&& (g_iMapType & MAP_AS || g_iMapType & MAP_CS)
+					&& pBot->f_spawn_time + 10.0 < gpGlobals->time)
+				|| (iAliveTeamnates >= 2 * iAliveEnemies || g_b_cv_jasonmode || pBot->bIsChickenOrZombie))
+			&& iAliveEnemies > 0 && !(pEdict->v.weapons & 1 << CS_WEAPON_C4))  // KWo - 04.10.2010
 		{
-			fLevel = 4096.0 - ((1.0 - fTempAgression) * fDistance);
-			fLevel = (100 * fLevel) / 4096.0;
+			fLevel = 4096.0 - (1.0 - fTempAgression) * fDistance;
+			fLevel = 100 * fLevel / 4096.0;
 			fLevel = fLevel - fRetreatLevel;
 			if (fLevel > 89)
 				fLevel = 89;
@@ -3796,7 +3796,7 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 
 			if (g_b_DebugTasks)
 			{
-				if ((pBot->bot_team == 1) && (g_iFrameCounter == g_i_botthink_index))
+				if (pBot->bot_team == 1 && g_iFrameCounter == g_i_botthink_index)
 					ALERT(at_logged, "[DEBUG] Bot %s has SEEKCOVER's fDesisre = %f; ENEMYHUNT's fDesire = %f.\n",
 						pBot->name, fRetreatLevel * fRatio, fLevel);
 			}
@@ -3869,8 +3869,8 @@ void BotPrepareTask(bot_t* pBot) // KWo - 10.04.2010
 		// Push the final Behaviour in our Tasklist to carry out
 		if (pFinal != NULL)
 		{
-			if ((BotGetSafeTask(pBot)->iTask != TASK_ENEMYHUNT) && (pFinal->iTask == TASK_ENEMYHUNT)
-				&& (!FNullEnt(pBot->pLastEnemy)) && (pBot->vecLastEnemyOrigin != g_vecZero)) // KWo - 11.06.2008
+			if (BotGetSafeTask(pBot)->iTask != TASK_ENEMYHUNT && pFinal->iTask == TASK_ENEMYHUNT
+				&& !FNullEnt(pBot->pLastEnemy) && pBot->vecLastEnemyOrigin != g_vecZero) // KWo - 11.06.2008
 			{
 				if (IsAlive(pBot->pLastEnemy))
 				{
@@ -3914,7 +3914,7 @@ void BotResetTasks(bot_t* pBot)
 	while (pBot->pTasks != NULL)
 	{
 		pPrevTask = pBot->pTasks->pPreviousTask;
-		delete (pBot->pTasks);
+		delete pBot->pTasks;
 		pBot->pTasks = pPrevTask;
 
 		pBot->i_TaskDeep--; // KWo - 30.08.2006 - stack tests
@@ -3926,7 +3926,7 @@ void BotResetTasks(bot_t* pBot)
 	while (pBot->pTasks != NULL)
 	{
 		pNextTask = pBot->pTasks->pNextTask;
-		delete (pBot->pTasks);
+		delete pBot->pTasks;
 		pBot->pTasks = pNextTask;
 
 		pBot->i_TaskDeep--; // KWo - 30.08.2006 - stack tests
@@ -3989,7 +3989,7 @@ void BotCheckTaskPriorities(bot_t* pBot) // KWo - 27.08.2006
 		while (pBot->pTasks != NULL)
 		{
 			pNextTask = pBot->pTasks->pNextTask;
-			if ((pBot->pTasks != pMaxDesiredTask) && (!pBot->pTasks->bCanContinue)) // some task has to be deleted if cannot be continued...
+			if (pBot->pTasks != pMaxDesiredTask && !pBot->pTasks->bCanContinue) // some task has to be deleted if cannot be continued...
 			{
 				if (pBot->pTasks->pPreviousTask != NULL)
 					pBot->pTasks->pPreviousTask->pNextTask = pBot->pTasks->pNextTask;
@@ -3998,7 +3998,7 @@ void BotCheckTaskPriorities(bot_t* pBot) // KWo - 27.08.2006
 
 				iTask = pBot->pTasks->iTask;
 
-				delete (pBot->pTasks);
+				delete pBot->pTasks;
 
 				pBot->i_TaskDeep--; // KWo - 30.08.2006 - stack tests
 				if (pBot->i_TaskDeep < -999999) // KWo - 30.08.2006 - stack tests
@@ -4013,7 +4013,7 @@ void BotCheckTaskPriorities(bot_t* pBot) // KWo - 27.08.2006
 	}
 	pBot->pTasks = pMaxDesiredTask;
 
-	if ((g_iDebugGoalIndex != -1) && (pMaxDesiredTask->iTask == TASK_NORMAL)) // KWo - 07.01.2008
+	if (g_iDebugGoalIndex != -1 && pMaxDesiredTask->iTask == TASK_NORMAL) // KWo - 07.01.2008
 		pBot->chosengoal_index = g_iDebugGoalIndex;
 	else if (pBot->pTasks->iData != -1)
 		pBot->chosengoal_index = pBot->pTasks->iData;
@@ -4130,7 +4130,7 @@ void BotPushTask(bot_t* pBot, bottask_t* pTask)
 			// now go back to the previous stack position and try to find the same task as one of "the next" ones
 			// (already pushed before and not finished yet)
 
-			if ((!bFoundTaskExisting) && (!bCheckPriorities))
+			if (!bFoundTaskExisting && !bCheckPriorities)
 			{
 				pBot->pTasks = pOldTask; // KWo - 27.08.2006
 				while (pBot->pTasks->pNextTask) // KWo - 27.08.2006
@@ -4208,7 +4208,7 @@ void BotPushTask(bot_t* pBot, bottask_t* pTask)
 				pBot->fNoCollTime = gpGlobals->time + 1.0;
 
 			// Leader Bot ?
-			if ((pBot->bIsLeader) && (bNewTaskDifferent))
+			if (pBot->bIsLeader && bNewTaskDifferent)
 			{
 				// Reorganize Team if fleeing
 				if (pBot->pTasks->iTask == TASK_SEEKCOVER)
@@ -4245,7 +4245,7 @@ bottask_t* BotGetSafeTask(bot_t* pBot)
 		if (pBot->fNoCollTime + 1.0 < gpGlobals->time) // KWo - 02.01.2010
 			pBot->fNoCollTime = gpGlobals->time + 1.0;
 	}
-	return (pBot->pTasks);
+	return pBot->pTasks;
 }
 
 void BotRemoveCertainTask(bot_t* pBot, int iTaskNum)
@@ -4292,7 +4292,7 @@ void BotRemoveCertainTask(bot_t* pBot, int iTaskNum)
 			else if (pTask == pOldNextTask)
 				pOldNextTask = NULL;
 
-			delete (pTask);
+			delete pTask;
 
 			pBot->i_TaskDeep--; // KWo - 30.08.2006 - stack tests
 			if (pBot->i_TaskDeep < -999999) // KWo - 30.08.2006 - stack tests
@@ -4369,14 +4369,14 @@ void BotTaskComplete(bot_t* pBot)
 	if (pPrevTask != NULL)
 		pPrevTask->pNextTask = pNextTask;
 
-	delete (pBot->pTasks);  // delete the current one
+	delete pBot->pTasks;  // delete the current one
 	pBot->pTasks = NULL;
 
 	pBot->i_TaskDeep--; // KWo - 30.08.2006 - stack tests
 	if (pBot->i_TaskDeep < -999999) // KWo - 30.08.2006 - stack tests
 		pBot->i_TaskDeep = -999999;
 
-	if ((pPrevTask) && (pNextTask))
+	if (pPrevTask && pNextTask)
 	{
 		if (pPrevTask->fDesire >= pNextTask->fDesire)
 		{
@@ -4447,7 +4447,7 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 
 	if (g_bIsOldCS15)  // KWo - 14.10.2006
 	{
-		vecDirection = vecDirection + pEdict->v.punchangle * (float)(pBot->bot_skill) / 100.0;
+		vecDirection = vecDirection + pEdict->v.punchangle * (float)pBot->bot_skill / 100.0;
 		//      pBot->rgvecRecoil[0] = pEdict->v.punchangle;
 		//      pBot->rgvecRecoil[0] = g_vecZero; // KWo - test
 
@@ -4463,7 +4463,7 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 	}
 	//   vecDirection = vecDirection  + 1.0 * (pEdict->v.punchangle) * (float)(pBot->bot_skill)/100.0; // KWo - 02.04.2010
 	vecDirection.x = -vecDirection.x;
-	vecDirection = vecDirection - 0.2 * (pEdict->v.punchangle);
+	vecDirection = vecDirection - 0.2 * pEdict->v.punchangle;
 
 	UTIL_ClampVector(&vecDirection);
 
@@ -4510,8 +4510,8 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 		// Slow turning if ZOOMED!
 		float fZoomFactor = pEdict->v.fov * (1.f / 90.f);
 
-		BotChangePitch(pBot, pEdict->v.pitch_speed * fSpeedFactor * fZoomFactor * (((pBot->iAimFlags & AIM_ENEMY) && !(pBot->iAimFlags & AIM_ENTITY)) ? 1 : 0.3)); // KWo - 04.03.2004
-		BotChangeYaw(pBot, pEdict->v.yaw_speed * fSpeedFactor * fZoomFactor * (((pBot->iAimFlags & AIM_ENEMY) && !(pBot->iAimFlags & AIM_ENTITY)) ? 1 : 0.3)); // KWo - 04.03.2004
+		BotChangePitch(pBot, pEdict->v.pitch_speed * fSpeedFactor * fZoomFactor * (pBot->iAimFlags & AIM_ENEMY && !(pBot->iAimFlags & AIM_ENTITY) ? 1 : 0.3)); // KWo - 04.03.2004
+		BotChangeYaw(pBot, pEdict->v.yaw_speed * fSpeedFactor * fZoomFactor * (pBot->iAimFlags & AIM_ENEMY && !(pBot->iAimFlags & AIM_ENTITY) ? 1 : 0.3)); // KWo - 04.03.2004
 		break;
 	}
 	case 3:
@@ -4520,11 +4520,11 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 
 		UTIL_ClampVector(&vecDeviation);
 
-		float flTurnSkill = (pBot->bot_skill * 0.05) + 0.5;
-		float flSpeed = (0.5f - (1.f / 3.f)) + flTurnSkill * (2.f / 33.f);
+		float flTurnSkill = pBot->bot_skill * 0.05 + 0.5;
+		float flSpeed = 0.5f - 1.f / 3.f + flTurnSkill * (2.f / 33.f);
 		float flFrameCompensation = gpGlobals->frametime * 1000 * 0.01f; // KWo - 27.04.2006 - thanks to THE_STORM
 
-		if ((pBot->iAimFlags & AIM_ENEMY) && !(pBot->iAimFlags & AIM_ENTITY)) // KWo - 04.03.2006
+		if (pBot->iAimFlags & AIM_ENEMY && !(pBot->iAimFlags & AIM_ENTITY)) // KWo - 04.03.2006
 			flSpeed *= 1.75;
 		/*         if (pBot->iAimFlags & AIM_ENEMY)
 					flSpeed = 0.7f + (flTurnSkill - 1.f) * (1.f / 15.f); // fast aim
@@ -4533,8 +4533,8 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 
 		float flMomentum = (1 - flSpeed) * 0.5;//exp (log (flSpeed * 0.5) * flFrameCompensation);
 
-		pEdict->v.pitch_speed = ((pEdict->v.pitch_speed * flMomentum) + flSpeed * vecDeviation.x * (1.f - flMomentum)) * flFrameCompensation;
-		pEdict->v.yaw_speed = ((pEdict->v.yaw_speed * flMomentum) + flSpeed * vecDeviation.y * (1.f - flMomentum)) * flFrameCompensation;
+		pEdict->v.pitch_speed = (pEdict->v.pitch_speed * flMomentum + flSpeed * vecDeviation.x * (1.f - flMomentum)) * flFrameCompensation;
+		pEdict->v.yaw_speed = (pEdict->v.yaw_speed * flMomentum + flSpeed * vecDeviation.y * (1.f - flMomentum)) * flFrameCompensation;
 
 		if (pBot->bot_skill < 100)
 		{
@@ -4606,7 +4606,7 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 
 					pBot->target_angular_speed.x = -pBot->target_angular_speed.x;
 
-					if ((pEdict->v.fov < 90) /* && (pBot->angular_deviation.Length () >= 5.0) */)
+					if (pEdict->v.fov < 90 /* && (pBot->angular_deviation.Length () >= 5.0) */)
 					{
 						spring_stiffness = 2 * spring_stiffness;
 					}
@@ -4615,22 +4615,22 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 				else
 					pBot->target_angular_speed = g_vecZero;
 
-				v_stiffness = fDistStiff * spring_stiffness * (0.2 + ((float)pBot->bot_skill) / 125.0);
+				v_stiffness = fDistStiff * spring_stiffness * (0.2 + (float)pBot->bot_skill / 125.0);
 				if (pEdict->v.punchangle.x > 2.0)
 					v_stiffness.x = v_stiffness.x * 2;
 			}
 			else
 			{
 				pBot->target_angular_speed = g_vecZero;
-				v_stiffness = 0.4 * spring_stiffness * (0.2 + ((float)pBot->bot_skill) / 125.0);
+				v_stiffness = 0.4 * spring_stiffness * (0.2 + (float)pBot->bot_skill / 125.0);
 			}
 		}
 		else
 		{
 			// is it time for bot to randomize the aim direction again (more often where moving) ?
-			if ((pBot->randomize_angles_time < gpGlobals->time)
-				&& (((pBot->pEdict->v.velocity.Length() > 1.0) && (pBot->angular_deviation.Length() < 5.0))
-					|| (pBot->angular_deviation.Length() < 1.0)))
+			if (pBot->randomize_angles_time < gpGlobals->time
+				&& (pBot->pEdict->v.velocity.Length() > 1.0 && pBot->angular_deviation.Length() < 5.0
+					|| pBot->angular_deviation.Length() < 1.0))
 			{
 				// is the bot standing still ?
 				if (pBot->pEdict->v.velocity.Length() < 1.0)
@@ -4645,11 +4645,11 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 				pBot->randomize_angles_time = gpGlobals->time + RANDOM_FLOAT(0.4, offset_delay);
 			}
 
-			if (((pBot->dest_origin - pBot->pEdict->v.origin).Length() <= 15) && (pBot->bMoveToGoal)
-				&& ((BotGetSafeTask(pBot)->iTask == TASK_NORMAL) || (BotGetSafeTask(pBot)->iTask == TASK_MOVETOPOSITION)
-					|| (BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER) || (BotGetSafeTask(pBot)->iTask == TASK_ENEMYHUNT)
-					|| (BotGetSafeTask(pBot)->iTask == TASK_SEEKCOVER))
-				|| (BotGetSafeTask(pBot)->iTask == TASK_PAUSE)) // KWo - 10.04.2016
+			if ((pBot->dest_origin - pBot->pEdict->v.origin).Length() <= 15 && pBot->bMoveToGoal
+				&& (BotGetSafeTask(pBot)->iTask == TASK_NORMAL || BotGetSafeTask(pBot)->iTask == TASK_MOVETOPOSITION
+					|| BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER || BotGetSafeTask(pBot)->iTask == TASK_ENEMYHUNT
+					|| BotGetSafeTask(pBot)->iTask == TASK_SEEKCOVER)
+				|| BotGetSafeTask(pBot)->iTask == TASK_PAUSE) // KWo - 10.04.2016
 			{
 				pBot->randomized_ideal_angles = pBot->pEdict->v.v_angle;
 			}
@@ -4666,7 +4666,7 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 			if (stiffness_multiplier < 0.1) // KWo - 17.02.2008
 				stiffness_multiplier = 0.1;
 			// \\ KWo - TEST against bot "shaking"
-			if ((pBot->f_wpt_timeset + 1.0 > gpGlobals->time) && pBot->bMoveToGoal) // KWo - 20.09.2008
+			if (pBot->f_wpt_timeset + 1.0 > gpGlobals->time && pBot->bMoveToGoal) // KWo - 20.09.2008
 				stiffness_multiplier = 1.5 * stiffness_multiplier;
 
 			// also take in account the remaining deviation (slow down the aiming in the last 10°)
@@ -4698,10 +4698,10 @@ inline void BotFacePosition(bot_t* pBot, Vector vecPos) // KWo - 13.04.2010
 
 		// spring/damper model aiming (thanks Aspirin for the target speed idea)
 
-		pBot->aim_speed.x = (v_stiffness.x * pBot->angular_deviation.x)
-			- (damper_coefficient.x * (pBot->aim_speed.x)) + 1.0 * pBot->target_angular_speed.x;  // KWo - 12.01.2012
-		pBot->aim_speed.y = (v_stiffness.y * pBot->angular_deviation.y)
-			- (damper_coefficient.y * (pBot->aim_speed.y)) + 1.0 * pBot->target_angular_speed.y;  // KWo - 12.01.2012
+		pBot->aim_speed.x = v_stiffness.x * pBot->angular_deviation.x
+			- damper_coefficient.x * pBot->aim_speed.x + 1.0 * pBot->target_angular_speed.x;  // KWo - 12.01.2012
+		pBot->aim_speed.y = v_stiffness.y * pBot->angular_deviation.y
+			- damper_coefficient.y * pBot->aim_speed.y + 1.0 * pBot->target_angular_speed.y;  // KWo - 12.01.2012
 
 		// influence of y movement on x axis and vice versa (less influence than x on y since it's
 		// easier and more natural for the bot to "move its mouse" horizontally than vertically)
@@ -4746,14 +4746,14 @@ bool BotEnemyIsThreat(bot_t* pBot)
 	int iWeaponEnemy; // KWo - 24.06.2008
 
 	if (FNullEnt(pBot->pBotEnemy) /* || (pBot->iStates & STATE_SUSPECTENEMY) */
-		|| (BotGetSafeTask(pBot)->iTask == TASK_SEEKCOVER))
-		return (FALSE);
+		|| BotGetSafeTask(pBot)->iTask == TASK_SEEKCOVER)
+		return false;
 
 	if (!FNullEnt(pBot->pBotEnemy))
 	{
 		iEnemyIndex = ENTINDEX(pBot->pBotEnemy) - 1; // KWo - 24.06.2008
 		iWeaponEnemy = CS_WEAPON_KNIFE;
-		if ((iEnemyIndex > 0) && (iEnemyIndex <= gpGlobals->maxClients))
+		if (iEnemyIndex > 0 && iEnemyIndex <= gpGlobals->maxClients)
 		{
 			iWeaponEnemy = clients[iEnemyIndex].iCurrentWeaponId; // KWo - 24.06.2008
 		}
@@ -4761,19 +4761,19 @@ bool BotEnemyIsThreat(bot_t* pBot)
 		fDistance = vDest.Length();
 	}
 	else
-		return (FALSE);
+		return false;
 
 	// If Bot is camping, he should be firing anyway and NOT leaving his position
 	if (BotGetSafeTask(pBot)->iTask == TASK_CAMP)
-		return (FALSE);
+		return false;
 
 	// If Enemy is near or facing us directly
-	if ((fDistance < 256)
-		|| (iWeaponEnemy != CS_WEAPON_KNIFE)
-		&& (GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) >= 0.7))
-		return (TRUE);
+	if (fDistance < 256
+		|| iWeaponEnemy != CS_WEAPON_KNIFE
+		&& GetShootingConeDeviation(pBot->pBotEnemy, &pEdict->v.origin) >= 0.7)
+		return true;
 
-	return (FALSE);
+	return false;
 }
 
 bool BotReactOnEnemy(bot_t* pBot)
@@ -4792,11 +4792,11 @@ bool BotReactOnEnemy(bot_t* pBot)
 			int iLinDist = (int)(pBot->pBotEnemy->v.origin - pBot->pEdict->v.origin).Length();	// KWo variable name changed
 			int iPathDist = GetPathDistance(iBotWpIndex, iEnemyWpIndex);	// KWo variable name changed
 
-			if ((iPathDist - iLinDist > 112)
-				|| ((pBot->current_weapon.iId == CS_WEAPON_KNIFE) && (iEnWepID != CS_WEAPON_KNIFE)
-					&& (pBot->pBotEnemy->v.origin.z - pBot->pEdict->v.origin.z > 45.0)
-					&& ((pBot->pBotEnemy->v.origin - pBot->pEdict->v.origin).Length2D() < 100.0)
-					&& (!pBot->bOnLadder))) // KWo - 14.06.2008
+			if (iPathDist - iLinDist > 112
+				|| pBot->current_weapon.iId == CS_WEAPON_KNIFE && iEnWepID != CS_WEAPON_KNIFE
+				&& pBot->pBotEnemy->v.origin.z - pBot->pEdict->v.origin.z > 45.0
+				&& (pBot->pBotEnemy->v.origin - pBot->pEdict->v.origin).Length2D() < 100.0
+				&& !pBot->bOnLadder) // KWo - 14.06.2008
 				pBot->bEnemyReachable = FALSE;
 			else
 				pBot->bEnemyReachable = TRUE;
@@ -4808,10 +4808,10 @@ bool BotReactOnEnemy(bot_t* pBot)
 		{
 			// Override existing movement by attack movement
 			pBot->f_wpt_timeset = gpGlobals->time;
-			return (TRUE);
+			return true;
 		}
 	}
-	return (FALSE);
+	return false;
 }
 
 bool BotFollowUser(bot_t* pBot)
@@ -4819,13 +4819,13 @@ bool BotFollowUser(bot_t* pBot)
 	// Check if Bot can still follow a User
 
 	if (FNullEnt(pBot->pBotUser))
-		return (FALSE);
+		return false;
 
 	if (!IsAlive(pBot->pBotUser))
 	{
 		// the bot's user is dead!
 		pBot->pBotUser = NULL;
-		return (FALSE);
+		return false;
 	}
 
 	bool user_visible = false; // KWo - 02.05.2006
@@ -4836,19 +4836,19 @@ bool BotFollowUser(bot_t* pBot)
 	// check if the "user" is still visible or if the user has been visible
 	// in the last 30 seconds (or the player just starting "using" the bot)
 
-	if (user_visible || (pBot->f_bot_use_time + 30 > gpGlobals->time))
+	if (user_visible || pBot->f_bot_use_time + 30 > gpGlobals->time)
 	{
 		if (user_visible)
 			pBot->f_bot_use_time = gpGlobals->time; // reset "last visible time"
 
-		return (TRUE);
+		return true;
 	}
 	else
 	{
 		// person to follow has gone out of sight...
 		pBot->pBotUser = NULL;
 	}
-	return (FALSE);
+	return false;
 }
 
 void BotCheckRadioCommands(bot_t* pBot)
@@ -4885,7 +4885,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 		if (BotEntityIsVisible(pBot, pPlayer->v.origin))
 		{
 			// If Bot isn't already 'used' then follow him about half of the time
-			if (FNullEnt(pBot->pBotUser) && (RANDOM_LONG(0, 99) < 50))
+			if (FNullEnt(pBot->pBotUser) && RANDOM_LONG(0, 99) < 50)
 			{
 				int iNumFollowers = 0;
 				int i;
@@ -4905,7 +4905,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 					// don't pause/camp/follow anymore
 					int iTask = BotGetSafeTask(pBot)->iTask;
 
-					if ((iTask == TASK_PAUSE) || (iTask == TASK_CAMP))
+					if (iTask == TASK_PAUSE || iTask == TASK_CAMP)
 						BotGetSafeTask(pBot)->fTime = gpGlobals->time;
 
 					// KWo - 08.07.2006
@@ -4924,7 +4924,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 					{
 						iTempPathNr = (int)RANDOM_LONG(0, MAX_PATH_INDEX - 1);
 						iDestIndex = paths[iTempIndex]->index[iTempPathNr];
-						if ((iDestIndex > 0) && (iDestIndex <= g_iNumWaypoints))
+						if (iDestIndex > 0 && iDestIndex <= g_iNumWaypoints)
 						{
 							if (IsConnectedWithWaypoint(iDestIndex, iTempIndex))
 							{
@@ -4933,7 +4933,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 							}
 						}
 						iStepNr++;
-					} while ((iStepNr < 10) && (!bCon));
+					} while (iStepNr < 10 && !bCon);
 
 					if (!bCon)
 						iDestIndex = iTempIndex;
@@ -4941,7 +4941,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 					pBot->prev_goal_index = iDestIndex;
 					pBot->chosengoal_index = iDestIndex; // KWo - 27.06.2006
 					pBot->bCheckTerrain = TRUE;  // 25.06.2006
-					if ((iDestIndex != pBot->curr_wpt_index) && (pBot->curr_wpt_index >= 0))
+					if (iDestIndex != pBot->curr_wpt_index && pBot->curr_wpt_index >= 0)
 					{
 						// Do Pathfinding if it's not the current waypoint
 						pBot->pWayNodesStart = FindShortestPath(pBot->curr_wpt_index, iDestIndex, &bPathValid);  // KWo - 25.03.2006
@@ -4973,9 +4973,9 @@ void BotCheckRadioCommands(bot_t* pBot)
 				else if (g_b_cv_radio) // KWo - 07.03.2010
 					BotPlayRadioMessage(pBot, RADIO_NEGATIVE);
 			}
-			else if ((pBot->pBotUser == pPlayer) && (g_b_cv_radio)) // KWo - 07.03.2010
+			else if (pBot->pBotUser == pPlayer && g_b_cv_radio) // KWo - 07.03.2010
 				BotPlayRadioMessage(pBot, RADIO_IMINPOSITION);
-			else if ((RANDOM_LONG(0, 100) < 50) && (g_b_cv_radio)) // KWo - 07.03.2010
+			else if (RANDOM_LONG(0, 100) < 50 && g_b_cv_radio) // KWo - 07.03.2010
 				BotPlayRadioMessage(pBot, RADIO_NEGATIVE);
 		}
 
@@ -4983,7 +4983,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 	}
 	case RADIO_HOLDPOSITION:
 	{
-		if (!FNullEnt(pBot->pBotUser) && (pBot->pBotUser == pPlayer))
+		if (!FNullEnt(pBot->pBotUser) && pBot->pBotUser == pPlayer)
 		{
 			pBot->pBotUser = NULL;
 			if (g_b_cv_radio) // KWo - 07.03.2010
@@ -5012,7 +5012,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 				// don't pause/camp anymore
 				int iTask = BotGetSafeTask(pBot)->iTask;
 
-				if ((iTask == TASK_PAUSE) || (iTask == TASK_CAMP))
+				if (iTask == TASK_PAUSE || iTask == TASK_CAMP)
 					BotGetSafeTask(pBot)->fTime = gpGlobals->time;
 
 				pBot->f_bot_use_time = gpGlobals->time;
@@ -5030,8 +5030,8 @@ void BotCheckRadioCommands(bot_t* pBot)
 	}
 	case RADIO_NEEDBACKUP:
 	{
-		if ((FNullEnt(pBot->pBotEnemy) && (BotEntityIsVisible(pBot, pPlayer->v.origin)))
-			|| (f_distance < 2048))
+		if (FNullEnt(pBot->pBotEnemy) && BotEntityIsVisible(pBot, pPlayer->v.origin)
+			|| f_distance < 2048)
 		{
 			pBot->fFearLevel -= 0.1;
 			if (pBot->fFearLevel < 0.0)
@@ -5041,7 +5041,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 
 			// don't pause/camp anymore
 			int iTask = BotGetSafeTask(pBot)->iTask;
-			if ((iTask == TASK_PAUSE) || (iTask == TASK_CAMP))
+			if (iTask == TASK_PAUSE || iTask == TASK_CAMP)
 				BotGetSafeTask(pBot)->fTime = gpGlobals->time;
 
 			pBot->f_bot_use_time = gpGlobals->time;
@@ -5067,12 +5067,12 @@ void BotCheckRadioCommands(bot_t* pBot)
 			if (pBot->fFearLevel < 0.0)
 				pBot->fFearLevel = 0.0;
 		}
-		else if ((FNullEnt(pBot->pBotEnemy) && (BotEntityIsVisible(pBot, pPlayer->v.origin)))
-			|| (f_distance < 2048))
+		else if (FNullEnt(pBot->pBotEnemy) && BotEntityIsVisible(pBot, pPlayer->v.origin)
+			|| f_distance < 2048)
 		{
 			int iTask = BotGetSafeTask(pBot)->iTask;
 
-			if ((iTask == TASK_PAUSE) || (iTask == TASK_CAMP))
+			if (iTask == TASK_PAUSE || iTask == TASK_CAMP)
 			{
 				pBot->fFearLevel -= 0.3;
 
@@ -5102,8 +5102,8 @@ void BotCheckRadioCommands(bot_t* pBot)
 	}
 	case RADIO_STORMTHEFRONT:
 	{
-		if ((FNullEnt(pBot->pBotEnemy) && BotEntityIsVisible(pBot, pPlayer->v.origin))
-			|| (f_distance < 1024))
+		if (FNullEnt(pBot->pBotEnemy) && BotEntityIsVisible(pBot, pPlayer->v.origin)
+			|| f_distance < 1024)
 		{
 			if (g_b_cv_radio) // KWo - 07.03.2010
 				BotPlayRadioMessage(pBot, RADIO_AFFIRMATIVE);
@@ -5111,7 +5111,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 			// don't pause/camp anymore
 			int iTask = BotGetSafeTask(pBot)->iTask;
 
-			if ((iTask == TASK_PAUSE) || (iTask == TASK_CAMP))
+			if (iTask == TASK_PAUSE || iTask == TASK_CAMP)
 				BotGetSafeTask(pBot)->fTime = gpGlobals->time;
 
 			pBot->f_bot_use_time = gpGlobals->time;
@@ -5137,8 +5137,8 @@ void BotCheckRadioCommands(bot_t* pBot)
 	}
 	case RADIO_FALLBACK:
 	{
-		if ((FNullEnt(pBot->pBotEnemy) && (BotEntityIsVisible(pBot, pPlayer->v.origin)))
-			|| (f_distance < 1024))
+		if (FNullEnt(pBot->pBotEnemy) && BotEntityIsVisible(pBot, pPlayer->v.origin)
+			|| f_distance < 1024)
 		{
 			pBot->fFearLevel += 0.5;
 			if (pBot->fFearLevel > 1.0)
@@ -5180,7 +5180,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 					{
 						if (!(clients[ind].iFlags & CLIENT_USED)
 							|| !(clients[ind].iFlags & CLIENT_ALIVE)
-							|| (clients[ind].iTeam == pBot->bot_team))
+							|| clients[ind].iTeam == pBot->bot_team)
 							continue;
 
 						edict_t* pEnemy = clients[ind].pEdict;
@@ -5212,7 +5212,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 		if (g_bBombPlanted)
 		{
 			// Check if it's a Counter Command
-			if ((UTIL_GetTeam(pPlayer) == TEAM_CS_COUNTER) && (pBot->bot_team == TEAM_CS_COUNTER))
+			if (UTIL_GetTeam(pPlayer) == TEAM_CS_COUNTER && pBot->bot_team == TEAM_CS_COUNTER)
 			{
 				if (g_fTimeNextBombUpdate < gpGlobals->time)
 				{
@@ -5253,8 +5253,8 @@ void BotCheckRadioCommands(bot_t* pBot)
 	}
 	case RADIO_GETINPOSITION:
 	{
-		if ((FNullEnt(pBot->pBotEnemy) && (BotEntityIsVisible(pBot, pPlayer->v.origin)))
-			|| (f_distance < 1024))
+		if (FNullEnt(pBot->pBotEnemy) && BotEntityIsVisible(pBot, pPlayer->v.origin)
+			|| f_distance < 1024)
 		{
 			if (g_b_cv_radio) // KWo - 07.03.2010
 				BotPlayRadioMessage(pBot, RADIO_AFFIRMATIVE);
@@ -5266,7 +5266,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 				BotGetSafeTask(pBot)->fTime = gpGlobals->time + fCampTime; // KWo - 23.03.2008
 				pBot->fTimeCamping = BotGetSafeTask(pBot)->fTime;  // KWo - 23.03.2008
 			}
-			else if (BotHasCampWeapon(pBot) && (pBot->current_weapon.iAmmo1 > 0) && (!pBot->bIsChickenOrZombie)) // KWo - 18.01.2011
+			else if (BotHasCampWeapon(pBot) && pBot->current_weapon.iAmmo1 > 0 && !pBot->bIsChickenOrZombie) // KWo - 18.01.2011
 			{
 				// don't pause anymore
 				int iTask = BotGetSafeTask(pBot)->iTask;
@@ -5288,7 +5288,7 @@ void BotCheckRadioCommands(bot_t* pBot)
 					{
 						if (!(clients[ind].iFlags & CLIENT_USED)
 							|| !(clients[ind].iFlags & CLIENT_ALIVE)
-							|| (clients[ind].iTeam == pBot->bot_team))
+							|| clients[ind].iTeam == pBot->bot_team)
 							continue;
 
 						edict_t* pEnemy = clients[ind].pEdict;
@@ -5342,14 +5342,14 @@ int GetHighestFragsBot(int iTeam)
 		pFragBot = &bots[bot_index];
 
 		if (pFragBot->is_used && !FNullEnt(pFragBot->pEdict) && !pFragBot->bDead
-			&& (pFragBot->bot_team == iTeam) && (pFragBot->pEdict->v.frags > fBestFrags))
+			&& pFragBot->bot_team == iTeam && pFragBot->pEdict->v.frags > fBestFrags)
 		{
 			iBestIndex = bot_index;
 			fBestFrags = pFragBot->pEdict->v.frags;
 		}
 	}
 
-	return (iBestIndex);
+	return iBestIndex;
 }
 
 void SelectLeaderEachTeam(bot_t* pBot)
@@ -5364,8 +5364,8 @@ void SelectLeaderEachTeam(bot_t* pBot)
 			// VIP Bot is the leader
 			pBot->bIsLeader = TRUE;
 
-			if ((RANDOM_LONG(1, 100) < 50) && (!g_b_cv_ffa) && (g_b_cv_radio)
-				&& (g_iAliveCTs > 1)) // KWo - 13.09.2008
+			if (RANDOM_LONG(1, 100) < 50 && !g_b_cv_ffa && g_b_cv_radio
+				&& g_iAliveCTs > 1) // KWo - 13.09.2008
 			{
 				BotPlayRadioMessage(pBot, RADIO_FOLLOWME);
 				pBot->iCampButtons = 0;
@@ -5373,13 +5373,13 @@ void SelectLeaderEachTeam(bot_t* pBot)
 
 			g_bLeaderChosenCT = TRUE;
 		}
-		else if ((pBot->bot_team == TEAM_CS_TERRORIST) && !g_bLeaderChosenT)
+		else if (pBot->bot_team == TEAM_CS_TERRORIST && !g_bLeaderChosenT)
 		{
 			pBotLeader = &bots[GetHighestFragsBot(pBot->bot_team)];
 			pBotLeader->bIsLeader = TRUE;
 
-			if ((RANDOM_LONG(1, 100) < 50) && (!g_b_cv_ffa) && (g_b_cv_radio)
-				&& (g_iAliveTs > 1)) // KWo - 13.09.2008
+			if (RANDOM_LONG(1, 100) < 50 && !g_b_cv_ffa && g_b_cv_radio
+				&& g_iAliveTs > 1) // KWo - 13.09.2008
 			{
 				BotPlayRadioMessage(pBotLeader, RADIO_FOLLOWME);
 			}
@@ -5395,8 +5395,8 @@ void SelectLeaderEachTeam(bot_t* pBot)
 			pBotLeader = &bots[GetHighestFragsBot(pBot->bot_team)];
 			pBotLeader->bIsLeader = TRUE;
 
-			if ((RANDOM_LONG(1, 100) < 50) && (!g_b_cv_ffa) && (g_b_cv_radio)
-				&& (g_iAliveTs > 1)) // KWo - 13.09.2008
+			if (RANDOM_LONG(1, 100) < 50 && !g_b_cv_ffa && g_b_cv_radio
+				&& g_iAliveTs > 1) // KWo - 13.09.2008
 			{
 				BotPlayRadioMessage(pBotLeader, RADIO_FOLLOWME);
 			}
@@ -5406,8 +5406,8 @@ void SelectLeaderEachTeam(bot_t* pBot)
 			pBotLeader = &bots[GetHighestFragsBot(pBot->bot_team)];
 			pBotLeader->bIsLeader = TRUE;
 
-			if ((RANDOM_LONG(1, 100) < 50) && (!g_b_cv_ffa) && (g_b_cv_radio)
-				&& (g_iAliveCTs > 1)) // KWo - 13.09.2008
+			if (RANDOM_LONG(1, 100) < 50 && !g_b_cv_ffa && g_b_cv_radio
+				&& g_iAliveCTs > 1) // KWo - 13.09.2008
 			{
 				BotPlayRadioMessage(pBotLeader, RADIO_FOLLOWME);
 			}
@@ -5416,16 +5416,16 @@ void SelectLeaderEachTeam(bot_t* pBot)
 
 	if (g_iMapType & MAP_DE)
 	{
-		if ((pBot->bot_team == TEAM_CS_TERRORIST) && !g_bLeaderChosenT)
+		if (pBot->bot_team == TEAM_CS_TERRORIST && !g_bLeaderChosenT)
 		{
-			if (pEdict->v.weapons & (1 << CS_WEAPON_C4))
+			if (pEdict->v.weapons & 1 << CS_WEAPON_C4)
 			{
 				// Bot carrying the Bomb is the leader
 				pBot->bIsLeader = TRUE;
 
 				// Terrorist carrying a Bomb needs to have some company so order some Bots sometimes
-				if ((RANDOM_LONG(1, 100) < 50) && (!g_b_cv_ffa) && (g_b_cv_radio)
-					&& (g_iAliveTs > 1)) // KWo - 13.09.2008
+				if (RANDOM_LONG(1, 100) < 50 && !g_b_cv_ffa && g_b_cv_radio
+					&& g_iAliveTs > 1) // KWo - 13.09.2008
 				{
 					BotPlayRadioMessage(pBot, RADIO_FOLLOWME);
 					pBot->iCampButtons = 0;
@@ -5439,8 +5439,8 @@ void SelectLeaderEachTeam(bot_t* pBot)
 			pBotLeader = &bots[GetHighestFragsBot(pBot->bot_team)];
 			pBotLeader->bIsLeader = TRUE;
 
-			if ((RANDOM_LONG(1, 100) < 50) && (!g_b_cv_ffa) && (g_b_cv_radio)
-				&& (g_iAliveCTs > 1)) // KWo - 13.09.2008
+			if (RANDOM_LONG(1, 100) < 50 && !g_b_cv_ffa && g_b_cv_radio
+				&& g_iAliveCTs > 1) // KWo - 13.09.2008
 			{
 				BotPlayRadioMessage(pBotLeader, RADIO_FOLLOWME);
 			}
@@ -5473,8 +5473,8 @@ void BotChooseAimDirection(bot_t* pBot)
 	static float f_angle_corr;
 	static float f_dist_throw;
 
-	bPrevWptIndOK = ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints)); // KWo - 12.08.2006
-	bCurWptIndOK = ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints)); // KWo - 12.08.2006
+	bPrevWptIndOK = pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints; // KWo - 12.08.2006
+	bCurWptIndOK = pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints; // KWo - 12.08.2006
 
 	if (!bCurWptIndOK) // KWo - 12.08.2006
 	{
@@ -5487,11 +5487,11 @@ void BotChooseAimDirection(bot_t* pBot)
 	iFlags = pBot->iAimFlags;
 	pEdict = pBot->pEdict;
 	fLastEnDistance = 9999.0;
-	bFollowUser = (BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER);                        // KWo - 12.08.2006
+	bFollowUser = BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER;                        // KWo - 12.08.2006
 	bDestAimingSelected = false;
 	bDontShootThroughWall = false; // KWo - 08.10.2010
 
-	if ((pBot->vecLastEnemyOrigin != g_vecZero) && (!FNullEnt(pBot->pLastEnemy)))          // KWo - 10.07.2008
+	if (pBot->vecLastEnemyOrigin != g_vecZero && !FNullEnt(pBot->pLastEnemy))          // KWo - 10.07.2008
 	{
 		TRACE_LINE(GetGunPosition(pEdict), pBot->vecLastEnemyOrigin, ignore_glass, pEdict, &tr);  // KWo - 27.01.2008
 
@@ -5500,21 +5500,21 @@ void BotChooseAimDirection(bot_t* pBot)
 		vLastEnLookDir = UTIL_VecToAngles(pBot->vecLastEnemyOrigin - GetGunPosition(pEdict)); // KWo - 01.10.2010
 		vLastEnLookDir.x = -vLastEnLookDir.x;  // KWo - 01.10.2010
 
-		if (FNullEnt(pBot->pBotEnemy) && (pBot->f_bot_see_enemy_time + 2.0 < gpGlobals->time)
-			&& (((tr.flFraction <= 0.2) && (FStrEq(STRING(tr.pHit->v.classname), "worldspawn"))
-				&& (fLastEnDistance >= 300.0)
+		if (FNullEnt(pBot->pBotEnemy) && pBot->f_bot_see_enemy_time + 2.0 < gpGlobals->time
+			&& (tr.flFraction <= 0.2 && FStrEq(STRING(tr.pHit->v.classname), "worldspawn")
+				&& fLastEnDistance >= 300.0
 				/*          && !(pBot->bShootThruSeen) && !(pBot->bShootThruHeard) */
-				&& (pBot->f_bot_see_new_enemy_time - 0.5 < gpGlobals->time))
-				|| (!(pBot->bShootThruSeen) && (fabs(vLastEnLookDir.x) >= 45.0))))              // KWo - 01.10.2010
+				&& pBot->f_bot_see_new_enemy_time - 0.5 < gpGlobals->time
+				|| !pBot->bShootThruSeen && fabs(vLastEnLookDir.x) >= 45.0))              // KWo - 01.10.2010
 		{
-			if (((pBot->iAimFlags & AIM_LASTENEMY) || (pBot->iAimFlags & AIM_PREDICTPATH))   // 14.10.2006
-				&& (pBot->bWantsToFire))
+			if ((pBot->iAimFlags & AIM_LASTENEMY || pBot->iAimFlags & AIM_PREDICTPATH)   // 14.10.2006
+				&& pBot->bWantsToFire)
 			{
 				pBot->bWantsToFire = FALSE;
 				bDontShootThroughWall = TRUE; // KWo - 08.10.2010
 			}
 
-			if ((pBot->fChangeAimDirectionTime + 0.5 < gpGlobals->time) && !(pBot->bShootThruSeen) && !(pBot->bShootThruHeard))
+			if (pBot->fChangeAimDirectionTime + 0.5 < gpGlobals->time && !pBot->bShootThruSeen && !pBot->bShootThruHeard)
 			{
 				pBot->iAimFlags &= ~AIM_LASTENEMY;
 				iFlags &= ~AIM_LASTENEMY;
@@ -5539,13 +5539,13 @@ void BotChooseAimDirection(bot_t* pBot)
 
 	// Don't allow Bot to look at danger positions under certain circumstances
 
-	if ((BotGetSafeTask(pBot)->iTask != TASK_DEFUSEBOMB) && (pBot->pShootBreakable == NULL) && (pBot->fButtonNoticedTime + 5.0 < gpGlobals->time)
-		&& (pBot->iLiftUsageState != LIFT_LOOKING_BUTTON_OUTSIDE) && (pBot->iLiftUsageState != LIFT_LOOKING_BUTTON_INSIDE)
-		&& (BotGetSafeTask(pBot)->iTask != TASK_PICKUPITEM))  // KWo - 27.10.2006
+	if (BotGetSafeTask(pBot)->iTask != TASK_DEFUSEBOMB && pBot->pShootBreakable == NULL && pBot->fButtonNoticedTime + 5.0 < gpGlobals->time
+		&& pBot->iLiftUsageState != LIFT_LOOKING_BUTTON_OUTSIDE && pBot->iLiftUsageState != LIFT_LOOKING_BUTTON_INSIDE
+		&& BotGetSafeTask(pBot)->iTask != TASK_PICKUPITEM)  // KWo - 27.10.2006
 	{
 		if (bCurWptIndOK)
 		{
-			if ((!paths[pBot->curr_wpt_index]->flags & W_FL_USE_BUTTON) && (pBot->fButtonNoticedTime + 3.0 < gpGlobals->time)) // KWo - 29.03.2008
+			if (!paths[pBot->curr_wpt_index]->flags & W_FL_USE_BUTTON && pBot->fButtonNoticedTime + 3.0 < gpGlobals->time) // KWo - 29.03.2008
 			{
 				pBot->bButtonPushDecided = false;
 				pBot->iAimFlags &= ~AIM_ENTITY;
@@ -5554,9 +5554,9 @@ void BotChooseAimDirection(bot_t* pBot)
 		}
 	}
 
-	if (!(iFlags & AIM_ENEMY) && !FNullEnt(pBot->pHit) && (iFlags & AIM_DEST)) // KWo - 29.03.2008
+	if (!(iFlags & AIM_ENEMY) && !FNullEnt(pBot->pHit) && iFlags & AIM_DEST) // KWo - 29.03.2008
 	{
-		if ((strncmp(STRING(pBot->pHit->v.classname), "func_door", 9) == 0) && (pBot->iLiftUsageState == LIFT_NO_NEARBY))
+		if (strncmp(STRING(pBot->pHit->v.classname), "func_door", 9) == 0 && pBot->iLiftUsageState == LIFT_NO_NEARBY)
 		{
 			pBot->iAimFlags &= ~AIM_LASTENEMY;
 			iFlags &= ~AIM_LASTENEMY;
@@ -5566,7 +5566,7 @@ void BotChooseAimDirection(bot_t* pBot)
 	if (!(iFlags & (AIM_GRENADE | AIM_ENEMY | AIM_ENTITY)))
 	{
 		if ((pBot->bOnLadder || pBot->bInWater
-			|| (pBot->curr_travel_flags & C_FL_JUMP) || (pBot->iWPTFlags & W_FL_LADDER)) && (fLastEnDistance > 500.0)) // KWo - 19.01.2008
+			|| pBot->curr_travel_flags & C_FL_JUMP || pBot->iWPTFlags & W_FL_LADDER) && fLastEnDistance > 500.0) // KWo - 19.01.2008
 		{
 			iFlags &= ~(AIM_LASTENEMY | AIM_PREDICTPATH);
 			pBot->bCanChooseAimDirection = FALSE;
@@ -5594,10 +5594,10 @@ void BotChooseAimDirection(bot_t* pBot)
 		f_z_corr = 0.0; // KWo - 16.09.2006
 		f_angle_corr = 0.0; // KWo - 16.09.2006
 		f_dist_throw = (pBot->vecThrow - pEdict->v.origin).Length(); // KWo - 16.09.2006
-		if ((f_dist_throw > 100.0) && (f_dist_throw < 800.0)) // KWo - 25.02.2008
+		if (f_dist_throw > 100.0 && f_dist_throw < 800.0) // KWo - 25.02.2008
 		{
 			f_angle_corr = 0.0;
-			f_z_corr = (0.25) * (pBot->vecThrow.z - pEdict->v.origin.z);  // KWo - 25.02.2008
+			f_z_corr = 0.25 * (pBot->vecThrow.z - pEdict->v.origin.z);  // KWo - 25.02.2008
 		}
 		else if (f_dist_throw >= 800.0)
 		{
@@ -5605,7 +5605,7 @@ void BotChooseAimDirection(bot_t* pBot)
 			if (f_angle_corr > 45.0)
 				f_angle_corr = 45.0;
 			f_z_corr = f_dist_throw * tan(f_angle_corr * M_PI / 180.0)
-				+ (0.25) * (pBot->vecThrow.z - pEdict->v.origin.z); // KWo - 25.02.2008
+				+ 0.25 * (pBot->vecThrow.z - pEdict->v.origin.z); // KWo - 25.02.2008
 		}
 
 		pBot->vecLookAt.z += f_z_corr; // KWo - 16.09.2006
@@ -5618,11 +5618,11 @@ void BotChooseAimDirection(bot_t* pBot)
 			pBot->vecLookAt = pBot->vecEntity;
 			pBot->fChangeAimDirectionTime = gpGlobals->time + 0.6; // KWo - 06.02.2008
 		}
-		if ((BotGetSafeTask(pBot)->iTask == TASK_PICKUPITEM) && (pBot->iPickupType == PICKUP_HOSTAGE)) // KWo - 12.10.2006
+		if (BotGetSafeTask(pBot)->iTask == TASK_PICKUPITEM && pBot->iPickupType == PICKUP_HOSTAGE) // KWo - 12.10.2006
 			pBot->vecLookAt = pBot->vecEntity + pBot->pEdict->v.view_ofs;
-		if (((BotGetSafeTask(pBot)->iTask == TASK_PLANTBOMB) || (BotGetSafeTask(pBot)->iTask == TASK_DEFUSEBOMB)
-			|| (BotGetSafeTask(pBot)->iTask == TASK_ATTACK))
-			&& (iFlags & AIM_ENEMY))
+		if ((BotGetSafeTask(pBot)->iTask == TASK_PLANTBOMB || BotGetSafeTask(pBot)->iTask == TASK_DEFUSEBOMB
+			|| BotGetSafeTask(pBot)->iTask == TASK_ATTACK)
+			&& iFlags & AIM_ENEMY)
 		{
 			BotFocusEnemy(pBot);             // KWo - 10.10.2006
 			pBot->vecLookAt = pBot->vecEnemy; // KWo - 10.10.2006
@@ -5644,10 +5644,10 @@ void BotChooseAimDirection(bot_t* pBot)
 	else if (iFlags & AIM_LASTENEMY)// KWo - 04.03.2006
 	{
 		// Did Bot just see Enemy and is quite agressive ?
-		if ((pBot->f_heard_sound_time + 4.0 > gpGlobals->time)) // KWo - 12.07.2008
+		if (pBot->f_heard_sound_time + 4.0 > gpGlobals->time) // KWo - 12.07.2008
 		{
 			// Feel free to fire if shootable
-			if ((pBot->bShootThruHeard) && (!bDontShootThroughWall)) // KWo - 08.10.2010
+			if (pBot->bShootThruHeard && !bDontShootThroughWall) // KWo - 08.10.2010
 			{
 				pBot->bWantsToFire = TRUE;
 			}
@@ -5666,13 +5666,13 @@ void BotChooseAimDirection(bot_t* pBot)
 	}
 	else if (iFlags & AIM_PREDICTPATH) // KWo - 04.03.2006
 	{
-		if ((((pEdict->v.origin - pBot->vecLastEnemyOrigin).Length() < 1600) || BotUsesSniper(pBot))
-			&& ((tr.flFraction >= 0.2) || !(FStrEq(STRING(tr.pHit->v.classname), "worldspawn")))) // KWo - 22.10.2006
+		if (((pEdict->v.origin - pBot->vecLastEnemyOrigin).Length() < 1600 || BotUsesSniper(pBot))
+			&& (tr.flFraction >= 0.2 || !FStrEq(STRING(tr.pHit->v.classname), "worldspawn"))) // KWo - 22.10.2006
 		{
 			bRecalcPath = TRUE;
 
-			if ((pBot->pTrackingEdict == pBot->pLastEnemy) && (!FNullEnt(pBot->pLastEnemy))
-				&& (pBot->fTimeNextTracking < gpGlobals->time)) // KWo - 06.08.2006
+			if (pBot->pTrackingEdict == pBot->pLastEnemy && !FNullEnt(pBot->pLastEnemy)
+				&& pBot->fTimeNextTracking < gpGlobals->time) // KWo - 06.08.2006
 				bRecalcPath = FALSE;
 
 			if (bRecalcPath)
@@ -5687,7 +5687,7 @@ void BotChooseAimDirection(bot_t* pBot)
 					ALERT(at_logged, "[DEBUG] AIM_PREDICTPATH flag works for bot %s.\n", pBot->name);
 				}
 
-				if ((BotLastEnemyShootable(pBot)) && (IsShootableThruObstacle(pEdict, pBot->vecLastEnemyOrigin))) // KWo - 14.10.2006
+				if (BotLastEnemyShootable(pBot) && IsShootableThruObstacle(pEdict, pBot->vecLastEnemyOrigin)) // KWo - 14.10.2006
 					pBot->bWantsToFire = TRUE;
 			}
 			else
@@ -5714,11 +5714,11 @@ void BotChooseAimDirection(bot_t* pBot)
 		//    look at the user after reaching goal WP for following the user
 		if (bFollowUser && !FNullEnt(pBot->pBotUser)
 			&& !(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) && bPrevWptIndOK
-			&& (pBot->fChangeAimDirectionTime < gpGlobals->time))  // KWo - 09.12.2007
+			&& pBot->fChangeAimDirectionTime < gpGlobals->time)  // KWo - 09.12.2007
 		{
-			if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER) && ((pBot->dest_origin - pBot->pBotUser->v.origin).Length() < 250)
-				&& (FVisible(pBot->pBotUser->v.origin, pBot->pEdict))
-				&& ((pBot->curr_wpt_index == pBot->chosengoal_index)) || (pBot->chosengoal_index == -1))
+			if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER) && (pBot->dest_origin - pBot->pBotUser->v.origin).Length() < 250
+				&& FVisible(pBot->pBotUser->v.origin, pBot->pEdict)
+				&& pBot->curr_wpt_index == pBot->chosengoal_index || pBot->chosengoal_index == -1)
 			{
 				pBot->vecLookAt = pBot->pBotUser->v.origin + pBot->pEdict->v.view_ofs;
 				pBot->fChangeAimDirectionTime = gpGlobals->time + 0.5; // KWo - 09.12.2007
@@ -5726,18 +5726,18 @@ void BotChooseAimDirection(bot_t* pBot)
 			}
 		}
 
-		if ((paths[pBot->curr_wpt_index]->flags & W_FL_LADDER)
-			|| ((paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) && !(paths[pBot->curr_wpt_index]->flags & W_FL_CAMP))
-			|| (pBot->curr_travel_flags & C_FL_JUMP)) // KWo - 07.04.2010
+		if (paths[pBot->curr_wpt_index]->flags & W_FL_LADDER
+			|| paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH && !(paths[pBot->curr_wpt_index]->flags & W_FL_CAMP)
+			|| pBot->curr_travel_flags & C_FL_JUMP) // KWo - 07.04.2010
 		{
 			bDestAimingSelected = TRUE;
 			pBot->vecLookAt = pBot->dest_origin + pBot->pEdict->v.view_ofs;
-			if ((paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) && (pBot->pWaypointNodes != NULL))   // KWo - 22.01.2012
+			if (paths[pBot->curr_wpt_index]->flags & W_FL_LADDER && pBot->pWaypointNodes != NULL)   // KWo - 22.01.2012
 			{
 				if (pBot->pWaypointNodes->NextNode != NULL)
 				{
-					if ((paths[pBot->pWaypointNodes->NextNode->iIndex]->flags & W_FL_LADDER) && ((pEdict->v.origin - pBot->dest_origin).Length() < 100)
-						&& (paths[pBot->pWaypointNodes->NextNode->iIndex]->origin.z > paths[pBot->curr_wpt_index]->origin.z + 30.0))
+					if (paths[pBot->pWaypointNodes->NextNode->iIndex]->flags & W_FL_LADDER && (pEdict->v.origin - pBot->dest_origin).Length() < 100
+						&& paths[pBot->pWaypointNodes->NextNode->iIndex]->origin.z > paths[pBot->curr_wpt_index]->origin.z + 30.0)
 					{
 						pBot->vecLookAt = paths[pBot->pWaypointNodes->NextNode->iIndex]->origin;
 
@@ -5752,7 +5752,7 @@ void BotChooseAimDirection(bot_t* pBot)
 		// look at the door to let them be opened right...
 		if (!FNullEnt(pBot->pHit)) // KWo - 22.03.2008
 		{
-			if ((strncmp(STRING(pBot->pHit->v.classname), "func_door", 9) == 0) && (pBot->iLiftUsageState == LIFT_NO_NEARBY))
+			if (strncmp(STRING(pBot->pHit->v.classname), "func_door", 9) == 0 && pBot->iLiftUsageState == LIFT_NO_NEARBY)
 			{
 				pBot->fChangeAimDirectionTime = gpGlobals->time + 1.0;
 				bDestAimingSelected = TRUE;
@@ -5762,15 +5762,15 @@ void BotChooseAimDirection(bot_t* pBot)
 
 		//    look backward if the bot is looking at the wall...
 		if (bPrevWptIndOK && !(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER)
-			&& !bFollowUser && pBot->bCanChooseAimDirection && (pBot->fChangeAimDirectionTime < gpGlobals->time)
-			&& ((pBot->cCollisionState != COLLISION_PROBING)
-				|| ((pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFELEFT)
-					&& (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFERIGHT))))   // KWo - 16.12.2007
+			&& !bFollowUser && pBot->bCanChooseAimDirection && pBot->fChangeAimDirectionTime < gpGlobals->time
+			&& (pBot->cCollisionState != COLLISION_PROBING
+				|| pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFELEFT
+				&& pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFERIGHT))   // KWo - 16.12.2007
 		{
 			if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER)
 				&& !(pBot->curr_travel_flags & C_FL_JUMP)        // KWo - 19.04.2006
-				&& (!(pBot->iWPTFlags & W_FL_CROUCH) && (fabs(paths[pBot->prev_wpt_index[0]]->origin.z - pBot->dest_origin.z) < 30.0)
-					|| (pBot->iWPTFlags & W_FL_CAMP)))// KWo - 23.03.2006
+				&& (!(pBot->iWPTFlags & W_FL_CROUCH) && fabs(paths[pBot->prev_wpt_index[0]]->origin.z - pBot->dest_origin.z) < 30.0
+					|| pBot->iWPTFlags & W_FL_CAMP))// KWo - 23.03.2006
 			{
 				v_src = paths[pBot->prev_wpt_index[0]]->origin;
 				vecDirection = (pBot->dest_origin - v_src).Normalize();
@@ -5779,7 +5779,7 @@ void BotChooseAimDirection(bot_t* pBot)
 				// trace forward...
 				TRACE_LINE(pBot->dest_origin, v_dest, dont_ignore_monsters, pEdict, &tr);
 				// check if the trace hit a wall, then look back (I hate them looking at the wall :) )
-				if ((tr.flFraction < 1.0) && (FStrEq("worldspawn", STRING(tr.pHit->v.classname))))
+				if (tr.flFraction < 1.0 && FStrEq("worldspawn", STRING(tr.pHit->v.classname)))
 				{
 					pBot->vecLookAt = paths[pBot->prev_wpt_index[0]]->origin + pBot->pEdict->v.view_ofs;
 					pBot->fChangeAimDirectionTime = gpGlobals->time + 0.6; // KWo - 09.12.2007
@@ -5789,21 +5789,21 @@ void BotChooseAimDirection(bot_t* pBot)
 		}
 
 		//    look at the danger position if it's seen from bot's eyes...
-		if (pBot->bCanChooseAimDirection && (pBot->f_timeHitDoor + 2.0 < gpGlobals->time)
+		if (pBot->bCanChooseAimDirection && pBot->f_timeHitDoor + 2.0 < gpGlobals->time
 			&& !(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) && !bFollowUser
-			&& bPrevWptIndOK && (!bDestAimingSelected))  // KWo - 22.03.2008
+			&& bPrevWptIndOK && !bDestAimingSelected)  // KWo - 22.03.2008
 		{
 			iIndex = pBot->curr_wpt_index;
 			if (!(paths[pBot->prev_wpt_index[0]]->flags & W_FL_LADDER)) // KWo - 12.08.2006
 			{
 				if (pBot->bot_team == TEAM_CS_TERRORIST)
 				{
-					if (((pBotExperienceData + (iIndex * g_iNumWaypoints) + iIndex)->iTeam0_danger_index != -1)
-						&& ((float)((pBotExperienceData + (iIndex * g_iNumWaypoints) + iIndex)->uTeam0Damage) / g_iHighestDamageT > 0.6)) // KWo - 07.04.2010
+					if ((pBotExperienceData + iIndex * g_iNumWaypoints + iIndex)->iTeam0_danger_index != -1
+						&& (float)(pBotExperienceData + iIndex * g_iNumWaypoints + iIndex)->uTeam0Damage / g_iHighestDamageT > 0.6) // KWo - 07.04.2010
 					{
-						v_dest = paths[(pBotExperienceData + (iIndex * g_iNumWaypoints) + iIndex)->iTeam0_danger_index]->origin;   // KWo - 12.03.2006
+						v_dest = paths[(pBotExperienceData + iIndex * g_iNumWaypoints + iIndex)->iTeam0_danger_index]->origin;   // KWo - 12.03.2006
 						TRACE_LINE(pEdict->v.origin, v_dest, ignore_monsters, pEdict, &tr);  // KWo - 12.03.2006
-						if ((tr.flFraction > 0.8) || (!FStrEq("worldspawn", STRING(tr.pHit->v.classname))))  // KWo - 12.03.2006
+						if (tr.flFraction > 0.8 || !FStrEq("worldspawn", STRING(tr.pHit->v.classname)))  // KWo - 12.03.2006
 						{
 							pBot->vecLookAt = v_dest + pBot->pEdict->v.view_ofs;
 							pBot->fChangeAimDirectionTime = gpGlobals->time + 0.6; // KWo - 16.02.2008
@@ -5813,12 +5813,12 @@ void BotChooseAimDirection(bot_t* pBot)
 				}
 				else
 				{
-					if (((pBotExperienceData + (iIndex * g_iNumWaypoints) + iIndex)->iTeam1_danger_index != -1)
-						&& ((float)((pBotExperienceData + (iIndex * g_iNumWaypoints) + iIndex)->uTeam1Damage) / g_iHighestDamageCT > 0.6)) // KWo - 07.04.2010
+					if ((pBotExperienceData + iIndex * g_iNumWaypoints + iIndex)->iTeam1_danger_index != -1
+						&& (float)(pBotExperienceData + iIndex * g_iNumWaypoints + iIndex)->uTeam1Damage / g_iHighestDamageCT > 0.6) // KWo - 07.04.2010
 					{
-						v_dest = paths[(pBotExperienceData + (iIndex * g_iNumWaypoints) + iIndex)->iTeam1_danger_index]->origin;  // KWo - 12.03.2006
+						v_dest = paths[(pBotExperienceData + iIndex * g_iNumWaypoints + iIndex)->iTeam1_danger_index]->origin;  // KWo - 12.03.2006
 						TRACE_LINE(pEdict->v.origin, v_dest, ignore_monsters, pEdict, &tr);  // KWo - 12.03.2006
-						if ((tr.flFraction > 0.8) || (!FStrEq("worldspawn", STRING(tr.pHit->v.classname))))  // KWo - 12.03.2006
+						if (tr.flFraction > 0.8 || !FStrEq("worldspawn", STRING(tr.pHit->v.classname)))  // KWo - 12.03.2006
 						{
 							pBot->vecLookAt = v_dest + pBot->pEdict->v.view_ofs;
 							pBot->fChangeAimDirectionTime = gpGlobals->time + 0.6; // KWo - 16.02.2008
@@ -5829,23 +5829,23 @@ void BotChooseAimDirection(bot_t* pBot)
 			}
 		}
 
-		if ((pBot->dest_origin != g_vecZero)
-			&& ((pBot->fChangeAimDirectionTime < gpGlobals->time) && (!bDestAimingSelected)
-				&& ((pBot->cCollisionState != COLLISION_PROBING)
-					|| ((pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFELEFT)
-						&& (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFERIGHT)
-						&& (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_GOBACK)))))   // KWo - 29.09.2010
+		if (pBot->dest_origin != g_vecZero
+			&& (pBot->fChangeAimDirectionTime < gpGlobals->time && !bDestAimingSelected
+				&& (pBot->cCollisionState != COLLISION_PROBING
+					|| pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFELEFT
+					&& pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFERIGHT
+					&& pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_GOBACK)))   // KWo - 29.09.2010
 		{
 			if ((pBot->dest_origin - pBot->pEdict->v.origin).Length() > 15)
 				pBot->vecLookAt = pBot->dest_origin + pBot->pEdict->v.view_ofs;
 			else if (pBot->bMoveToGoal) // KWo - 20.04.2013
 			{
-				if ((pBot->pWaypointNodes != NULL) && !(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER)
+				if (pBot->pWaypointNodes != NULL && !(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER)
 					&& !bFollowUser)// Look forward at the next waypoint
 				{
 					if (pBot->pWaypointNodes->NextNode != NULL)
 					{
-						if ((pBot->pWaypointNodes->NextNode->iIndex >= 0) && (pBot->pWaypointNodes->NextNode->iIndex < g_iNumWaypoints))
+						if (pBot->pWaypointNodes->NextNode->iIndex >= 0 && pBot->pWaypointNodes->NextNode->iIndex < g_iNumWaypoints)
 						{
 							pBot->vecLookAt = paths[pBot->pWaypointNodes->NextNode->iIndex]->origin + pBot->pEdict->v.view_ofs;
 						}
@@ -5866,7 +5866,7 @@ void BotChooseAimDirection(bot_t* pBot)
 		*/
 	}
 
-	if ((pBot->vecLookAt == g_vecZero) && (pBot->dest_origin != g_vecZero)) // 14.07.2006
+	if (pBot->vecLookAt == g_vecZero && pBot->dest_origin != g_vecZero) // 14.07.2006
 	{
 		pBot->vecLookAt = pBot->dest_origin + pBot->pEdict->v.view_ofs; // KWo - 27.06.2006
 	}
@@ -5877,20 +5877,20 @@ bool BotHasHostage(bot_t* pBot)
 {
 	int i;
 
-	if ((pBot->bot_team == TEAM_CS_TERRORIST) || (g_iNumHostages == 0)) // KWo - 07.04.2010
-		return (FALSE);
+	if (pBot->bot_team == TEAM_CS_TERRORIST || g_iNumHostages == 0) // KWo - 07.04.2010
+		return false;
 
 	for (i = 0; i < g_iNumHostages; i++)
 	{
 		if (!FNullEnt(pBot->pHostages[i]))
 		{
-			if ((pBot->pHostages[i]->v.health > 0) || ((pBot->pHostages[i]->v.origin - pBot->pEdict->v.origin).Length() < 600)) // KWo - 16.07.2006
-				return (TRUE);
+			if (pBot->pHostages[i]->v.health > 0 || (pBot->pHostages[i]->v.origin - pBot->pEdict->v.origin).Length() < 600) // KWo - 16.07.2006
+				return true;
 			else
 				pBot->pHostages[i] = NULL;
 		}
 	}
-	return (FALSE);
+	return false;
 }
 
 void BotCheckShield(bot_t* pBot) // KWo - 13.04.2010
@@ -5914,9 +5914,9 @@ void BotCheckShield(bot_t* pBot) // KWo - 13.04.2010
 
 			if (!BotHasShieldDrawn(pBot))
 			{
-				if ((WeaponIsPistol(iWeaponEnemy) || WeaponIsPrimaryGun(iWeaponEnemy)) && (fEnemyDot > 0.92)
-					&& (pBot->pBotEnemy->v.button & IN_ATTACK) && (pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time)
-					&& (clients[iEnemyIndex].fReloadingTime < gpGlobals->time)) // KWo - 15.08.2007
+				if ((WeaponIsPistol(iWeaponEnemy) || WeaponIsPrimaryGun(iWeaponEnemy)) && fEnemyDot > 0.92
+					&& pBot->pBotEnemy->v.button & IN_ATTACK && pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time
+					&& clients[iEnemyIndex].fReloadingTime < gpGlobals->time) // KWo - 15.08.2007
 				{
 					pBot->pEdict->v.button |= IN_ATTACK2;
 					pBot->fTimeWeaponSwitch = gpGlobals->time;
@@ -5924,9 +5924,9 @@ void BotCheckShield(bot_t* pBot) // KWo - 13.04.2010
 			}
 			else
 			{
-				if (((!WeaponIsPistol(iWeaponEnemy) && !WeaponIsPrimaryGun(iWeaponEnemy)) || (fEnemyDot < 0.85)
-					|| (clients[iEnemyIndex].fReloadingTime >= gpGlobals->time)) // KWo - 15.08.2007)
-					&& (pBot->fTimeWeaponSwitch + 0.2 < gpGlobals->time))
+				if ((!WeaponIsPistol(iWeaponEnemy) && !WeaponIsPrimaryGun(iWeaponEnemy) || fEnemyDot < 0.85
+					|| clients[iEnemyIndex].fReloadingTime >= gpGlobals->time) // KWo - 15.08.2007)
+					&& pBot->fTimeWeaponSwitch + 0.2 < gpGlobals->time)
 				{
 					pBot->pEdict->v.button |= IN_ATTACK2;
 					pBot->fTimeWeaponSwitch = gpGlobals->time;
@@ -5943,8 +5943,8 @@ void BotCheckDarkness(bot_t* pBot)  // KWo - 13.04.2010
 	static edict_t* pEdict;
 	pEdict = pBot->pEdict;
 
-	if ((g_i_botthink_index == g_iFrameCounter)
-		&& (pBot->f_spawn_time + 6.0 < gpGlobals->time)) // KWo - 23.03.2012
+	if (g_i_botthink_index == g_iFrameCounter
+		&& pBot->f_spawn_time + 6.0 < gpGlobals->time) // KWo - 23.03.2012
 	{
 		fLightLevel = UTIL_IlluminationOf(pEdict);
 
@@ -5955,17 +5955,17 @@ void BotCheckDarkness(bot_t* pBot)  // KWo - 13.04.2010
 
 		if (g_b_cv_flash_allowed && gmsgFlashlight && !bNvg)
 		{
-			if ((((g_f_cv_skycolor > 50.0) && (fLightLevel < 10.0)) || ((g_f_cv_skycolor <= 50.0) && (fLightLevel < 40.0)))
-				&& (!(pEdict->v.effects & EF_DIMLIGHT)) && (BotGetSafeTask(pBot)->iTask != TASK_CAMP)
-				&& (BotGetSafeTask(pBot)->iTask != TASK_ATTACK) && (pBot->f_heard_sound_time + 3.0 < gpGlobals->time)
-				&& (pBot->cFlashBat > 30))
+			if ((g_f_cv_skycolor > 50.0 && fLightLevel < 10.0 || g_f_cv_skycolor <= 50.0 && fLightLevel < 40.0)
+				&& !(pEdict->v.effects & EF_DIMLIGHT) && BotGetSafeTask(pBot)->iTask != TASK_CAMP
+				&& BotGetSafeTask(pBot)->iTask != TASK_ATTACK && pBot->f_heard_sound_time + 3.0 < gpGlobals->time
+				&& pBot->cFlashBat > 30)
 			{
 				pEdict->v.impulse = 100;
 			}
-			else if ((pEdict->v.effects & EF_DIMLIGHT)
-				&& ((((fLightLevel > 15.0) && (g_f_cv_skycolor > 50.0)) || ((fLightLevel > 45.0) && (g_f_cv_skycolor <= 50.0)))
-					|| (BotGetSafeTask(pBot)->iTask == TASK_CAMP) || (BotGetSafeTask(pBot)->iTask == TASK_ATTACK)
-					|| (pBot->cFlashBat <= 0) || (pBot->f_heard_sound_time + 3.0 >= gpGlobals->time)))
+			else if (pEdict->v.effects & EF_DIMLIGHT
+				&& (fLightLevel > 15.0 && g_f_cv_skycolor > 50.0 || fLightLevel > 45.0 && g_f_cv_skycolor <= 50.0
+					|| BotGetSafeTask(pBot)->iTask == TASK_CAMP || BotGetSafeTask(pBot)->iTask == TASK_ATTACK
+					|| pBot->cFlashBat <= 0 || pBot->f_heard_sound_time + 3.0 >= gpGlobals->time))
 			{
 				pEdict->v.impulse = 100;
 			}
@@ -5976,7 +5976,7 @@ void BotCheckDarkness(bot_t* pBot)  // KWo - 13.04.2010
 			{
 				pEdict->v.impulse = 100;
 			}
-			else if ((((g_f_cv_skycolor > 50.0) && (fLightLevel < 15.0)) || ((g_f_cv_skycolor <= 50.0) && (fLightLevel < 40.0)))
+			else if ((g_f_cv_skycolor > 50.0 && fLightLevel < 15.0 || g_f_cv_skycolor <= 50.0 && fLightLevel < 40.0)
 				&& !pBot->bUsesNVG)
 			{
 				FakeClientCommand(pEdict, "nightvision\n");
@@ -5985,7 +5985,7 @@ void BotCheckDarkness(bot_t* pBot)  // KWo - 13.04.2010
 					ALERT(at_logged, "[DEBUG] Bot %s uses nvg - lightlevel = %.1f, skycolor = %d, flashbat = %d.\n",
 						pBot->name, fLightLevel, (int)g_f_cv_skycolor, pBot->cFlashBat);
 			}
-			else if ((((fLightLevel > 20.0) && (g_f_cv_skycolor > 50.0)) || ((fLightLevel > 45.0) && (g_f_cv_skycolor <= 50.0)))
+			else if ((fLightLevel > 20.0 && g_f_cv_skycolor > 50.0 || fLightLevel > 45.0 && g_f_cv_skycolor <= 50.0)
 				&& pBot->bUsesNVG)
 			{
 				FakeClientCommand(pEdict, "nightvision\n");
@@ -6069,11 +6069,11 @@ void BotExecuteTask(bot_t* pBot)
 		if (g_b_DebugTasks || g_b_DebugNavig)
 			ALERT(at_logged, "[DEBUG] BotExecuteTask - Bot %s - debuggoal activated - with node nr %i.\n", pBot->name, g_iDebugGoalIndex);
 
-		if ((iTask != TASK_NORMAL) || (BotGetSafeTask(pBot)->iData != g_iDebugGoalIndex))
+		if (iTask != TASK_NORMAL || BotGetSafeTask(pBot)->iData != g_iDebugGoalIndex)
 		{
 			DeleteSearchNodes(pBot);
-			if ((iTask != TASK_NORMAL) && (iTask != TASK_SHOOTBREAKABLE)
-				&& (iTask != TASK_PICKUPITEM) && (iTask != TASK_SPRAYLOGO))// KWo - 22.10.2011
+			if (iTask != TASK_NORMAL && iTask != TASK_SHOOTBREAKABLE
+				&& iTask != TASK_PICKUPITEM && iTask != TASK_SPRAYLOGO)// KWo - 22.10.2011
 				BotTaskComplete(pBot);
 
 			if (g_b_DebugTasks || g_b_DebugNavig)
@@ -6106,12 +6106,12 @@ void BotExecuteTask(bot_t* pBot)
 
 		// If Bomb planted and it's a Counter
 	 // calculate new path to Bomb Point if he's not already heading for
-		if (g_bBombPlanted && (pBot->bot_team == TEAM_CS_COUNTER) && (g_iDebugGoalIndex == -1))  // KWo - 03.02.2006
+		if (g_bBombPlanted && pBot->bot_team == TEAM_CS_COUNTER && g_iDebugGoalIndex == -1)  // KWo - 03.02.2006
 		{
 			if (BotGetSafeTask(pBot)->iData != -1)
 			{
 				if (!(paths[BotGetSafeTask(pBot)->iData]->flags & W_FL_GOAL)
-					&& ((paths[BotGetSafeTask(pBot)->iData]->origin - g_vecBomb).Length() > 128.0)) // KWo - 16.05.2008
+					&& (paths[BotGetSafeTask(pBot)->iData]->origin - g_vecBomb).Length() > 128.0) // KWo - 16.05.2008
 				{
 					DeleteSearchNodes(pBot);
 					BotGetSafeTask(pBot)->iData = -1;
@@ -6120,14 +6120,14 @@ void BotExecuteTask(bot_t* pBot)
 		}
 
 		// if the bot is about to come to the camp spot, but there is already someone else camping ...
-		if ((pBot->curr_wpt_index == BotGetSafeTask(pBot)->iData) && (BotGetSafeTask(pBot)->iData != -1)) // KWo - 15.06.2008
+		if (pBot->curr_wpt_index == BotGetSafeTask(pBot)->iData && BotGetSafeTask(pBot)->iData != -1) // KWo - 15.06.2008
 		{
 			// Heading Waypoint is a Camp Waypoint
 			if (paths[pBot->curr_wpt_index]->flags & W_FL_CAMP)
 			{
 				// Check if Bot has got a primary weapon and hasn't camped before
-				if (BotHasCampWeapon(pBot) && (pBot->current_weapon.iAmmo1 > 0) && (pBot->fTimeCamping + 10.0 < gpGlobals->time)
-					&& !((pBot->bot_team == TEAM_CS_COUNTER) && g_bBombPlanted)) // KWo - 25.05.2010
+				if (BotHasCampWeapon(pBot) && pBot->current_weapon.iAmmo1 > 0 && pBot->fTimeCamping + 10.0 < gpGlobals->time
+					&& !(pBot->bot_team == TEAM_CS_COUNTER && g_bBombPlanted)) // KWo - 25.05.2010
 				{
 					bCampingAllowed = TRUE;
 
@@ -6152,11 +6152,11 @@ void BotExecuteTask(bot_t* pBot)
 						{
 							if (!(clients[c].iFlags & CLIENT_USED)
 								|| !(clients[c].iFlags & CLIENT_ALIVE)
-								|| (pPlayer == pBot->pEdict))
+								|| pPlayer == pBot->pEdict)
 								continue;
 
-							if (((pPlayer->v.origin - paths[pBot->curr_wpt_index]->origin).Length() < 50.0)
-								&& ((pPlayer->v.velocity).Length2D() < 30.0))
+							if ((pPlayer->v.origin - paths[pBot->curr_wpt_index]->origin).Length() < 50.0
+								&& pPlayer->v.velocity.Length2D() < 30.0)
 								bCampingAllowed = FALSE;
 						}
 					}
@@ -6173,7 +6173,7 @@ void BotExecuteTask(bot_t* pBot)
 		if (BotDoWaypointNav(pBot))
 		{
 			DeleteSearchNodes(pBot);      // KWo - 30.12.2009 moved above checking spraying logo task
-			if (!(pBot->b_bomb_blinking)) // KWo - 26.04.2008
+			if (!pBot->b_bomb_blinking) // KWo - 26.04.2008
 			{
 				pBot->prev_goal_index = -1;
 				pBot->pTasks->iData = -1;
@@ -6181,7 +6181,7 @@ void BotExecuteTask(bot_t* pBot)
 			}
 
 			// Spray Logo sometimes if allowed to do so
-			if (!pBot->bLogoSprayed && (g_b_cv_spray) && (!(pBot->b_bomb_blinking) || !(pEdict->v.weapons & (1 << CS_WEAPON_C4))))  // KWo - 24.08.2006
+			if (!pBot->bLogoSprayed && g_b_cv_spray && (!pBot->b_bomb_blinking || !(pEdict->v.weapons & 1 << CS_WEAPON_C4)))  // KWo - 24.08.2006
 			{
 				if (RANDOM_LONG(1, 100) < 50)
 				{
@@ -6202,8 +6202,8 @@ void BotExecuteTask(bot_t* pBot)
 			if (paths[pBot->curr_wpt_index]->flags & W_FL_CAMP)
 			{
 				// Check if Bot has got a primary weapon and hasn't camped before
-				if (BotHasCampWeapon(pBot) && (pBot->current_weapon.iAmmo1 > 0) && (pBot->fTimeCamping + 10.0 < gpGlobals->time)
-					&& ((pBot->bot_team != TEAM_CS_COUNTER) || (!g_bBombPlanted)) && (!pBot->bIsChickenOrZombie)) // KWo - 18.01.2011
+				if (BotHasCampWeapon(pBot) && pBot->current_weapon.iAmmo1 > 0 && pBot->fTimeCamping + 10.0 < gpGlobals->time
+					&& (pBot->bot_team != TEAM_CS_COUNTER || !g_bBombPlanted) && !pBot->bIsChickenOrZombie) // KWo - 18.01.2011
 				{
 					bool bCampingAllowed = TRUE;
 
@@ -6229,8 +6229,8 @@ void BotExecuteTask(bot_t* pBot)
 							if (pOtherBot == pBot)
 								continue;
 
-							if (!pOtherBot->bDead && (pOtherBot->bot_team == pBot->bot_team)
-								&& (pOtherBot->curr_wpt_index == pBot->curr_wpt_index))
+							if (!pOtherBot->bDead && pOtherBot->bot_team == pBot->bot_team
+								&& pOtherBot->curr_wpt_index == pBot->curr_wpt_index)
 								bCampingAllowed = FALSE;
 						}
 					}
@@ -6258,9 +6258,9 @@ void BotExecuteTask(bot_t* pBot)
 						pBot->iCampDirection = 0;
 
 						// Tell the world we're camping
-						if ((!g_b_cv_ffa) && (g_b_cv_radio) && (RANDOM_LONG(1, 100) < 20)
-							&& (((pBot->bot_team == TEAM_CS_COUNTER) && (g_iAliveCTs > 1))
-								|| ((pBot->bot_team == TEAM_CS_TERRORIST) && (g_iAliveTs > 1)))) // KWo - 06.03.2010
+						if (!g_b_cv_ffa && g_b_cv_radio && RANDOM_LONG(1, 100) < 20
+							&& (pBot->bot_team == TEAM_CS_COUNTER && g_iAliveCTs > 1
+								|| pBot->bot_team == TEAM_CS_TERRORIST && g_iAliveTs > 1)) // KWo - 06.03.2010
 							BotPlayRadioMessage(pBot, RADIO_IMINPOSITION);
 						pBot->bMoveToGoal = FALSE;
 						pBot->bCheckTerrain = FALSE;
@@ -6275,10 +6275,10 @@ void BotExecuteTask(bot_t* pBot)
 				if (g_iMapType & MAP_CS)
 				{
 					// CT Bot has some stupid hossies following ?
-					if (BotHasHostage(pBot) && (pBot->bot_team == TEAM_CS_COUNTER))
+					if (BotHasHostage(pBot) && pBot->bot_team == TEAM_CS_COUNTER)
 					{
 						// and reached a Rescue Point ?
-						if ((paths[pBot->curr_wpt_index]->flags & W_FL_RESCUE))
+						if (paths[pBot->curr_wpt_index]->flags & W_FL_RESCUE)
 						{
 							if (pBot->fTimeHostageRescue == 0.0) // KWo - 27.02.2007
 								pBot->fTimeHostageRescue = gpGlobals->time;
@@ -6288,7 +6288,7 @@ void BotExecuteTask(bot_t* pBot)
 							{
 								if (pBot->pHostages[i] != NULL)  // KWo 16.06.2006
 								{
-									if ((pBot->pHostages[i]->v.takedamage == 0) || (pBot->fTimeHostageRescue + 5.0 < gpGlobals->time)) // KWo - 27.02.2007
+									if (pBot->pHostages[i]->v.takedamage == 0 || pBot->fTimeHostageRescue + 5.0 < gpGlobals->time) // KWo - 27.02.2007
 									{
 										pBot->pHostages[i] = NULL;
 										if (pBot->fTimeHostageRescue + 5.0 > gpGlobals->time)
@@ -6307,9 +6307,9 @@ void BotExecuteTask(bot_t* pBot)
 					if (paths[pBot->curr_wpt_index]->flags & W_FL_GOAL)
 					{
 						// Is it a Terrorist carrying the bomb ?
-						if ((pBot->b_bomb_blinking) && (pBot->bot_team == TEAM_CS_TERRORIST)
-							&& (pBot->f_bot_see_enemy_time + 3.0 < gpGlobals->time)
-							&& (pEdict->v.weapons & (1 << CS_WEAPON_C4)))  // KWo - 25.04.2008
+						if (pBot->b_bomb_blinking && pBot->bot_team == TEAM_CS_TERRORIST
+							&& pBot->f_bot_see_enemy_time + 3.0 < gpGlobals->time
+							&& pEdict->v.weapons & 1 << CS_WEAPON_C4)  // KWo - 25.04.2008
 						{
 							if (pBot->current_weapon.iId != CS_WEAPON_C4)
 								SelectWeaponByName(pBot, "weapon_c4");
@@ -6320,20 +6320,20 @@ void BotExecuteTask(bot_t* pBot)
 								ALERT(at_logged, "[DEBUG] BotExecuteTask - Bot %s should start the task PLANT_BOMB.\n", pBot->name);
 
 							// Tell Teammates to move over here...
-							if ((!g_b_cv_ffa) && (g_b_cv_radio)
-								&& (g_iAliveCTs > 0) && (g_iAliveTs > 1)
-								&& (RANDOM_LONG(1, 100) < 30)) // KWo - 06.03.2010
+							if (!g_b_cv_ffa && g_b_cv_radio
+								&& g_iAliveCTs > 0 && g_iAliveTs > 1
+								&& RANDOM_LONG(1, 100) < 30) // KWo - 06.03.2010
 								BotPlayRadioMessage(pBot, RADIO_NEEDBACKUP);
 						}
 
 						// Counter searching the Bomb ?
-						else if ((pBot->bot_team == TEAM_CS_COUNTER) && g_bBombPlanted)
+						else if (pBot->bot_team == TEAM_CS_COUNTER && g_bBombPlanted)
 						{
 							distance = (int)(pEdict->v.origin - g_vecBomb).Length();
 							if (distance < 150)  // KWo - 05.09.2008
 							{
 								iTempWpIndex1 = WaypointFindNearestToMove(pEdict, g_vecBomb);
-								if ((iTempWpIndex1 >= 0) && (iTempWpIndex1 < g_iNumWaypoints) && (iTempWpIndex1 != pBot->curr_wpt_index))
+								if (iTempWpIndex1 >= 0 && iTempWpIndex1 < g_iNumWaypoints && iTempWpIndex1 != pBot->curr_wpt_index)
 								{
 									DeleteSearchNodes(pBot);
 									pBot->chosengoal_index = iTempWpIndex1;
@@ -6344,8 +6344,8 @@ void BotExecuteTask(bot_t* pBot)
 							else if (distance > 128) // KWo - 25.06.2008
 							{
 								CTBombPointClear(pBot->curr_wpt_index);
-								if ((!g_b_cv_ffa) && (g_b_cv_radio)
-									&& (g_iAliveCTs > 1) && (RANDOM_LONG(1, 100) < 20)) // KWo - 06.03.2010
+								if (!g_b_cv_ffa && g_b_cv_radio
+									&& g_iAliveCTs > 1 && RANDOM_LONG(1, 100) < 20) // KWo - 06.03.2010
 									BotPlayRadioMessage(pBot, RADIO_SECTORCLEAR);
 							}
 						}
@@ -6373,12 +6373,12 @@ void BotExecuteTask(bot_t* pBot)
 			pBot->prev_time = gpGlobals->time + 0.5;     // KWo - 25.02.2008
 			pBot->fNoCollTime = gpGlobals->time + 1.0;   // KWo - 02.01.2010
 
-			if ((!g_bPathWasCalculated) && ((g_i_botthink_index == g_iFrameCounter) || (pBot->f_spawn_time + 10.0 < gpGlobals->time))) // KWo - 18.02.2008
+			if (!g_bPathWasCalculated && (g_i_botthink_index == g_iFrameCounter || pBot->f_spawn_time + 10.0 < gpGlobals->time)) // KWo - 18.02.2008
 			{
 				DeleteSearchNodes(pBot);
 
 				// Did we already decide about a goal before ?
-				if ((BotGetSafeTask(pBot)->iData != -1) && (!(pEdict->v.weapons & (1 << CS_WEAPON_C4))))
+				if (BotGetSafeTask(pBot)->iData != -1 && !(pEdict->v.weapons & 1 << CS_WEAPON_C4))
 					iDestIndex = BotGetSafeTask(pBot)->iData;
 				else
 				{
@@ -6408,20 +6408,20 @@ void BotExecuteTask(bot_t* pBot)
 			{
 				pBot->iAimFlags &= ~AIM_DEST;  // KWo - 18.02.2008
 				if (!(pEdict->v.flags & FL_DUCKING)
-					&& (pBot->fMinSpeed != 60.0))
+					&& pBot->fMinSpeed != 60.0)
 					pBot->f_move_speed = 60.0;
 			}
 		}
-		else if ((g_iMapType & MAP_CS) && (pBot->bot_team == TEAM_CS_COUNTER)
-			&& (pBot->chosengoal_index >= 0) && (pBot->chosengoal_index < g_iNumWaypoints)
-			&& (g_i_botthink_index == g_iFrameCounter)) // KWo - 18.02.2008
+		else if (g_iMapType & MAP_CS && pBot->bot_team == TEAM_CS_COUNTER
+			&& pBot->chosengoal_index >= 0 && pBot->chosengoal_index < g_iNumWaypoints
+			&& g_i_botthink_index == g_iFrameCounter) // KWo - 18.02.2008
 		{
 			bHostAlive = false;
 			for (i = 0; i < g_iNumHostages; i++)
 			{
 				if (!FNullEnt(pBot->pHostages[i]))
 				{
-					if ((pBot->pHostages[i]->v.health > 0) && ((pBot->pHostages[i]->v.origin - pEdict->v.origin).Length() < 600))
+					if (pBot->pHostages[i]->v.health > 0 && (pBot->pHostages[i]->v.origin - pEdict->v.origin).Length() < 600)
 					{
 						bHostAlive = true;
 						break;
@@ -6473,9 +6473,9 @@ void BotExecuteTask(bot_t* pBot)
 				}
 			}
 		}
-		else if ((g_iMapType & MAP_DE) && (pBot->bot_team == TEAM_CS_TERRORIST)
-			&& (pBot->chosengoal_index >= 0) && (pBot->chosengoal_index < g_iNumWaypoints)
-			&& (g_i_botthink_index == g_iFrameCounter) && (pEdict->v.weapons & (1 << CS_WEAPON_C4))) // KWo - 18.02.2008
+		else if (g_iMapType & MAP_DE && pBot->bot_team == TEAM_CS_TERRORIST
+			&& pBot->chosengoal_index >= 0 && pBot->chosengoal_index < g_iNumWaypoints
+			&& g_i_botthink_index == g_iFrameCounter && pEdict->v.weapons & 1 << CS_WEAPON_C4) // KWo - 18.02.2008
 		{
 			// checks once a while if any bomb site isn't so close so we can just plant the bomb instead go somewhere else...
 
@@ -6490,7 +6490,7 @@ void BotExecuteTask(bot_t* pBot)
 			{
 				iGoalIndex = g_rgiGoalWaypoints[i];
 				distance = (int)(paths[iGoalIndex]->origin - pEdict->v.origin).Length();
-				if ((distance < min_distance) && (!IsGroupOfEnemies(pBot, paths[iGoalIndex]->origin))) // KWo - 14.04.2008
+				if (distance < min_distance && !IsGroupOfEnemies(pBot, paths[iGoalIndex]->origin)) // KWo - 14.04.2008
 				{
 					if (g_b_DebugTasks || g_b_DebugNavig)
 						ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_NORMAL - Bot %s is not seeing any group of enemies near the goal WP %d.\n",
@@ -6507,7 +6507,7 @@ void BotExecuteTask(bot_t* pBot)
 			{
 				iGoalIndex = iGoalChoices[RANDOM_LONG(0, index2 - 1)];
 				if (!(paths[pBot->chosengoal_index]->flags & W_FL_GOAL)
-					|| ((paths[pBot->chosengoal_index]->origin - paths[iGoalIndex]->origin).Length() > 800.0))
+					|| (paths[pBot->chosengoal_index]->origin - paths[iGoalIndex]->origin).Length() > 800.0)
 				{
 					if (g_b_DebugTasks || g_b_DebugNavig)
 						ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_NORMAL - Bot %s chose the closest bombsite - previous goal %d.\n",
@@ -6556,14 +6556,14 @@ void BotExecuteTask(bot_t* pBot)
 				}
 			}
 		}
-		else if ((g_iMapType & MAP_DE) && (pBot->bot_team == TEAM_CS_COUNTER)
-			&& (pBot->chosengoal_index >= 0) && (pBot->chosengoal_index < g_iNumWaypoints)
-			&& (g_bBombPlanted) && ((pEdict->v.origin - g_vecBomb).Length() < BOMBMAXHEARDISTANCE)
-			&& (g_i_botthink_index == g_iFrameCounter)) // KWo - 16.05.2008
+		else if (g_iMapType & MAP_DE && pBot->bot_team == TEAM_CS_COUNTER
+			&& pBot->chosengoal_index >= 0 && pBot->chosengoal_index < g_iNumWaypoints
+			&& g_bBombPlanted && (pEdict->v.origin - g_vecBomb).Length() < BOMBMAXHEARDISTANCE
+			&& g_i_botthink_index == g_iFrameCounter) // KWo - 16.05.2008
 		{
 			// checks once a while if the bomb position isn't so close so we can see it and go there instead to go somewhere else...
-			if (((paths[pBot->chosengoal_index]->origin - g_vecBomb).Length() > 128.0)
-				|| (fabs(paths[pBot->chosengoal_index]->origin.z - g_vecBomb.z) > 40.0)) // KWo - 05.09.2008
+			if ((paths[pBot->chosengoal_index]->origin - g_vecBomb).Length() > 128.0
+				|| fabs(paths[pBot->chosengoal_index]->origin.z - g_vecBomb.z) > 40.0) // KWo - 05.09.2008
 			{
 				TRACE_LINE(GetGunPosition(pEdict), g_vecBomb, ignore_monsters, pEdict, &tr);
 				if (tr.flFraction >= 0.8)
@@ -6578,7 +6578,7 @@ void BotExecuteTask(bot_t* pBot)
 					{
 						iGoalIndex = g_rgiGoalWaypoints[i];
 						distance = (int)(paths[iGoalIndex]->origin - g_vecBomb).Length();
-						if ((distance < min_distance) && (fabs(paths[iGoalIndex]->origin.z - g_vecBomb.z) < 40.0)) // KWo - 14.08.2008
+						if (distance < min_distance && fabs(paths[iGoalIndex]->origin.z - g_vecBomb.z) < 40.0) // KWo - 14.08.2008
 						{
 							min_index = i;
 							min_distance = distance;
@@ -6605,13 +6605,13 @@ void BotExecuteTask(bot_t* pBot)
 		else
 		{
 			if (!(pEdict->v.flags & FL_DUCKING)
-				&& (pBot->fMinSpeed != pEdict->v.maxspeed))
+				&& pBot->fMinSpeed != pEdict->v.maxspeed)
 			{
 				pBot->f_move_speed = pBot->fMinSpeed;
 			}
 		}
-		if ((!FNullEnt(pBot->pBotEnemy)) && BotUsesSniper(pBot)
-			&& (pBot->f_shoot_time - 0.4 <= gpGlobals->time) && (pBot->iStates & STATE_SEEINGENEMY)) // KWo - 22.10.2006
+		if (!FNullEnt(pBot->pBotEnemy) && BotUsesSniper(pBot)
+			&& pBot->f_shoot_time - 0.4 <= gpGlobals->time && pBot->iStates & STATE_SEEINGENEMY) // KWo - 22.10.2006
 		{
 			flDot1 = GetShootingConeDeviation(pEdict, &pBot->vecEnemy);
 			if (flDot1 > 0.95)
@@ -6642,7 +6642,7 @@ void BotExecuteTask(bot_t* pBot)
 		}
 
 		// Bot didn't spray this round ?
-		if (!pBot->bLogoSprayed && (BotGetSafeTask(pBot)->fTime > gpGlobals->time))
+		if (!pBot->bLogoSprayed && BotGetSafeTask(pBot)->fTime > gpGlobals->time)
 		{
 			v_angles = pEdict->v.v_angle;
 			MAKE_VECTORS(v_angles);
@@ -6690,8 +6690,8 @@ void BotExecuteTask(bot_t* pBot)
 			ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_ENEMYHUNT - Bot %s, time = %.2f.\n", pBot->name, gpGlobals->time);
 
 		// seen the new enemy
-		if ((!FNullEnt(pBot->pHuntEnemy) && (pBot->f_bot_see_enemy_time + 0.5 > gpGlobals->time)
-			|| FNullEnt(pBot->pHuntEnemy)) && (pBot->current_weapon.iId != CS_WEAPON_KNIFE))
+		if ((!FNullEnt(pBot->pHuntEnemy) && pBot->f_bot_see_enemy_time + 0.5 > gpGlobals->time
+			|| FNullEnt(pBot->pHuntEnemy)) && pBot->current_weapon.iId != CS_WEAPON_KNIFE)
 		{
 			// Forget about it...
 			if (BotGetSafeTask(pBot)->iTask == TASK_ENEMYHUNT) // KWo - 02.09.2006 - against BotRemoveCertainTask
@@ -6729,7 +6729,7 @@ void BotExecuteTask(bot_t* pBot)
 			bNewPosition = false; // KWo 16.06.2008
 			iGoalIndex = BotGetSafeTask(pBot)->iData; // KWo 16.06.2008
 
-			if ((iGoalIndex >= 0) && (iGoalIndex < g_iNumWaypoints) && IsAlive(pBot->pHuntEnemy)) // KWo - 08.04.2010
+			if (iGoalIndex >= 0 && iGoalIndex < g_iNumWaypoints && IsAlive(pBot->pHuntEnemy)) // KWo - 08.04.2010
 			{
 				if ((paths[iGoalIndex]->origin - pBot->vecHuntEnemyOrigin).Length() > 300.0)
 				{
@@ -6744,8 +6744,8 @@ void BotExecuteTask(bot_t* pBot)
 				}
 			}
 
-			if ((!IsAlive(pBot->pHuntEnemy)) || ((pEdict->v.origin - pBot->vecHuntEnemyOrigin).Length() < 114.0)
-				|| (bNewPosition)) // KWo - 16.06.2008
+			if (!IsAlive(pBot->pHuntEnemy) || (pEdict->v.origin - pBot->vecHuntEnemyOrigin).Length() < 114.0
+				|| bNewPosition) // KWo - 16.06.2008
 			{
 				if (BotGetSafeTask(pBot)->iTask == TASK_ENEMYHUNT) // KWo - 02.09.2006 - against BotRemoveCertainTask
 				{
@@ -6759,13 +6759,13 @@ void BotExecuteTask(bot_t* pBot)
 		}
 
 		// Do we need to calculate a new Path ?
-		if ((pBot->pWaypointNodes == NULL) && (!bEndTask) && (g_iDebugGoalIndex == -1)
-			/* && FNullEnt (pBot->pBotEnemy) */ && !FNullEnt(pBot->pHuntEnemy) && (pBot->vecHuntEnemyOrigin != g_vecZero))
+		if (pBot->pWaypointNodes == NULL && !bEndTask && g_iDebugGoalIndex == -1
+			/* && FNullEnt (pBot->pBotEnemy) */ && !FNullEnt(pBot->pHuntEnemy) && pBot->vecHuntEnemyOrigin != g_vecZero)
 		{
 			DeleteSearchNodes(pBot);
 			iTempDestIndex = BotGetSafeTask(pBot)->iData;
 			// Is there a remembered Index ?
-			if ((iTempDestIndex >= 0) && (iTempDestIndex < g_iNumWaypoints))
+			if (iTempDestIndex >= 0 && iTempDestIndex < g_iNumWaypoints)
 				iDestIndex = iTempDestIndex;
 			// No. We need to find a new one
 			else
@@ -6777,7 +6777,7 @@ void BotExecuteTask(bot_t* pBot)
 			pBot->prev_goal_index = iDestIndex;
 			BotGetSafeTask(pBot)->iData = iDestIndex;
 			pBot->chosengoal_index = iDestIndex;  // KWo - 21.04.2006
-			if ((pBot->curr_wpt_index < 0) || (pBot->curr_wpt_index >= g_iNumWaypoints))
+			if (pBot->curr_wpt_index < 0 || pBot->curr_wpt_index >= g_iNumWaypoints)
 			{
 				GetValidWaypoint(pBot);
 
@@ -6798,17 +6798,17 @@ void BotExecuteTask(bot_t* pBot)
 		}
 
 		// Bots skill higher than 60 ?
-		if ((pBot->bot_skill > 60) && (!FNullEnt(pBot->pHuntEnemy)) && (!bEndTask))
+		if (pBot->bot_skill > 60 && !FNullEnt(pBot->pHuntEnemy) && !bEndTask)
 		{
-			if ((pBot->bot_skill > 80) && (pBot->bIsChickenOrZombie))
+			if (pBot->bot_skill > 80 && pBot->bIsChickenOrZombie)
 			{
-				if ((pBot->f_jumptime + 5.0 < gpGlobals->time) && (pEdict->v.flags & FL_ONGROUND)
-					&& ((pEdict->v.origin - pBot->vecHuntEnemyOrigin).Length() < 2 * MIN_BURST_DISTANCE)
-					&& (pBot->f_ducktime < gpGlobals->time))
+				if (pBot->f_jumptime + 5.0 < gpGlobals->time && pEdict->v.flags & FL_ONGROUND
+					&& (pEdict->v.origin - pBot->vecHuntEnemyOrigin).Length() < 2 * MIN_BURST_DISTANCE
+					&& pBot->f_ducktime < gpGlobals->time)
 				{
 					fEnemyDot = GetShootingConeDeviation(pBot->pHuntEnemy, &pEdict->v.origin);
-					if ((RANDOM_LONG(1, 1000) < 200) && (pEdict->v.velocity.Length2D() > 100)
-						&& (fEnemyDot > 0.95) && (pBot->iStates & STATE_SEEINGENEMY))
+					if (RANDOM_LONG(1, 1000) < 200 && pEdict->v.velocity.Length2D() > 100
+						&& fEnemyDot > 0.95 && pBot->iStates & STATE_SEEINGENEMY)
 					{
 						pEdict->v.button |= IN_JUMP;
 						pBot->f_jumptime = gpGlobals->time + 1.0;
@@ -6817,13 +6817,13 @@ void BotExecuteTask(bot_t* pBot)
 			}
 
 			// Then make him move slow if near Enemy
-			if (!(pBot->curr_travel_flags & C_FL_JUMP) && (pBot->f_jumptime + 2.0 < gpGlobals->time))
+			if (!(pBot->curr_travel_flags & C_FL_JUMP) && pBot->f_jumptime + 2.0 < gpGlobals->time)
 			{
-				if ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints))
+				if (pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints)
 				{
-					if ((paths[pBot->curr_wpt_index]->Radius < 32) && !pBot->bOnLadder
-						&& !pBot->bInWater && (pBot->f_bot_see_enemy_time + 4.f > gpGlobals->time)
-						&& (pBot->bot_skill < 80))
+					if (paths[pBot->curr_wpt_index]->Radius < 32 && !pBot->bOnLadder
+						&& !pBot->bInWater && pBot->f_bot_see_enemy_time + 4.f > gpGlobals->time
+						&& pBot->bot_skill < 80)
 					{
 						pEdict->v.button |= IN_DUCK;
 						pBot->f_ducktime = gpGlobals->time + 1.0;
@@ -6832,7 +6832,7 @@ void BotExecuteTask(bot_t* pBot)
 
 				v_diff = pBot->vecHuntEnemyOrigin - pEdict->v.origin;
 
-				if ((v_diff.Length() < 512.f) && !(pEdict->v.flags & FL_DUCKING))
+				if (v_diff.Length() < 512.f && !(pEdict->v.flags & FL_DUCKING))
 					pBot->f_move_speed = pEdict->v.maxspeed * 0.5;
 			}
 		}
@@ -6858,7 +6858,7 @@ void BotExecuteTask(bot_t* pBot)
 				ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_SEEKCOVER - Bot %s is reloading a weapon.\n", pBot->name);
 		}
 
-		if ((FNullEnt(pBot->pLastEnemy)) || (pBot->vecLastEnemyOrigin == g_vecZero)) // KWo - 12.04.2010
+		if (FNullEnt(pBot->pLastEnemy) || pBot->vecLastEnemyOrigin == g_vecZero) // KWo - 12.04.2010
 		{
 			if (BotGetSafeTask(pBot)->iTask == TASK_SEEKCOVER) // KWo - 02.09.2006 - against BotRemoveCertainTask
 			{
@@ -6946,13 +6946,13 @@ void BotExecuteTask(bot_t* pBot)
 						else
 							pBot->iCampButtons = 0;
 
-						bottask_t TempTask = { NULL, NULL, TASK_CAMP, TASKPRI_CAMP, -1, gpGlobals->time + RANDOM_FLOAT(15.0, ((20.0 > g_f_cv_maxcamptime) ? g_f_cv_maxcamptime : 20)), FALSE }; // KWo - 18.01.2008
+						bottask_t TempTask = { NULL, NULL, TASK_CAMP, TASKPRI_CAMP, -1, gpGlobals->time + RANDOM_FLOAT(15.0, 20.0 > g_f_cv_maxcamptime ? g_f_cv_maxcamptime : 20), FALSE }; // KWo - 18.01.2008
 						BotPushTask(pBot, &TempTask); // KWo - 18.01.2008
 					}
 					else
 					{
 						// Choose a crouch or stand pos
-						if ((RANDOM_LONG(1, 100) < 30) && (paths[pBot->curr_wpt_index]->Radius < 32))
+						if (RANDOM_LONG(1, 100) < 30 && paths[pBot->curr_wpt_index]->Radius < 32)
 							pBot->iCampButtons = IN_DUCK;
 						else
 							pBot->iCampButtons = 0;
@@ -7003,8 +7003,8 @@ void BotExecuteTask(bot_t* pBot)
 				}
 			}
 
-			if ((!FNullEnt(pBot->pBotEnemy)) && BotUsesSniper(pBot) && !(pBot->bIsReloading)
-				&& (pBot->f_shoot_time - 0.4 <= gpGlobals->time) && (pBot->iStates & STATE_SEEINGENEMY)) // KWo - 18.02.2008
+			if (!FNullEnt(pBot->pBotEnemy) && BotUsesSniper(pBot) && !pBot->bIsReloading
+				&& pBot->f_shoot_time - 0.4 <= gpGlobals->time && pBot->iStates & STATE_SEEINGENEMY) // KWo - 18.02.2008
 			{
 				flDot1 = GetShootingConeDeviation(pEdict, &pBot->vecEnemy);
 				if (flDot1 > 0.95)
@@ -7030,13 +7030,13 @@ void BotExecuteTask(bot_t* pBot)
 		pBot->bCheckTerrain = TRUE; // KWo - 24.02.2008
 		pBot->bUsingGrenade = FALSE;
 
-		if (!FNullEnt(pBot->pBotEnemy) && (pBot->f_bot_see_enemy_time + 1.0 > gpGlobals->time))
+		if (!FNullEnt(pBot->pBotEnemy) && pBot->f_bot_see_enemy_time + 1.0 > gpGlobals->time)
 		{
 			DeleteSearchNodes(pBot);
 			if (pBot->cCollisionState == COLLISION_NOTDECIDED) // KWo - 20.05.2008
 			{
 				BotDoAttackMovement(pBot);
-				if ((pBot->current_weapon.iId == CS_WEAPON_KNIFE) && (pBot->vecLastEnemyOrigin != g_vecZero)) // KWo - 20.05.2008
+				if (pBot->current_weapon.iId == CS_WEAPON_KNIFE && pBot->vecLastEnemyOrigin != g_vecZero) // KWo - 20.05.2008
 					pBot->dest_origin = pBot->vecLastEnemyOrigin;
 				if (pBot->byFightStyle == 1)              // KWo - 25.02.2008
 				{
@@ -7079,7 +7079,7 @@ void BotExecuteTask(bot_t* pBot)
 		pBot->fNoCollTime = gpGlobals->time + 2.5;   // KWo - 02.01.2010
 
 		// Is Bot blinded and above average skill ?
-		if ((pBot->f_view_distance < 500.0) && (pBot->bot_skill > 60))
+		if (pBot->f_view_distance < 500.0 && pBot->bot_skill > 60)
 		{
 			// Go mad !
 			pBot->f_move_speed = -fabs((pBot->f_view_distance - 500.0) * 0.5);
@@ -7100,9 +7100,9 @@ void BotExecuteTask(bot_t* pBot)
 		}
 
 		// Stop camping if Time over or gets Hurt by something else than bullets
-		if (((BotGetSafeTask(pBot)->fTime < gpGlobals->time) || (pBot->iLastDamageType > 0)
-			|| ((g_iDebugGoalIndex != -1) && (BotGetSafeTask(pBot)->fDesire != TASKPRI_DEFUSEBOMB)))
-			&& (BotGetSafeTask(pBot)->iTask == TASK_PAUSE)) // KWo - 02.09.2006 - against BotRemoveCertainTask
+		if ((BotGetSafeTask(pBot)->fTime < gpGlobals->time || pBot->iLastDamageType > 0
+			|| g_iDebugGoalIndex != -1 && BotGetSafeTask(pBot)->fDesire != TASKPRI_DEFUSEBOMB)
+			&& BotGetSafeTask(pBot)->iTask == TASK_PAUSE) // KWo - 02.09.2006 - against BotRemoveCertainTask
 			BotTaskComplete(pBot);
 		break;
 	}
@@ -7124,8 +7124,8 @@ void BotExecuteTask(bot_t* pBot)
 		{
 			if (g_i_botthink_index == g_iFrameCounter)  // KWo - 13.08.2008
 			{
-				if ((pBot->bot_skill > 60) && (pBot->vecLastEnemyOrigin != g_vecZero)
-					&& (RANDOM_LONG(0, 100) > 50)) // KWo - 31.03.2006
+				if (pBot->bot_skill > 60 && pBot->vecLastEnemyOrigin != g_vecZero
+					&& RANDOM_LONG(0, 100) > 50) // KWo - 31.03.2006
 					pBot->bShootLastPosition = TRUE;
 				else
 					pBot->bShootLastPosition = FALSE;
@@ -7136,7 +7136,7 @@ void BotExecuteTask(bot_t* pBot)
 		// Psycho
 		case 1:
 		{
-			if ((g_i_botthink_index == g_iFrameCounter) && (pBot->vecLastEnemyOrigin != g_vecZero))  // KWo - 13.08.2008
+			if (g_i_botthink_index == g_iFrameCounter && pBot->vecLastEnemyOrigin != g_vecZero)  // KWo - 13.08.2008
 			{
 				if (RANDOM_LONG(0, 100) > 30)
 				{
@@ -7170,7 +7170,7 @@ void BotExecuteTask(bot_t* pBot)
 		pBot->vecLookAt = GetGunPosition(pEdict) + gpGlobals->v_forward * 500;
 
 		// If Bot remembers last Enemy Position
-		if ((pBot->bShootLastPosition) && (pBot->vecLastEnemyOrigin != g_vecZero))
+		if (pBot->bShootLastPosition && pBot->vecLastEnemyOrigin != g_vecZero)
 		{
 			// Face it and shoot
 			pBot->vecLookAt = pBot->vecLastEnemyOrigin;
@@ -7186,7 +7186,7 @@ void BotExecuteTask(bot_t* pBot)
 		pBot->f_move_speed = pBot->f_blindmovespeed_forward;
 		pBot->f_sidemove_speed = pBot->f_blindmovespeed_side;
 
-		if ((pBot->f_blind_time < gpGlobals->time) && (BotGetSafeTask(pBot)->iTask == TASK_BLINDED)) // KWo - 02.09.2006 - against BotRemoveCertainTask
+		if (pBot->f_blind_time < gpGlobals->time && BotGetSafeTask(pBot)->iTask == TASK_BLINDED) // KWo - 02.09.2006 - against BotRemoveCertainTask
 		{
 			pBot->bShootLastPosition = FALSE;
 			pBot->bMadShoot = FALSE;
@@ -7217,22 +7217,22 @@ void BotExecuteTask(bot_t* pBot)
 		if (g_b_DebugTasks)
 			ALERT(at_logged, "[DEBUG] ExecuteTask - bot %s is camping; time = %.2f.\n", pBot->name, gpGlobals->time);
 
-		if ((BotHasPrimaryWeapon(pBot)) && (!WeaponIsPrimaryGun(pBot->current_weapon.iId))) // KWo - 27.02.2007
+		if (BotHasPrimaryWeapon(pBot) && !WeaponIsPrimaryGun(pBot->current_weapon.iId)) // KWo - 27.02.2007
 			BotSelectBestWeapon(pBot);
-		else if ((!BotHasPrimaryWeapon(pBot) || (pBot->current_weapon.iAmmo1 == 0) || (pBot->bIsChickenOrZombie))
-			&& (!pBot->bDefendedBomb) && (BotGetSafeTask(pBot)->iTask == TASK_CAMP)) // KWo - 18.01.2011
+		else if ((!BotHasPrimaryWeapon(pBot) || pBot->current_weapon.iAmmo1 == 0 || pBot->bIsChickenOrZombie)
+			&& !pBot->bDefendedBomb && BotGetSafeTask(pBot)->iTask == TASK_CAMP) // KWo - 18.01.2011
 		{
 			BotTaskComplete(pBot);
 			break;
 		}
 
-		if ((pBot->fNextCampDirectionTime + 15.0 < gpGlobals->time)
-			&& (pBot->bIsLeader) && (g_b_cv_radio)) // KWo - 13.04.2010
+		if (pBot->fNextCampDirectionTime + 15.0 < gpGlobals->time
+			&& pBot->bIsLeader && g_b_cv_radio) // KWo - 13.04.2010
 		{
 			for (i = 0; i < gpGlobals->maxClients; i++)
 			{
-				if (!bots[i].is_used || bots[i].bDead || (i == g_i_botthink_index)
-					|| (bots[i].bot_team != pBot->bot_team) || (bots[i].pBotUser == NULL))
+				if (!bots[i].is_used || bots[i].bDead || i == g_i_botthink_index
+					|| bots[i].bot_team != pBot->bot_team || bots[i].pBotUser == NULL)
 					continue;
 				if (bots[i].pBotUser == pEdict)
 				{
@@ -7274,17 +7274,17 @@ void BotExecuteTask(bot_t* pBot)
 				// KWo - 17.02.2008 first try to find the most danger visible WP for this position
 				if (pBot->bot_team == TEAM_CS_TERRORIST)
 				{
-					iDangerWpIndex = (pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + pBot->curr_wpt_index)->iTeam0_danger_index;
-					if ((iDangerWpIndex >= 0) && (iDangerWpIndex < g_iNumWaypoints))
-						iDangerMax = (pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + iDangerWpIndex)->uTeam0Damage;
+					iDangerWpIndex = (pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + pBot->curr_wpt_index)->iTeam0_danger_index;
+					if (iDangerWpIndex >= 0 && iDangerWpIndex < g_iNumWaypoints)
+						iDangerMax = (pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + iDangerWpIndex)->uTeam0Damage;
 				}
 				else
 				{
-					iDangerWpIndex = (pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + pBot->curr_wpt_index)->iTeam1_danger_index;
-					if ((iDangerWpIndex >= 0) && (iDangerWpIndex < g_iNumWaypoints))
-						iDangerMax = (pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + iDangerWpIndex)->uTeam1Damage;
+					iDangerWpIndex = (pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + pBot->curr_wpt_index)->iTeam1_danger_index;
+					if (iDangerWpIndex >= 0 && iDangerWpIndex < g_iNumWaypoints)
+						iDangerMax = (pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + iDangerWpIndex)->uTeam1Damage;
 				}
-				if ((iDangerWpIndex >= 0) && (iDangerWpIndex < g_iNumWaypoints))
+				if (iDangerWpIndex >= 0 && iDangerWpIndex < g_iNumWaypoints)
 				{
 					if (!WaypointIsVisible(pBot->curr_wpt_index, iDangerWpIndex))
 					{
@@ -7304,17 +7304,17 @@ void BotExecuteTask(bot_t* pBot)
 
 					if (pBot->bot_team == TEAM_CS_TERRORIST)
 					{
-						iTempWpIndex1 = (pBotExperienceData + (iTempWpIndex2 * g_iNumWaypoints) + iTempWpIndex2)->iTeam0_danger_index;
-						if ((iTempWpIndex1 >= 0) && (iTempWpIndex1 < g_iNumWaypoints))
-							iTempDanger = (pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + iTempWpIndex1)->uTeam0Damage;
+						iTempWpIndex1 = (pBotExperienceData + iTempWpIndex2 * g_iNumWaypoints + iTempWpIndex2)->iTeam0_danger_index;
+						if (iTempWpIndex1 >= 0 && iTempWpIndex1 < g_iNumWaypoints)
+							iTempDanger = (pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + iTempWpIndex1)->uTeam0Damage;
 					}
 					else
 					{
-						iTempWpIndex1 = (pBotExperienceData + (iTempWpIndex2 * g_iNumWaypoints) + iTempWpIndex2)->iTeam1_danger_index;
-						if ((iTempWpIndex1 >= 0) && (iTempWpIndex1 < g_iNumWaypoints))
-							iTempDanger = (pBotExperienceData + (pBot->curr_wpt_index * g_iNumWaypoints) + iTempWpIndex1)->uTeam1Damage;
+						iTempWpIndex1 = (pBotExperienceData + iTempWpIndex2 * g_iNumWaypoints + iTempWpIndex2)->iTeam1_danger_index;
+						if (iTempWpIndex1 >= 0 && iTempWpIndex1 < g_iNumWaypoints)
+							iTempDanger = (pBotExperienceData + pBot->curr_wpt_index * g_iNumWaypoints + iTempWpIndex1)->uTeam1Damage;
 					}
-					if ((iTempWpIndex1 >= 0) && (iTempWpIndex1 < g_iNumWaypoints))
+					if (iTempWpIndex1 >= 0 && iTempWpIndex1 < g_iNumWaypoints)
 					{
 						if (!WaypointIsVisible(pBot->curr_wpt_index, iTempWpIndex1))
 						{
@@ -7328,18 +7328,18 @@ void BotExecuteTask(bot_t* pBot)
 
 				iWpIndex = iDangerWpIndex;
 				iLoopIndex = 0;        // KWo - 20.07.2007
-				while ((iDangerWpIndex < 0) && (iLoopIndex < g_iNumWaypoints))  // KWo - 17.02.2008
+				while (iDangerWpIndex < 0 && iLoopIndex < g_iNumWaypoints)  // KWo - 17.02.2008
 				{
 					iWpIndex = RANDOM_LONG(0, g_iNumWaypoints - 1); // KWo - 20.07.2007
 					distance = (int)(paths[iWpIndex]->origin - pEdict->v.origin).Length();
 
-					if ((distance > 200) && (distance < 800) && WaypointIsVisible(pBot->curr_wpt_index, iWpIndex)
-						&& (pBot->curr_wpt_index != iWpIndex)) // KWo - 13.10.2011 - should work faster (no need a lot of tracelines)
+					if (distance > 200 && distance < 800 && WaypointIsVisible(pBot->curr_wpt_index, iWpIndex)
+						&& pBot->curr_wpt_index != iWpIndex) // KWo - 13.10.2011 - should work faster (no need a lot of tracelines)
 						break;
 					iLoopIndex++;
 				}
 
-				if ((iWpIndex < g_iNumWaypoints) && (iWpIndex >= 0)) // KWo - 17.02.2008
+				if (iWpIndex < g_iNumWaypoints && iWpIndex >= 0) // KWo - 17.02.2008
 				{
 					v_dest = UTIL_VecToAngles(paths[iWpIndex]->origin - pEdict->v.origin);
 					v_dest.x = -v_dest.x; // KWo - 17.02.2008
@@ -7401,8 +7401,8 @@ void BotExecuteTask(bot_t* pBot)
 			pBot->f_ducktime = gpGlobals->time + 1.0;
 
 		// Stop camping if Time over or gets Hurt by something else than bullets
-		if (((BotGetSafeTask(pBot)->fTime < gpGlobals->time) || (pBot->iLastDamageType > 0) || (g_iDebugGoalIndex != -1)) // KWo - 18.07.2006
-			&& (BotGetSafeTask(pBot)->iTask == TASK_CAMP)) // KWo - 02.09.2006 - against BotRemoveCertainTask
+		if ((BotGetSafeTask(pBot)->fTime < gpGlobals->time || pBot->iLastDamageType > 0 || g_iDebugGoalIndex != -1) // KWo - 18.07.2006
+			&& BotGetSafeTask(pBot)->iTask == TASK_CAMP) // KWo - 02.09.2006 - against BotRemoveCertainTask
 		{
 			pBot->iCampButtons = 0; // KWo - 17.02.2008
 			BotTaskComplete(pBot);
@@ -7464,10 +7464,10 @@ void BotExecuteTask(bot_t* pBot)
 		pBot->f_wpt_timeset = gpGlobals->time;
 
 		// Stop hiding if Time over or gets Hurt by something else than bullets
-		if (((BotGetSafeTask(pBot)->fTime < gpGlobals->time) || (pBot->iLastDamageType > 0)
-			|| ((pBot->current_weapon.iId != CS_WEAPON_KNIFE) && (!pBot->bIsReloading) && (pEdict->v.health > 35))
-			|| (pBot->vecLastEnemyOrigin == g_vecZero))
-			&& (BotGetSafeTask(pBot)->iTask == TASK_HIDE)) // KWo - 09.04.2010
+		if ((BotGetSafeTask(pBot)->fTime < gpGlobals->time || pBot->iLastDamageType > 0
+			|| pBot->current_weapon.iId != CS_WEAPON_KNIFE && !pBot->bIsReloading && pEdict->v.health > 35
+			|| pBot->vecLastEnemyOrigin == g_vecZero)
+			&& BotGetSafeTask(pBot)->iTask == TASK_HIDE) // KWo - 09.04.2010
 		{
 			BotTaskComplete(pBot);
 			pBot->iCampButtons = 0; // KWo - 17.02.2008
@@ -7507,7 +7507,7 @@ void BotExecuteTask(bot_t* pBot)
 				 }
 		*/
 		// Reached destination ?
-		if (BotDoWaypointNav(pBot) || ((g_iDebugGoalIndex != -1) && (fDesire != TASKPRI_PLANTBOMB)))
+		if (BotDoWaypointNav(pBot) || g_iDebugGoalIndex != -1 && fDesire != TASKPRI_PLANTBOMB)
 		{
 			// We're done
 			if (BotGetSafeTask(pBot)->iTask == TASK_MOVETOPOSITION) // KWo - 02.09.2006 - against BotRemoveCertainTask
@@ -7543,11 +7543,11 @@ void BotExecuteTask(bot_t* pBot)
 			pBot->prev_time = gpGlobals->time + 0.5; // KWo - 25.02.2008
 			pBot->fNoCollTime = gpGlobals->time + 1.0;   // KWo - 02.01.2010
 
-			if ((!g_bPathWasCalculated) && (g_i_botthink_index == g_iFrameCounter) || (pBot->f_spawn_time + 10.0 < gpGlobals->time)) // KWo - 18.02.2008
+			if (!g_bPathWasCalculated && g_i_botthink_index == g_iFrameCounter || pBot->f_spawn_time + 10.0 < gpGlobals->time) // KWo - 18.02.2008
 			{
 				DeleteSearchNodes(pBot);
-				if ((BotGetSafeTask(pBot)->iData != -1)
-					&& (BotGetSafeTask(pBot)->iData < g_iNumWaypoints))
+				if (BotGetSafeTask(pBot)->iData != -1
+					&& BotGetSafeTask(pBot)->iData < g_iNumWaypoints)
 					iDestIndex = BotGetSafeTask(pBot)->iData;
 				else
 					iDestIndex = WaypointFindNearestToMove(pBot->pEdict, pBot->vecPosition); // KWo - 17.04.2008
@@ -7569,7 +7569,7 @@ void BotExecuteTask(bot_t* pBot)
 	case TASK_PLANTBOMB:
 	{
 		pBot->bUsingGrenade = FALSE;
-		if ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints))  // KWo - 13.01.2012
+		if (pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints)  // KWo - 13.01.2012
 		{
 			pBot->vecEntity = paths[pBot->curr_wpt_index]->origin - Vector(0.0, 0.0, 36.0);
 			pBot->iAimFlags |= AIM_ENTITY;
@@ -7581,16 +7581,16 @@ void BotExecuteTask(bot_t* pBot)
 		pBot->fNoCollTime = gpGlobals->time + 2.5;   // KWo - 02.01.2010
 		iWeaponNum = GetBestWeaponCarried(pBot);     // KWo - 15.02.2012
 
-		if ((pBot->iStates & STATE_SEEINGENEMY)
-			&& ((!pBot->bIsChickenOrZombie) && (!g_b_cv_jasonmode)
-				&& (cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iWeaponNum]].iId != CS_WEAPON_KNIFE)
-				|| ((pEdict->v.origin - pBot->vecLastEnemyOrigin).Length() < 60.0))
-			&& (BotGetSafeTask(pBot)->iTask == TASK_PLANTBOMB))  // KWo - 22.01.2012
+		if (pBot->iStates & STATE_SEEINGENEMY
+			&& (!pBot->bIsChickenOrZombie && !g_b_cv_jasonmode
+				&& cs_weapon_select[ptrWeaponPrefs[pBot->bot_personality][iWeaponNum]].iId != CS_WEAPON_KNIFE
+				|| (pEdict->v.origin - pBot->vecLastEnemyOrigin).Length() < 60.0)
+			&& BotGetSafeTask(pBot)->iTask == TASK_PLANTBOMB)  // KWo - 22.01.2012
 		{
 			BotTaskComplete(pBot);
 		}
 		// We're still in the planting time and got the c4 ?
-		else if (pBot->b_bomb_blinking && (pEdict->v.weapons & (1 << CS_WEAPON_C4)))
+		else if (pBot->b_bomb_blinking && pEdict->v.weapons & 1 << CS_WEAPON_C4)
 		{
 			if (pBot->current_weapon.iId == CS_WEAPON_C4)
 			{
@@ -7606,7 +7606,7 @@ void BotExecuteTask(bot_t* pBot)
 				if (g_b_DebugTasks || g_b_DebugCombat)
 					ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_PLANTBOMB - Bot %s is planting C4.\n", pBot->name);
 			}
-			else if ((pBot->fTimeWeaponSwitch + 0.1 < gpGlobals->time) && (pBot->current_weapon.iId != CS_WEAPON_INSWITCH))
+			else if (pBot->fTimeWeaponSwitch + 0.1 < gpGlobals->time && pBot->current_weapon.iId != CS_WEAPON_INSWITCH)
 			{
 				pBot->bMoveToGoal = FALSE;
 				pBot->bCheckTerrain = FALSE;
@@ -7629,14 +7629,14 @@ void BotExecuteTask(bot_t* pBot)
 			{
 				BotTaskComplete(pBot);
 
-				if (!(pEdict->v.weapons & (1 << CS_WEAPON_C4)))
+				if (!(pEdict->v.weapons & 1 << CS_WEAPON_C4))
 				{
 					// Notify the Team of this heroic action
-					if ((!g_b_cv_ffa) && (g_b_cv_chat) && (g_iAliveTs > 1) && (RANDOM_LONG(1, 100) < 10)) // KWo - 08.03.2010
+					if (!g_b_cv_ffa && g_b_cv_chat && g_iAliveTs > 1 && RANDOM_LONG(1, 100) < 10) // KWo - 08.03.2010
 						FakeClientCommand(pBot->pEdict, "say_team Planted the Bomb!\n");
 					DeleteSearchNodes(pBot);
 
-					fCampTime = (g_f_cv_c4timer * 0.5); // KWo - 23.03.2008
+					fCampTime = g_f_cv_c4timer * 0.5; // KWo - 23.03.2008
 					if (fCampTime > g_f_cv_maxcamptime)       // KWo - 23.03.2008
 						fCampTime = g_f_cv_maxcamptime;        // KWo - 23.03.2008
 
@@ -7733,16 +7733,16 @@ void BotExecuteTask(bot_t* pBot)
 		if (BotFollowUser(pBot))
 		{
 			pBot->bCheckTerrain = TRUE;  // 13.11.2006
-			bBotReachedDest = (BotDoWaypointNav(pBot) || (pBot->pWaypointNodes == NULL)
-				|| (pBot->chosengoal_index == -1) || (BotGetSafeTask(pBot)->iData == -1));
+			bBotReachedDest = BotDoWaypointNav(pBot) || pBot->pWaypointNodes == NULL
+				|| pBot->chosengoal_index == -1 || BotGetSafeTask(pBot)->iData == -1;
 
 			fDistanceToUser = (pBot->pBotUser->v.origin - pEdict->v.origin).Length(); // KWo - 26.02.2007
-			if (((fDistanceToUser > 256)
-				|| (!FVisible(pBot->pBotUser->v.origin, pEdict)))
-				&& (bBotReachedDest) || (fDistanceToUser < 50.0)) // KWo - 26.02.2007
+			if ((fDistanceToUser > 256
+				|| !FVisible(pBot->pBotUser->v.origin, pEdict))
+				&& bBotReachedDest || fDistanceToUser < 50.0) // KWo - 26.02.2007
 			{
-				if (((g_i_botthink_index != g_iFrameCounter) || (g_bPathWasCalculated))
-					&& (pBot->f_spawn_time + 10.0 > gpGlobals->time)) // KWo - 18.02.2008
+				if ((g_i_botthink_index != g_iFrameCounter || g_bPathWasCalculated)
+					&& pBot->f_spawn_time + 10.0 > gpGlobals->time) // KWo - 18.02.2008
 				{
 					pBot->f_move_speed = 0.0;
 					pBot->f_moved_distance = 15.0;      // KWo - 25.05.2010
@@ -7770,7 +7770,7 @@ void BotExecuteTask(bot_t* pBot)
 					{
 						iTempPathNr = (int)RANDOM_LONG(0, MAX_PATH_INDEX - 1);
 						iDestIndex = paths[iTempIndex]->index[iTempPathNr];
-						if ((iDestIndex > 0) && (iDestIndex <= g_iNumWaypoints))
+						if (iDestIndex > 0 && iDestIndex <= g_iNumWaypoints)
 						{
 							if (IsConnectedWithWaypoint(iDestIndex, iTempIndex))
 							{
@@ -7779,14 +7779,14 @@ void BotExecuteTask(bot_t* pBot)
 							}
 						}
 						iCount++;
-					} while ((iCount < 10) && (!bCon));
+					} while (iCount < 10 && !bCon);
 
 					if (!bCon)
 						iDestIndex = iTempIndex;
 
 					pBot->bCheckTerrain = TRUE;  // 25.06.2006
 
-					if ((iDestIndex != pBot->curr_wpt_index))
+					if (iDestIndex != pBot->curr_wpt_index)
 					{
 						DeleteSearchNodes(pBot);
 						pBot->prev_goal_index = iDestIndex;
@@ -7835,9 +7835,9 @@ void BotExecuteTask(bot_t* pBot)
 			pBot->prev_time = gpGlobals->time + 0.5;     // KWo - 25.05.2010
 		}
 
-		if ((pBot->bot_team == TEAM_CS_TERRORIST) && (pBot->b_bomb_blinking)
-			&& (pBot->f_bot_see_enemy_time + 3.0 < gpGlobals->time)
-			&& (pEdict->v.weapons & (1 << CS_WEAPON_C4))) // KWo - 15.02.2012
+		if (pBot->bot_team == TEAM_CS_TERRORIST && pBot->b_bomb_blinking
+			&& pBot->f_bot_see_enemy_time + 3.0 < gpGlobals->time
+			&& pEdict->v.weapons & 1 << CS_WEAPON_C4) // KWo - 15.02.2012
 		{
 			if (BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER) // KWo - 02.09.2006 - against BotRemoveCertainTask
 				BotTaskComplete(pBot);
@@ -7851,7 +7851,7 @@ void BotExecuteTask(bot_t* pBot)
 			bottask_t TempTask = { NULL, NULL, TASK_PLANTBOMB, TASKPRI_PLANTBOMB, -1, 0.0, TRUE }; // KWo - 21.02.2007
 			BotPushTask(pBot, &TempTask);
 		}
-		if ((BotGetSafeTask(pBot)->fTime < gpGlobals->time) && (BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER))
+		if (BotGetSafeTask(pBot)->fTime < gpGlobals->time && BotGetSafeTask(pBot)->iTask == TASK_FOLLOWUSER)
 		{
 			BotTaskComplete(pBot);
 			pBot->pBotUser = NULL;
@@ -7886,7 +7886,7 @@ void BotExecuteTask(bot_t* pBot)
 			pBot->bMoveToGoal = FALSE;
 		}
 
-		if (!FNullEnt(pBot->pLastEnemy) && (pBot->vecLastEnemyOrigin != g_vecZero))
+		if (!FNullEnt(pBot->pLastEnemy) && pBot->vecLastEnemyOrigin != g_vecZero)
 		{
 			distance = (int)(pBot->vecLastEnemyOrigin - pEdict->v.origin).Length();
 			if (pBot->iStates & STATE_SEEINGENEMY)
@@ -7896,7 +7896,7 @@ void BotExecuteTask(bot_t* pBot)
 					v_dest = pBot->vecLastEnemyOrigin;
 					v_src = pBot->pLastEnemy->v.velocity;
 					v_src.z = 0.0;
-					v_dest = v_dest + (v_src * distance / 400.0);
+					v_dest = v_dest + v_src * distance / 400.0;
 				}
 				else
 					v_dest = g_vecZero;
@@ -7918,32 +7918,32 @@ void BotExecuteTask(bot_t* pBot)
 		else
 			pBot->vecGrenade = g_vecZero;
 
-		if (((pBot->vecGrenade == g_vecZero)  /* && (pBot->current_weapon.iId != CS_WEAPON_HEGRENADE) */)
-			|| (BotGetSafeTask(pBot)->fTime < gpGlobals->time)
-			|| ((pEdict->v.weapons & (1 << CS_WEAPON_HEGRENADE)) == 0)
-			|| (NumTeammatesNearPos(pBot, v_dest, 512) > 0)) // KWo - 25.08.2008
+		if (pBot->vecGrenade == g_vecZero /* && (pBot->current_weapon.iId != CS_WEAPON_HEGRENADE) */
+			|| BotGetSafeTask(pBot)->fTime < gpGlobals->time
+			|| (pEdict->v.weapons & 1 << CS_WEAPON_HEGRENADE) == 0
+			|| NumTeammatesNearPos(pBot, v_dest, 512) > 0) // KWo - 25.08.2008
 		{
 			pBot->iStates &= ~STATE_THROWHEGREN;   // KWo - 24.02.2006
 			pBot->iAimFlags &= ~AIM_GRENADE;       // KWo - 24.02.2006
 			pBot->bUsingGrenade = FALSE;           // KWo - 19.03.2007
-			if ((pBot->fTimeWeaponSwitch + 1.0 < gpGlobals->time) && (BotGetSafeTask(pBot)->iTask == TASK_THROWHEGRENADE)) // KWo - 22.01.2008
+			if (pBot->fTimeWeaponSwitch + 1.0 < gpGlobals->time && BotGetSafeTask(pBot)->iTask == TASK_THROWHEGRENADE) // KWo - 22.01.2008
 			{
 				BotSelectBestWeapon(pBot);
 				BotTaskComplete(pBot);
 			}
 		}
-		else if ((pBot->vecGrenade != g_vecZero) /* || (pBot->current_weapon.iId == CS_WEAPON_HEGRENADE) */) // KWo - 22.01.2008 - rewritten again...
+		else if (pBot->vecGrenade != g_vecZero /* || (pBot->current_weapon.iId == CS_WEAPON_HEGRENADE) */) // KWo - 22.01.2008 - rewritten again...
 		{
-			if ((pBot->current_weapon.iId != CS_WEAPON_HEGRENADE) && (pBot->current_weapon.iId != CS_WEAPON_INSWITCH)
-				&& (pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time) /* && !FStrEq(STRING(pEdict->v.viewmodel),"models/v_hegrenade.mdl") */)
+			if (pBot->current_weapon.iId != CS_WEAPON_HEGRENADE && pBot->current_weapon.iId != CS_WEAPON_INSWITCH
+				&& pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time /* && !FStrEq(STRING(pEdict->v.viewmodel),"models/v_hegrenade.mdl") */)
 			{
-				if (pEdict->v.weapons & (1 << CS_WEAPON_HEGRENADE))
+				if (pEdict->v.weapons & 1 << CS_WEAPON_HEGRENADE)
 				{
 					SelectWeaponByName(pBot, "weapon_hegrenade");
 					BotGetSafeTask(pBot)->fTime = gpGlobals->time + TIME_GRENPRIME;
 				}
 			}
-			else if ((pBot->current_weapon.iId == CS_WEAPON_HEGRENADE) && (pBot->fTimeWeaponSwitch + 0.3 < gpGlobals->time)
+			else if (pBot->current_weapon.iId == CS_WEAPON_HEGRENADE && pBot->fTimeWeaponSwitch + 0.3 < gpGlobals->time
 				&& !(pEdict->v.oldbuttons & IN_ATTACK))
 			{
 				pEdict->v.button |= IN_ATTACK;
@@ -7980,13 +7980,13 @@ void BotExecuteTask(bot_t* pBot)
 		if (pBot->vecGrenade == g_vecZero /* && !pBot->bMoveToGoal */)
 			pBot->vecGrenade = VecCheckToss(pBot, GetGunPosition(pEdict), v_dest);
 
-		if ((pBot->vecGrenade == g_vecZero) || (BotGetSafeTask(pBot)->fTime < gpGlobals->time)
-			|| ((pEdict->v.weapons & (1 << CS_WEAPON_FLASHBANG)) == 0))
+		if (pBot->vecGrenade == g_vecZero || BotGetSafeTask(pBot)->fTime < gpGlobals->time
+			|| (pEdict->v.weapons & 1 << CS_WEAPON_FLASHBANG) == 0)
 		{
 			pBot->iStates &= ~STATE_THROWFLASHBANG;   // KWo - 24.02.2006
 			pBot->iAimFlags &= ~AIM_GRENADE;          // KWo - 24.02.2006
 			pBot->bUsingGrenade = FALSE;              // KWo - 19.03.2007
-			if ((pBot->fTimeWeaponSwitch + 1.0 < gpGlobals->time) && (BotGetSafeTask(pBot)->iTask == TASK_THROWFLASHBANG)) // KWo - 22.01.2008
+			if (pBot->fTimeWeaponSwitch + 1.0 < gpGlobals->time && BotGetSafeTask(pBot)->iTask == TASK_THROWFLASHBANG) // KWo - 22.01.2008
 			{
 				BotSelectBestWeapon(pBot);
 				BotTaskComplete(pBot);
@@ -7994,16 +7994,16 @@ void BotExecuteTask(bot_t* pBot)
 		}
 		else if (pBot->vecGrenade != g_vecZero) // KWo - 22.01.2008 - rewritten again...
 		{
-			if ((pBot->current_weapon.iId != CS_WEAPON_FLASHBANG) && (pBot->current_weapon.iId != CS_WEAPON_INSWITCH)
-				&& (pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time) /* && !FStrEq(STRING(pEdict->v.viewmodel),"models/v_flashbang.mdl") */)
+			if (pBot->current_weapon.iId != CS_WEAPON_FLASHBANG && pBot->current_weapon.iId != CS_WEAPON_INSWITCH
+				&& pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time /* && !FStrEq(STRING(pEdict->v.viewmodel),"models/v_flashbang.mdl") */)
 			{
-				if (pEdict->v.weapons & (1 << CS_WEAPON_FLASHBANG))
+				if (pEdict->v.weapons & 1 << CS_WEAPON_FLASHBANG)
 				{
 					SelectWeaponByName(pBot, "weapon_flashbang");
 					BotGetSafeTask(pBot)->fTime = gpGlobals->time + TIME_GRENPRIME;
 				}
 			}
-			else if ((pBot->current_weapon.iId == CS_WEAPON_FLASHBANG) && (pBot->fTimeWeaponSwitch + 0.3 < gpGlobals->time)
+			else if (pBot->current_weapon.iId == CS_WEAPON_FLASHBANG && pBot->fTimeWeaponSwitch + 0.3 < gpGlobals->time
 				&& !(pEdict->v.oldbuttons & IN_ATTACK))
 			{
 				pEdict->v.button |= IN_ATTACK;
@@ -8042,7 +8042,7 @@ void BotExecuteTask(bot_t* pBot)
 		pBot->fNoCollTime = gpGlobals->time + 2.5;   // KWo - 02.01.2010
 		pBot->f_grenade_check_time = gpGlobals->time + RANDOM_FLOAT(5.0, 7.0); // KWo - 24.08.2008
 
-		if (!FNullEnt(pBot->pLastEnemy) && (pBot->vecLastEnemyOrigin != g_vecZero))
+		if (!FNullEnt(pBot->pLastEnemy) && pBot->vecLastEnemyOrigin != g_vecZero)
 		{
 			distance = (int)(pBot->vecLastEnemyOrigin - pEdict->v.origin).Length();
 			if (pBot->iStates & STATE_SEEINGENEMY)
@@ -8052,7 +8052,7 @@ void BotExecuteTask(bot_t* pBot)
 					v_dest = pBot->vecLastEnemyOrigin;
 					v_src = pBot->pLastEnemy->v.velocity;
 					v_src.z = 0.0;
-					v_dest = v_dest + (v_src * distance / 400.0);
+					v_dest = v_dest + v_src * distance / 400.0;
 					v_dest = v_dest.Normalize();
 					v_dest = v_dest * 0.6 * distance;
 				}
@@ -8088,30 +8088,30 @@ void BotExecuteTask(bot_t* pBot)
 		else
 			pBot->vecGrenade = g_vecZero;
 
-		if (((pBot->vecGrenade == g_vecZero) && (pBot->current_weapon.iId != CS_WEAPON_SMOKEGRENADE)) || (BotGetSafeTask(pBot)->fTime < gpGlobals->time)
-			|| ((pEdict->v.weapons & (1 << CS_WEAPON_SMOKEGRENADE)) == 0))
+		if (pBot->vecGrenade == g_vecZero && pBot->current_weapon.iId != CS_WEAPON_SMOKEGRENADE || BotGetSafeTask(pBot)->fTime < gpGlobals->time
+			|| (pEdict->v.weapons & 1 << CS_WEAPON_SMOKEGRENADE) == 0)
 		{
 			pBot->iStates &= ~STATE_THROWSMOKEGREN;   // KWo - 24.02.2006
 			pBot->iAimFlags &= ~AIM_GRENADE;          // KWo - 24.02.2006
 			pBot->bUsingGrenade = FALSE;              // KWo - 19.03.2007
-			if ((pBot->fTimeWeaponSwitch + 1.0 < gpGlobals->time) && (BotGetSafeTask(pBot)->iTask == TASK_THROWSMOKEGRENADE)) // KWo - 22.01.2008
+			if (pBot->fTimeWeaponSwitch + 1.0 < gpGlobals->time && BotGetSafeTask(pBot)->iTask == TASK_THROWSMOKEGRENADE) // KWo - 22.01.2008
 			{
 				BotSelectBestWeapon(pBot);
 				BotTaskComplete(pBot);
 			}
 		}
-		else if ((pBot->vecGrenade != g_vecZero) || (pBot->current_weapon.iId == CS_WEAPON_SMOKEGRENADE))// KWo - 22.01.2008 - rewritten again...
+		else if (pBot->vecGrenade != g_vecZero || pBot->current_weapon.iId == CS_WEAPON_SMOKEGRENADE)// KWo - 22.01.2008 - rewritten again...
 		{
-			if ((pBot->current_weapon.iId != CS_WEAPON_SMOKEGRENADE) && (pBot->current_weapon.iId != CS_WEAPON_INSWITCH)
-				&& (pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time))
+			if (pBot->current_weapon.iId != CS_WEAPON_SMOKEGRENADE && pBot->current_weapon.iId != CS_WEAPON_INSWITCH
+				&& pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time)
 			{
-				if (pEdict->v.weapons & (1 << CS_WEAPON_SMOKEGRENADE))
+				if (pEdict->v.weapons & 1 << CS_WEAPON_SMOKEGRENADE)
 				{
 					SelectWeaponByName(pBot, "weapon_smokegrenade");
 					BotGetSafeTask(pBot)->fTime = gpGlobals->time + TIME_GRENPRIME;
 				}
 			}
-			else if ((pBot->current_weapon.iId == CS_WEAPON_SMOKEGRENADE) && (pBot->fTimeWeaponSwitch + 0.3 < gpGlobals->time)
+			else if (pBot->current_weapon.iId == CS_WEAPON_SMOKEGRENADE && pBot->fTimeWeaponSwitch + 0.3 < gpGlobals->time
 				&& !(pEdict->v.oldbuttons & IN_ATTACK))
 			{
 				pEdict->v.button |= IN_ATTACK;
@@ -8136,7 +8136,7 @@ void BotExecuteTask(bot_t* pBot)
 		if (g_b_DebugTasks || g_b_DebugEntities)
 			ALERT(at_logged, "[DEBUG] Bot %s is executing TASK_SHOOTBREAKABLE.\n", pBot->name);
 
-		if ((!BotFindBreakable(pBot)) && (BotGetSafeTask(pBot)->iTask == TASK_SHOOTBREAKABLE)) // KWo - 02.09.2006 - against BotRemoveCertainTask
+		if (!BotFindBreakable(pBot) && BotGetSafeTask(pBot)->iTask == TASK_SHOOTBREAKABLE) // KWo - 02.09.2006 - against BotRemoveCertainTask
 		{
 			pBot->iAimFlags &= ~AIM_ENTITY; // KWo - 09.02.2008
 			pBot->iAimFlags &= ~AIM_OVERRIDE; // KWo - 12.03.2010
@@ -8172,7 +8172,7 @@ void BotExecuteTask(bot_t* pBot)
 			pBot->bMoveToGoal = TRUE;
 		}
 
-		if ((pBot->current_weapon.iId == CS_WEAPON_KNIFE) && ((pEdict->v.origin - v_src).Length() > 40.0)) // KWo - 20.05.2010
+		if (pBot->current_weapon.iId == CS_WEAPON_KNIFE && (pEdict->v.origin - v_src).Length() > 40.0) // KWo - 20.05.2010
 		{
 			pBot->bCheckTerrain = TRUE;
 			pBot->bMoveToGoal = TRUE;
@@ -8197,14 +8197,14 @@ void BotExecuteTask(bot_t* pBot)
 		}
 		if (BotGetSafeTask(pBot)->fTime == 0.0)
 		{
-			BotGetSafeTask(pBot)->fTime = gpGlobals->time + ((pBot->iPickupType == PICKUP_HOSTAGE) ? 8.0 : 4.0); // KWo - 08.03.2010
+			BotGetSafeTask(pBot)->fTime = gpGlobals->time + (pBot->iPickupType == PICKUP_HOSTAGE ? 8.0 : 4.0); // KWo - 08.03.2010
 
 			if (g_b_DebugTasks || g_b_DebugEntities)
 				ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_PICKUPITEM - Bot %s has started the task with pickup_type = %s.\n",
 					pBot->name, g_ItemTypeNames[pBot->iPickupType]);
 		}
-		else if ((BotGetSafeTask(pBot)->fTime < gpGlobals->time)
-			&& ((pBot->iPickupType != PICKUP_PLANTED_C4) || (pBot->bot_team == TEAM_CS_TERRORIST))) // KWo - 02.09.2008
+		else if (BotGetSafeTask(pBot)->fTime < gpGlobals->time
+			&& (pBot->iPickupType != PICKUP_PLANTED_C4 || pBot->bot_team == TEAM_CS_TERRORIST)) // KWo - 02.09.2008
 		{
 			pBot->pItemIgnore[2] = pBot->pItemIgnore[1];
 			pBot->pItemIgnore[1] = pBot->pItemIgnore[0];
@@ -8226,7 +8226,7 @@ void BotExecuteTask(bot_t* pBot)
 						int iWeaponSecID = cs_weapon_select[iWeaponSecNum].iId;
 						int iWeaponPrimID = cs_weapon_select[iWeaponPrimNum].iId;
 						char vmodelname[64];
-						snprintf(vmodelname, sizeof(vmodelname), STRING(pBot->pBotPickupItem->v.model));
+						snprintf(vmodelname, sizeof vmodelname, STRING(pBot->pBotPickupItem->v.model));
 						ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_PICKUPITEM - Bot %s was trying to pickup %s; has %s with %d ammo in clip.\n", pBot->name,
 							vmodelname, weapon_defs[iId].szClassname, pBot->m_rgAmmoInClip[iId]);
 						ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_PICKUPITEM - Bot %s has primary weapon %s with %d ammo in clip and sec weapon %s with %d ammo in clip.\n", pBot->name,
@@ -8246,8 +8246,8 @@ void BotExecuteTask(bot_t* pBot)
 		}
 
 		// func Models needs special origin handling
-		if ((strncmp("func_", STRING(pBot->pBotPickupItem->v.classname), 5) == 0)
-			|| (pBot->pBotPickupItem->v.flags & FL_MONSTER))
+		if (strncmp("func_", STRING(pBot->pBotPickupItem->v.classname), 5) == 0
+			|| pBot->pBotPickupItem->v.flags & FL_MONSTER)
 			v_dest = VecBModelOrigin(pBot->pBotPickupItem);
 		else
 			v_dest = pBot->pBotPickupItem->v.origin;
@@ -8262,9 +8262,9 @@ void BotExecuteTask(bot_t* pBot)
 		{
 		case PICKUP_WEAPON:
 		{
-			pBot->iAimFlags |= (pBot->bot_skill < 60) ? AIM_DEST : AIM_ENTITY;
-			memset(vmodelname, 0, sizeof(vmodelname));
-			snprintf(vmodelname, sizeof(vmodelname), STRING(pBot->pBotPickupItem->v.model)); // KWo - 20.12.2006
+			pBot->iAimFlags |= pBot->bot_skill < 60 ? AIM_DEST : AIM_ENTITY;
+			memset(vmodelname, 0, sizeof vmodelname);
+			snprintf(vmodelname, sizeof vmodelname, STRING(pBot->pBotPickupItem->v.model)); // KWo - 20.12.2006
 
 			if (g_b_DebugEntities)
 				ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_PICKUPITEM - Bot %s is trying to pickup %s.\n", pBot->name, vmodelname);
@@ -8301,7 +8301,7 @@ void BotExecuteTask(bot_t* pBot)
 							if (g_b_DebugEntities || g_b_DebugCombat)
 								ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_PICKUPITEM - Bot %s doesn't have selected a primary gun.\n", pBot->name);
 
-							if ((pBot->current_weapon.iId != CS_WEAPON_INSWITCH) && (pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time))
+							if (pBot->current_weapon.iId != CS_WEAPON_INSWITCH && pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time)
 							{
 								SelectWeaponByNumber(pBot, iWeaponNum);
 							}
@@ -8333,7 +8333,7 @@ void BotExecuteTask(bot_t* pBot)
 						//                        if (pBot->current_weapon.iId != cs_weapon_select[iWeaponNum].iId)
 						if (!WeaponIsPistol(pBot->current_weapon.iId)) // KWo - 25.12.2006
 						{
-							if ((pBot->current_weapon.iId != CS_WEAPON_INSWITCH) && (pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time))
+							if (pBot->current_weapon.iId != CS_WEAPON_INSWITCH && pBot->fTimeWeaponSwitch + 0.5 < gpGlobals->time)
 							{
 								SelectWeaponByNumber(pBot, iWeaponNum);
 							}
@@ -8368,7 +8368,7 @@ void BotExecuteTask(bot_t* pBot)
 			{
 				// Get current best weapon to check if it's a primary in need to be dropped
 				iWeaponNum = HighestWeaponOfEdict(pEdict);
-				if ((iWeaponNum > 6) || BotHasShield(pBot))
+				if (iWeaponNum > 6 || BotHasShield(pBot))
 				{
 					if (pBot->current_weapon.iId != cs_weapon_select[iWeaponNum].iId)
 					{
@@ -8385,7 +8385,7 @@ void BotExecuteTask(bot_t* pBot)
 		{
 			pBot->iAimFlags |= AIM_ENTITY;
 			v_src = GetGunPosition(pEdict);
-			if (distance < ((v_dest.z - pEdict->v.origin.z > 20.0) ? 90.0 : 70.0)) // KWo - 08.03.2010
+			if (distance < (v_dest.z - pEdict->v.origin.z > 20.0 ? 90.0 : 70.0)) // KWo - 08.03.2010
 			{
 				angle_to_entity = BotInFieldOfView(pBot, v_dest - v_src);
 
@@ -8397,7 +8397,7 @@ void BotExecuteTask(bot_t* pBot)
 				{
 					for (i = 0; i < g_iNumHostages; i++) // KWo - 17.05.2006
 					{
-						if ((pBot->pBotPickupItem == INDEXENT(HostagesData[i].EntIndex) && HostagesData[i].UserEntIndex == 0))
+						if (pBot->pBotPickupItem == INDEXENT(HostagesData[i].EntIndex) && HostagesData[i].UserEntIndex == 0)
 						{
 							pEdict->v.button |= IN_USE;
 							HostagesData[i].UserEntIndex = ENTINDEX(pBot->pEdict);
@@ -8406,8 +8406,8 @@ void BotExecuteTask(bot_t* pBot)
 								ALERT(at_logged, "[DEBUG] BotExecuteTask - TASK_PICKUPITEM - Bot %s is pickuping the hostage %d.\n", pBot->name, i + 1);
 
 							//                           pBot->iAimFlags &= ~AIM_ENTITY; // KWo - 12.10.2006
-							if ((!g_b_cv_ffa) && (g_b_cv_chat)
-								&& (g_iAliveCTs > 1) && (RANDOM_LONG(1, 100) < 10)) // KWo - 06.03.2010
+							if (!g_b_cv_ffa && g_b_cv_chat
+								&& g_iAliveCTs > 1 && RANDOM_LONG(1, 100) < 10) // KWo - 06.03.2010
 								FakeClientCommand(pBot->pEdict, "say_team Trying to rescue a Hostage.\n"); // KWo - 06.03.2010
 
 							 // Store ptr to hostage so other Bots don't steal
@@ -8449,19 +8449,19 @@ void BotExecuteTask(bot_t* pBot)
 
 			if (pBot->bot_team == TEAM_CS_COUNTER)
 			{
-				if (((float)iEnemyNum < 0.8 * (float)iFriendlyNum)
-					|| (g_bIgnoreEnemies) || (g_iAliveTs == 0) || (iEnemyNum == 0)
-					|| (distance < 80) && (gpGlobals->time > g_fTimeBombPlanted + g_f_cv_c4timer - 12.0))  // KWo - 17.10.2008
+				if ((float)iEnemyNum < 0.8 * (float)iFriendlyNum
+					|| g_bIgnoreEnemies || g_iAliveTs == 0 || iEnemyNum == 0
+					|| distance < 80 && gpGlobals->time > g_fTimeBombPlanted + g_f_cv_c4timer - 12.0)  // KWo - 17.10.2008
 				{
 					iTempWpIndex1 = WaypointFindNearestToMove(pEdict, g_vecBomb);
-					if ((iTempWpIndex1 >= 0) && (iTempWpIndex1 < g_iNumWaypoints) && (iTempWpIndex1 != pBot->curr_wpt_index))
+					if (iTempWpIndex1 >= 0 && iTempWpIndex1 < g_iNumWaypoints && iTempWpIndex1 != pBot->curr_wpt_index)
 					{
 						DeleteSearchNodes(pBot);
 						pBot->chosengoal_index = iTempWpIndex1;
 						bottask_t TempTask = { NULL, NULL, TASK_MOVETOPOSITION, TASKPRI_MOVETOPOSITION + 11.0, iTempWpIndex1, 0.0, TRUE }; // KWo - 02.09.2008
 						BotPushTask(pBot, &TempTask);
 					}
-					else if ((distance < 40) && (iTempWpIndex1 == pBot->curr_wpt_index))
+					else if (distance < 40 && iTempWpIndex1 == pBot->curr_wpt_index)
 					{
 						pBot->iAimFlags |= AIM_ENTITY;
 						pBot->bMoveToGoal = FALSE;
@@ -8471,19 +8471,19 @@ void BotExecuteTask(bot_t* pBot)
 						pEdict->v.button |= IN_DUCK;
 
 						// Notify Team of defusing
-						if ((!g_b_cv_ffa) && (g_b_cv_radio)
-							&& (g_iAliveTs > 0) && (g_iAliveCTs > 1)
-							&& (RANDOM_LONG(1, 100) < 20)) // KWo - 06.03.2010
+						if (!g_b_cv_ffa && g_b_cv_radio
+							&& g_iAliveTs > 0 && g_iAliveCTs > 1
+							&& RANDOM_LONG(1, 100) < 20) // KWo - 06.03.2010
 							BotPlayRadioMessage(pBot, RADIO_NEEDBACKUP);
 
-						if ((!g_b_cv_ffa) && (g_b_cv_chat)
-							&& (g_iAliveCTs > 1) && (RANDOM_LONG(1, 100) < 10))  // KWo - 06.03.2010
+						if (!g_b_cv_ffa && g_b_cv_chat
+							&& g_iAliveCTs > 1 && RANDOM_LONG(1, 100) < 10)  // KWo - 06.03.2010
 							FakeClientCommand(pBot->pEdict, "say_team Trying to defuse the Bomb!\n");
 
 						bottask_t TempTask = { NULL, NULL, TASK_DEFUSEBOMB, TASKPRI_DEFUSEBOMB, -1, 0.0, TRUE }; // KWo - 21.02.2007
 						BotPushTask(pBot, &TempTask);
 					}
-					else if ((distance < 80) && (iTempWpIndex1 == pBot->curr_wpt_index))
+					else if (distance < 80 && iTempWpIndex1 == pBot->curr_wpt_index)
 					{
 						pBot->iAimFlags |= AIM_ENTITY;
 						pBot->bMoveToGoal = FALSE;
@@ -8502,7 +8502,7 @@ void BotExecuteTask(bot_t* pBot)
 			if (pBot->bot_team == TEAM_CS_TERRORIST)
 			{
 				pBot->iAimFlags |= AIM_ENTITY;
-				if (!(pBot->iAimFlags & AIM_ENEMY) && (GetShootingConeDeviation(pEdict, &v_dest) > 0.9))
+				if (!(pBot->iAimFlags & AIM_ENEMY) && GetShootingConeDeviation(pEdict, &v_dest) > 0.9)
 				{
 					if (distance > 100)
 					{
@@ -8587,22 +8587,22 @@ void BotThink(bot_t* pBot)
 	pEdict->v.button = 0;
 	pBot->f_move_speed = 0.0;
 	pBot->f_sidemove_speed = 0.0;
-	pBot->bDead = (IsAlive(pEdict) ? FALSE : TRUE);
+	pBot->bDead = IsAlive(pEdict) ? FALSE : TRUE;
 	pBot->bCanChooseAimDirection = TRUE;
 
-	pBot->bIsChickenOrZombie = ((strncmp("chicken", pBot->sz_BotModelName, 7) == 0)
-		|| (strncmp("zomb", pBot->sz_BotModelName, 4) == 0)); // KWo - 17.01.2011
+	pBot->bIsChickenOrZombie = strncmp("chicken", pBot->sz_BotModelName, 7) == 0
+		|| strncmp("zomb", pBot->sz_BotModelName, 4) == 0; // KWo - 17.01.2011
 
   // Set some debug flags..
-	bHostDebugPossible = ((pHostEdict) && ((g_vecHostOrigin - pEdict->v.origin).Length() < 30.0) && !(clients[0].iFlags & CLIENT_ALIVE));
-	bDebugAllBots = ((g_i_cv_debuglevel & DEBUG_FL_ALLBOTS) > 0);
-	g_b_DebugTasks = ((bHostDebugPossible || bDebugAllBots) && (g_i_cv_debuglevel & DEBUG_FL_TASKS));
-	g_b_DebugNavig = ((bHostDebugPossible || bDebugAllBots) && (g_i_cv_debuglevel & DEBUG_FL_NAVIGATION));
-	g_b_DebugStuck = ((bHostDebugPossible || bDebugAllBots) && (g_i_cv_debuglevel & DEBUG_FL_STUCK));
-	g_b_DebugSensing = ((bHostDebugPossible || bDebugAllBots) && (g_i_cv_debuglevel & DEBUG_FL_SENSING));
-	g_b_DebugCombat = ((bHostDebugPossible || bDebugAllBots) && (g_i_cv_debuglevel & DEBUG_FL_COMBAT));
-	g_b_DebugEntities = ((bHostDebugPossible || bDebugAllBots) && (g_i_cv_debuglevel & DEBUG_FL_ENTITIES));
-	g_b_DebugChat = ((bHostDebugPossible || bDebugAllBots) && (g_i_cv_debuglevel & DEBUG_FL_CHAT));
+	bHostDebugPossible = pHostEdict && (g_vecHostOrigin - pEdict->v.origin).Length() < 30.0 && !(clients[0].iFlags & CLIENT_ALIVE);
+	bDebugAllBots = (g_i_cv_debuglevel & DEBUG_FL_ALLBOTS) > 0;
+	g_b_DebugTasks = (bHostDebugPossible || bDebugAllBots) && g_i_cv_debuglevel & DEBUG_FL_TASKS;
+	g_b_DebugNavig = (bHostDebugPossible || bDebugAllBots) && g_i_cv_debuglevel & DEBUG_FL_NAVIGATION;
+	g_b_DebugStuck = (bHostDebugPossible || bDebugAllBots) && g_i_cv_debuglevel & DEBUG_FL_STUCK;
+	g_b_DebugSensing = (bHostDebugPossible || bDebugAllBots) && g_i_cv_debuglevel & DEBUG_FL_SENSING;
+	g_b_DebugCombat = (bHostDebugPossible || bDebugAllBots) && g_i_cv_debuglevel & DEBUG_FL_COMBAT;
+	g_b_DebugEntities = (bHostDebugPossible || bDebugAllBots) && g_i_cv_debuglevel & DEBUG_FL_ENTITIES;
+	g_b_DebugChat = (bHostDebugPossible || bDebugAllBots) && g_i_cv_debuglevel & DEBUG_FL_CHAT;
 
 	// if the bot hasn't selected stuff to start the game yet, go do that...
 	if (pBot->not_started)
@@ -8612,14 +8612,14 @@ void BotThink(bot_t* pBot)
 	else if (pBot->bDead)
 	{
 		// Bot chatting turned on ?
-		if ((g_b_cv_chat) && (clients[g_i_botthink_index].fDeathTime + 5.0 < gpGlobals->time)) // KWo - 27.03.2010
+		if (g_b_cv_chat && clients[g_i_botthink_index].fDeathTime + 5.0 < gpGlobals->time) // KWo - 27.03.2010
 		{
 			if (g_b_DebugChat)
 				ALERT(at_logged, "[DEBUG] BotThink - Bot %s is going to reply to the player; bot's last chat time = %f, global = %f.\n",
 					pBot->name, pBot->f_lastchattime, g_fLastChatTime);
 
-			if (!BotRepliesToPlayer(pBot) && (g_fLastChatTime + 1.0 < gpGlobals->time)
-				&& (pBot->f_lastchattime + 3.0 < gpGlobals->time)) // KWo - 10.03.2013
+			if (!BotRepliesToPlayer(pBot) && g_fLastChatTime + 1.0 < gpGlobals->time
+				&& pBot->f_lastchattime + 3.0 < gpGlobals->time) // KWo - 10.03.2013
 			{
 				pBot->f_lastchattime = gpGlobals->time; // exactly it gives the next time to check if the bot can chat....
 				// Say a Text every now and then
@@ -8668,7 +8668,7 @@ void BotThink(bot_t* pBot)
 	}
 
 	// Bot is still buying - don't move
-	else if ((pBot->iBuyCount > 0) && (pBot->iBuyCount < 8) && pBot->b_can_buy)
+	else if (pBot->iBuyCount > 0 && pBot->iBuyCount < 8 && pBot->b_can_buy)
 	{
 		if (pBot->f_buy_time < gpGlobals->time)
 			BotBuyStuff(pBot);
@@ -8684,7 +8684,7 @@ void BotThink(bot_t* pBot)
 	if (g_iFrameCounter == g_i_botthink_index)
 		BotCheckMessageQueue(pBot);
 
-	if (!bBotMovement || (gpGlobals->time <= g_fTimeRoundStart) || g_bWaypointsChanged)
+	if (!bBotMovement || gpGlobals->time <= g_fTimeRoundStart || g_bWaypointsChanged)
 	{
 		pBot->f_move_speed = 0.0;
 		pBot->f_sidemove_speed = 0.0;
@@ -8706,11 +8706,11 @@ void BotThink(bot_t* pBot)
 		pBot->bCheckMyTeam = FALSE;
 	}
 
-	pBot->bOnLadder = (pEdict->v.movetype == MOVETYPE_FLY);
-	pBot->bInWater = ((pEdict->v.waterlevel == 2) || (pEdict->v.waterlevel == 3));
+	pBot->bOnLadder = pEdict->v.movetype == MOVETYPE_FLY;
+	pBot->bInWater = pEdict->v.waterlevel == 2 || pEdict->v.waterlevel == 3;
 
 	// Check if we already switched weapon mode
-	if (pBot->bCheckWeaponSwitch && (pBot->f_spawn_time + 4.0 < gpGlobals->time))
+	if (pBot->bCheckWeaponSwitch && pBot->f_spawn_time + 4.0 < gpGlobals->time)
 	{
 		if (BotHasShield(pBot))
 		{
@@ -8720,15 +8720,15 @@ void BotThink(bot_t* pBot)
 		else
 		{
 			// Bot owns a Sniper Weapon ? Try to switch back to no zoom so Bot isn't moving slow
-			if (BotUsesSniper(pBot) && (pEdict->v.fov < 90))
+			if (BotUsesSniper(pBot) && pEdict->v.fov < 90)
 				pEdict->v.button |= IN_ATTACK2;
 
 			// If no sniper weapon use a secondary mode at random times
 			else
 			{
-				if (((pBot->current_weapon.iId == CS_WEAPON_M4A1) || (pBot->current_weapon.iId == CS_WEAPON_USP))
-					&& (pBot->fTimeSilencerSwitch < gpGlobals->time + 30.0)
-					&& (FNullEnt(pBot->pBotEnemy))) // KWo - 09.04.2010
+				if ((pBot->current_weapon.iId == CS_WEAPON_M4A1 || pBot->current_weapon.iId == CS_WEAPON_USP)
+					&& pBot->fTimeSilencerSwitch < gpGlobals->time + 30.0
+					&& FNullEnt(pBot->pBotEnemy)) // KWo - 09.04.2010
 				{
 					// Aggressive bots don't like the silencer (courtesy of Wei Mingzhi - good idea)
 					if (RANDOM_LONG(1, 100) <= (pBot->bot_personality == 1 ? 25 : 75))
@@ -8753,7 +8753,7 @@ void BotThink(bot_t* pBot)
 			*/
 		}
 
-		if ((RANDOM_LONG(1, 100) < 20) && (g_b_cv_spray)) // KWo - 06.04.2006
+		if (RANDOM_LONG(1, 100) < 20 && g_b_cv_spray) // KWo - 06.04.2006
 		{
 			bottask_t TempTask = { NULL, NULL, TASK_SPRAYLOGO, TASKPRI_SPRAYLOGO, -1, gpGlobals->time + 1.0f, FALSE };
 			BotPushTask(pBot, &TempTask);
@@ -8779,10 +8779,10 @@ void BotThink(bot_t* pBot)
 
 	// Maxspeed is set in ClientSetMaxspeed
 
-	if ((pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_GOBACK)
-		&& (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFELEFT)
-		&& (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFERIGHT)
-		&& !(pBot->bPlayerCollision)) // KWo - 13.09.2008
+	if (pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_GOBACK
+		&& pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFELEFT
+		&& pBot->cCollideMoves[(int)pBot->cCollStateIndex] != COLLISION_STRAFERIGHT
+		&& !pBot->bPlayerCollision) // KWo - 13.09.2008
 		pBot->f_move_speed = pEdict->v.maxspeed;
 
 	if (pBot->prev_time <= gpGlobals->time)
@@ -8801,7 +8801,7 @@ void BotThink(bot_t* pBot)
 	*/
 
 	// If there's some Radio Message to respond, check it
-	if ((pBot->iRadioOrder != 0) && (g_iFrameCounter == g_i_botthink_index))
+	if (pBot->iRadioOrder != 0 && g_iFrameCounter == g_i_botthink_index)
 		BotCheckRadioCommands(pBot);
 
 	// Do all Sensing, calculate/filter all Actions here
@@ -8811,18 +8811,18 @@ void BotThink(bot_t* pBot)
 	BotCheckGrenadeThrow(pBot); // KWo - 11.04.2010
 
 	// Change to the best weapon if heard something - moved - KWo - 15.01.2012
-	if (!(g_b_cv_jasonmode) && !(pBot->bUsingGrenade)
-		&& ((pBot->iStates & STATE_HEARINGENEMY) && (BotGetSafeTask(pBot)->iTask != TASK_PLANTBOMB)
-			&& (BotGetSafeTask(pBot)->iTask != TASK_DEFUSEBOMB)
-			|| (pBot->iStates & STATE_SEEINGENEMY) && (!pBot->bIsChickenOrZombie || !pBot->b_bomb_blinking)
-			|| (pBot->f_jumptime + 3.0 < gpGlobals->time) && (pBot->f_jumptime + 4.0 > gpGlobals->time))
+	if (!g_b_cv_jasonmode && !pBot->bUsingGrenade
+		&& (pBot->iStates & STATE_HEARINGENEMY && BotGetSafeTask(pBot)->iTask != TASK_PLANTBOMB
+			&& BotGetSafeTask(pBot)->iTask != TASK_DEFUSEBOMB
+			|| pBot->iStates & STATE_SEEINGENEMY && (!pBot->bIsChickenOrZombie || !pBot->b_bomb_blinking)
+			|| pBot->f_jumptime + 3.0 < gpGlobals->time && pBot->f_jumptime + 4.0 > gpGlobals->time)
 		/* && (!pBot->bIsReloading) */
-		&& (pBot->fTimeWeaponSwitch + ((pBot->iStates & STATE_SEEINGENEMY) ? 1.0 : 3.0) < gpGlobals->time)) // KWo - 22.01.2012
+		&& pBot->fTimeWeaponSwitch + (pBot->iStates & STATE_SEEINGENEMY ? 1.0 : 3.0) < gpGlobals->time) // KWo - 22.01.2012
 		BotSelectBestWeapon(pBot);
 
 	// Check if there are Items needing to be used/collected
-	if (((pBot->f_itemcheck_time < gpGlobals->time) || !FNullEnt(pBot->pBotPickupItem))
-		&& (g_i_botthink_index == g_iFrameCounter)) // KWo - 11.04.2008
+	if ((pBot->f_itemcheck_time < gpGlobals->time || !FNullEnt(pBot->pBotPickupItem))
+		&& g_i_botthink_index == g_iFrameCounter) // KWo - 11.04.2008
 	{
 		pBot->f_itemcheck_time = gpGlobals->time + g_f_cv_timer_pickup;  // KWo - 06.04.2006
 		BotFindItem(pBot);
@@ -8869,18 +8869,18 @@ void BotThink(bot_t* pBot)
 	pEdict->v.angles.z = pEdict->v.v_angle.z = 0.0;
 
 	// Enemy behind Obstacle ? Bot wants to fire ?
-	if ((pBot->iStates & STATE_SUSPECTENEMY) && pBot->bWantsToFire)
+	if (pBot->iStates & STATE_SUSPECTENEMY && pBot->bWantsToFire)
 	{
 		iTask = BotGetSafeTask(pBot)->iTask;
 
 		// Don't allow shooting through walls when camping
-		if ((iTask == TASK_PAUSE) || (iTask == TASK_CAMP))
+		if (iTask == TASK_PAUSE || iTask == TASK_CAMP)
 			pBot->bWantsToFire = FALSE;
 	}
 
 	// The Bot wants to fire at something ?
 	if (pBot->bWantsToFire && !pBot->bUsingGrenade
-		&& (pBot->f_shoot_time <= gpGlobals->time) && (pBot->f_spawn_time + 0.5 < gpGlobals->time)) // KWo - 10.07.2008
+		&& pBot->f_shoot_time <= gpGlobals->time && pBot->f_spawn_time + 0.5 < gpGlobals->time) // KWo - 10.07.2008
 	{
 		// If Bot didn't fire a bullet try again next frame
 		BotFireWeapon(pBot->vecLookAt - GetGunPosition(pEdict), pBot);  // KWo - 23.10.2006
@@ -8911,8 +8911,8 @@ void BotThink(bot_t* pBot)
 			int iWeaponSecID = cs_weapon_select[iWeaponSecNum].iId;
 			int iWeaponPrimID = cs_weapon_select[iWeaponPrimNum].iId;
 
-			if ((pBot->iAimFlags & AIM_ENEMY) && (fabs(pBot->pEdict->v.v_angle.x - pEdict->v.idealpitch) < 0.1)
-				&& (fabs(pBot->pEdict->v.v_angle.y - pEdict->v.ideal_yaw) < 0.1) && !(pEdict->v.button & IN_ATTACK))
+			if (pBot->iAimFlags & AIM_ENEMY && fabs(pBot->pEdict->v.v_angle.x - pEdict->v.idealpitch) < 0.1
+				&& fabs(pBot->pEdict->v.v_angle.y - pEdict->v.ideal_yaw) < 0.1 && !(pEdict->v.button & IN_ATTACK))
 			{
 				ALERT(at_logged, "[DEBUG] BotThink - Bot %s has primary weapon %s with %d ammo in clip and sec weapon %s with %d ammo in clip; current weapon - %s.\n",
 					pBot->name, weapon_defs[iWeaponPrimID].szClassname, pBot->m_rgAmmoInClip[iWeaponPrimID],
@@ -8932,11 +8932,11 @@ void BotThink(bot_t* pBot)
 
 	// Calculate 2 direction Vectors, 1 without the up/down component
 	iTask = BotGetSafeTask(pBot)->iTask;
-	if ((iTask == TASK_ATTACK) || (iTask == TASK_THROWHEGRENADE)
-		|| (iTask == TASK_THROWFLASHBANG) || (iTask == TASK_THROWSMOKEGRENADE)) // KWo - 01.10.2008
-		v_direction = pBot->vecLookAt - (pEdict->v.origin + (pEdict->v.velocity * pBot->fTimeFrameInterval));
+	if (iTask == TASK_ATTACK || iTask == TASK_THROWHEGRENADE
+		|| iTask == TASK_THROWFLASHBANG || iTask == TASK_THROWSMOKEGRENADE) // KWo - 01.10.2008
+		v_direction = pBot->vecLookAt - (pEdict->v.origin + pEdict->v.velocity * pBot->fTimeFrameInterval);
 	else
-		v_direction = pBot->dest_origin - (pEdict->v.origin + (pEdict->v.velocity * pBot->fTimeFrameInterval));
+		v_direction = pBot->dest_origin - (pEdict->v.origin + pEdict->v.velocity * pBot->fTimeFrameInterval);
 
 	vecDirectionNormal = v_direction.Normalize();
 	vecDirection = vecDirectionNormal;
@@ -8956,7 +8956,7 @@ void BotThink(bot_t* pBot)
 		bPrevLadder = FALSE;  // KWo - 17.09.2006
 		fDistance = 0.0;     // KWo - 13.01.2008
 
-		if ((pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints)) // KWo - 17.09.2006
+		if (pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints) // KWo - 17.09.2006
 		{
 			if (paths[pBot->prev_wpt_index[0]]->flags & W_FL_CROUCH)
 				bPrevCrouch = TRUE;
@@ -8965,18 +8965,17 @@ void BotThink(bot_t* pBot)
 		}
 
 		// Press duck button if we need to
-		if (((paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH))
+		if (paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH
 			/* && (!(paths[pBot->curr_wpt_index]->flags & W_FL_CAMP) || bPrevCrouch) */
-			&& (((pEdict->v.flags & FL_ONGROUND) && !pBot->bInWater && !pBot->bOnLadder
-				/* && !(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) && !bPrevLadder */) // KWo - 06.04.2016
-				|| (paths[pBot->curr_wpt_index]->origin.z < pEdict->v.origin.z + 64))) // KWo - 19.02.2008 - reverted back
+			&& (pEdict->v.flags & FL_ONGROUND && !pBot->bInWater && !pBot->bOnLadder // KWo - 06.04.2016
+				|| paths[pBot->curr_wpt_index]->origin.z < pEdict->v.origin.z + 64)) // KWo - 19.02.2008 - reverted back
 		{
 			pEdict->v.button |= IN_DUCK;
 			pBot->f_ducktime = gpGlobals->time + 1.0; // KWo - 22.01.2012
 		}
 
-		if ((paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) && (paths[pBot->curr_wpt_index]->flags & W_FL_LADDER)
-			&& !bPrevLadder && (pEdict->v.flags & FL_ONGROUND) || pBot->bOnLadder && (pEdict->v.flags & FL_ONGROUND)) // KWo - 08.04.2016
+		if (paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH && paths[pBot->curr_wpt_index]->flags & W_FL_LADDER
+			&& !bPrevLadder && pEdict->v.flags & FL_ONGROUND || pBot->bOnLadder && pEdict->v.flags & FL_ONGROUND) // KWo - 08.04.2016
 		{
 			pEdict->v.button &= ~IN_DUCK;
 			pBot->f_ducktime = 0.0;
@@ -8984,26 +8983,26 @@ void BotThink(bot_t* pBot)
 		}
 
 		// Press jump button if we need to leave the ladder
-		if ((!(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER)) && bPrevLadder
-			&& (pEdict->v.flags & FL_ONGROUND) && pBot->bOnLadder
-			&& (pBot->f_move_speed > 50.0) && (pEdict->v.velocity.Length() < 50.0)) // KWo - 09.04.2016
+		if (!(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) && bPrevLadder
+			&& pEdict->v.flags & FL_ONGROUND && pBot->bOnLadder
+			&& pBot->f_move_speed > 50.0 && pEdict->v.velocity.Length() < 50.0) // KWo - 09.04.2016
 		{
 			pEdict->v.button |= IN_JUMP;
 			pBot->f_jumptime = gpGlobals->time + 1.0;
 		}
 
-		fDistance = (pBot->dest_origin - (pEdict->v.origin + (pEdict->v.velocity * pBot->fTimeFrameInterval))).Length2D(); // KWo - 17.10.2006 - reverted back
+		fDistance = (pBot->dest_origin - (pEdict->v.origin + pEdict->v.velocity * pBot->fTimeFrameInterval)).Length2D(); // KWo - 17.10.2006 - reverted back
 
   // KWo - check if the direction change is really strong and near WP with low radius
-		if ((pBot->prev_wpt_index[0] >= 01) && (pBot->prev_wpt_index[0] < g_iNumWaypoints)
-			&& (pBot->curr_wpt_index > -1) && (pBot->curr_wpt_index < g_iNumWaypoints)
-			&& (pBot->pEdict->v.movetype != MOVETYPE_FLY) && (pBot->pWaypointNodes != NULL)
-			&& (!(pBot->curr_travel_flags & C_FL_JUMP)))  // KWo - 18.04.2016
+		if (pBot->prev_wpt_index[0] >= 01 && pBot->prev_wpt_index[0] < g_iNumWaypoints
+			&& pBot->curr_wpt_index > -1 && pBot->curr_wpt_index < g_iNumWaypoints
+			&& pBot->pEdict->v.movetype != MOVETYPE_FLY && pBot->pWaypointNodes != NULL
+			&& !(pBot->curr_travel_flags & C_FL_JUMP))  // KWo - 18.04.2016
 		{
-			if ((paths[pBot->curr_wpt_index]->Radius < 17) && (pBot->pWaypointNodes->NextNode != NULL)
-				&& (fDistance < paths[pBot->curr_wpt_index]->Radius + 20.0))
+			if (paths[pBot->curr_wpt_index]->Radius < 17 && pBot->pWaypointNodes->NextNode != NULL
+				&& fDistance < paths[pBot->curr_wpt_index]->Radius + 20.0)
 			{
-				if ((pBot->pWaypointNodes->NextNode->iIndex >= 0) && (pBot->pWaypointNodes->NextNode->iIndex < g_iNumWaypoints))
+				if (pBot->pWaypointNodes->NextNode->iIndex >= 0 && pBot->pWaypointNodes->NextNode->iIndex < g_iNumWaypoints)
 				{
 					v2_next1 = (paths[pBot->curr_wpt_index]->origin - paths[pBot->pWaypointNodes->NextNode->iIndex]->origin).Make2D().Normalize();
 					v2_prev1 = (paths[pBot->curr_wpt_index]->origin - paths[pBot->prev_wpt_index[0]]->origin).Make2D().Normalize();
@@ -9021,12 +9020,12 @@ void BotThink(bot_t* pBot)
 			}
 		}
 
-		if ((pEdict->v.flags & FL_DUCKING) || (pBot->f_ducktime > gpGlobals->time))  // KWo - 08.04.2016
+		if (pEdict->v.flags & FL_DUCKING || pBot->f_ducktime > gpGlobals->time)  // KWo - 08.04.2016
 		{
 			pBot->f_move_speed = pEdict->v.maxspeed;
 		}
-		else if ((paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) && (!pBot->bOnLadder)
-			&& (pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND)))  // KWo - 15.04.2016
+		else if (paths[pBot->curr_wpt_index]->flags & W_FL_LADDER && !pBot->bOnLadder
+			&& pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND))  // KWo - 15.04.2016
 		{
 			if (!bPrevLadder)
 				pBot->f_move_speed = (pEdict->v.origin - pBot->wpt_origin).Length();  // Slowly approach the ladder
@@ -9040,8 +9039,8 @@ void BotThink(bot_t* pBot)
 			//         if (bPrevLadder)
 			//            pBot->f_move_speed = 80.0;    // KWo - 24.01.2012
 		}
-		else if ((pBot->cCollisionState == COLLISION_NOTDECIDED) && (pBot->f_move_speed != 0.0)
-			&& (!(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER))
+		else if (pBot->cCollisionState == COLLISION_NOTDECIDED && pBot->f_move_speed != 0.0
+			&& !(paths[pBot->curr_wpt_index]->flags & W_FL_LADDER)
 			/*   && !(pEdict->v.flags & FL_DUCKING) && (pBot->f_ducktime < gpGlobals->time) */) // KWo - 07.04.2016
 		{
 			if (pBot->f_wpt_tim_str_chg > gpGlobals->time) // KWo - 17.04.2016
@@ -9051,7 +9050,7 @@ void BotThink(bot_t* pBot)
 				else
 					pBot->f_move_speed = -80.0;
 			}
-			else if ((pBot->curr_wpt_index == BotGetSafeTask(pBot)->iData) || (BotGetSafeTask(pBot)->iData == -1)) // KWo - 17.04.2016
+			else if (pBot->curr_wpt_index == BotGetSafeTask(pBot)->iData || BotGetSafeTask(pBot)->iData == -1) // KWo - 17.04.2016
 			{
 				if (fDistance < 50.0)
 					pBot->f_move_speed = 80;
@@ -9068,8 +9067,8 @@ void BotThink(bot_t* pBot)
 					 }
 			*/
 		}
-		else if ((pBot->cCollisionState == COLLISION_NOTDECIDED) && (fDistance < pBot->f_move_speed * pBot->fTimeFrameInterval)
-			&& (BotGetSafeTask(pBot)->iData != -1))  // KWo - 07.04.2016
+		else if (pBot->cCollisionState == COLLISION_NOTDECIDED && fDistance < pBot->f_move_speed * pBot->fTimeFrameInterval
+			&& BotGetSafeTask(pBot)->iData != -1)  // KWo - 07.04.2016
 			pBot->f_move_speed = fDistance;
 
 		if (pBot->f_move_speed > pEdict->v.maxspeed)
@@ -9100,9 +9099,9 @@ void BotThink(bot_t* pBot)
 	}
 
 	// Are we allowed to check blocking Terrain (and react to it) ?
-	if (((pBot->bCheckTerrain) || (pBot->cCollisionState == COLLISION_PROBING) || (pBot->f_probe_time >= gpGlobals->time))
-		&& (pBot->f_spawn_time + (((g_fTimeRoundEnd + g_f_cv_FreezeTime > gpGlobals->time)
-			&& (g_fTimeRoundEnd < gpGlobals->time)) ? (g_f_cv_FreezeTime + 0.0) : (0.2)) < gpGlobals->time)) // KWo - 28.05.2010
+	if ((pBot->bCheckTerrain || pBot->cCollisionState == COLLISION_PROBING || pBot->f_probe_time >= gpGlobals->time)
+		&& pBot->f_spawn_time + (g_fTimeRoundEnd + g_f_cv_FreezeTime > gpGlobals->time
+		                         && g_fTimeRoundEnd < gpGlobals->time ? g_f_cv_FreezeTime + 0.0 : 0.2) < gpGlobals->time) // KWo - 28.05.2010
 	{
 		BotCheckTerrain(pBot);
 	}
@@ -9112,7 +9111,7 @@ void BotThink(bot_t* pBot)
 		pBot->bPlayerCollision = FALSE; // KWo - 11.07.2006
 	}
 
-	if ((pBot->bHitDoor) && (pBot->f_timeHitDoor + 5.0 < gpGlobals->time)) // KWo - 17.01.2010
+	if (pBot->bHitDoor && pBot->f_timeHitDoor + 5.0 < gpGlobals->time) // KWo - 17.01.2010
 	{
 		pBot->bHitDoor = FALSE;
 	}
@@ -9133,9 +9132,9 @@ void BotThink(bot_t* pBot)
 
 		v_angles = pEdict->v.v_angle;
 		MAKE_VECTORS(v_angles);  // KWo - 28.08.2008
-		Vector vecForward = (gpGlobals->v_forward * (-pEdict->v.maxspeed)) * 0.2;
-		Vector vecSide = (gpGlobals->v_right * pEdict->v.maxspeed * pBot->cAvoidGrenade) * 0.2;
-		Vector vecTargetPos = pEdict->v.origin + vecForward + vecSide + (pEdict->v.velocity * pBot->fTimeFrameInterval);
+		Vector vecForward = gpGlobals->v_forward * -pEdict->v.maxspeed * 0.2;
+		Vector vecSide = gpGlobals->v_right * pEdict->v.maxspeed * pBot->cAvoidGrenade * 0.2;
+		Vector vecTargetPos = pEdict->v.origin + vecForward + vecSide + pEdict->v.velocity * pBot->fTimeFrameInterval;
 
 		if (!IsDeadlyDropAtPos(pBot, vecTargetPos))
 		{
@@ -9189,8 +9188,8 @@ void BotThink(bot_t* pBot)
 	// KWo - roger that! done :)
 	fReachWpDelay = 5.0;
 	// checks what the time the bot needs to reach the waypoint
-	if ((pBot->curr_wpt_index >= 0) && (pBot->curr_wpt_index < g_iNumWaypoints) // KWo - 26.07.2006
-		&& (pBot->prev_wpt_index[0] >= 0) && (pBot->prev_wpt_index[0] < g_iNumWaypoints))
+	if (pBot->curr_wpt_index >= 0 && pBot->curr_wpt_index < g_iNumWaypoints // KWo - 26.07.2006
+		&& pBot->prev_wpt_index[0] >= 0 && pBot->prev_wpt_index[0] < g_iNumWaypoints)
 	{
 		fDistance = (paths[pBot->prev_wpt_index[0]]->origin - paths[pBot->curr_wpt_index]->origin).Length();
 		//      if (pBot->pEdict->v.maxspeed <= 0.0) // KWo - 14.04.2016
@@ -9199,16 +9198,16 @@ void BotThink(bot_t* pBot)
 		else
 			//         fReachWpDelay = 5.0 * fDistance / pBot->pEdict->v.maxspeed; // KWo - 14.04.2016
 			fReachWpDelay = 5.0 * fDistance / fabs(pBot->f_move_speed); // KWo - 14.04.2016
-		if ((paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH) || (paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) || (pBot->pEdict->v.button & IN_DUCK))
+		if (paths[pBot->curr_wpt_index]->flags & W_FL_CROUCH || paths[pBot->curr_wpt_index]->flags & W_FL_LADDER || pBot->pEdict->v.button & IN_DUCK)
 			fReachWpDelay *= 3.f;
 		if (fReachWpDelay < 3.0)
 			fReachWpDelay = 3.0;
 		if (fReachWpDelay > 10.0)
 			fReachWpDelay = 10.0;
 	}
-	if ((pBot->f_jumptime + 10.0 > gpGlobals->time) || (pBot->f_probe_time + 3.0 > gpGlobals->time))
+	if (pBot->f_jumptime + 10.0 > gpGlobals->time || pBot->f_probe_time + 3.0 > gpGlobals->time)
 		fReachWpDelay = 10.0;
-	if ((pBot->f_wpt_timeset + fReachWpDelay < gpGlobals->time) && FNullEnt(pBot->pBotEnemy) && pBot->bMoveToGoal) // KWo - 28.08.2008
+	if (pBot->f_wpt_timeset + fReachWpDelay < gpGlobals->time && FNullEnt(pBot->pBotEnemy) && pBot->bMoveToGoal) // KWo - 28.08.2008
 	{
 		if (g_b_DebugNavig)
 		{
@@ -9219,7 +9218,7 @@ void BotThink(bot_t* pBot)
 		GetValidWaypoint(pBot);
 
 		// Clear these pointers, Bot might be stuck getting to them
-		if (!FNullEnt(pBot->pBotPickupItem) && (pBot->iPickupType != PICKUP_PLANTED_C4))
+		if (!FNullEnt(pBot->pBotPickupItem) && pBot->iPickupType != PICKUP_PLANTED_C4)
 		{
 			pBot->pItemIgnore[2] = pBot->pItemIgnore[1];
 			pBot->pItemIgnore[1] = pBot->pItemIgnore[0];
@@ -9270,14 +9269,14 @@ void BotThink(bot_t* pBot)
 			//         pBot->f_ducktime = gpGlobals->time + 1.0; // KWo - cannot be here - otherwise jumping is not working correctly
 		}
 	}
-	if ((pEdict->v.movetype == MOVETYPE_FLY) || (pEdict->v.velocity.z > -50.0)
-		|| (pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND))) // KWo - 05.03.2010 (parachute support :) )
+	if (pEdict->v.movetype == MOVETYPE_FLY || pEdict->v.velocity.z > -50.0
+		|| pEdict->v.flags & (FL_ONGROUND | FL_PARTIALGROUND)) // KWo - 05.03.2010 (parachute support :) )
 		pBot->f_falldowntime = 0.0;
 	else if (pBot->f_falldowntime == 0.0)
 		pBot->f_falldowntime = gpGlobals->time;
 
-	if ((pBot->f_falldowntime + 0.5 < gpGlobals->time)
-		&& (pBot->f_falldowntime != 0.0) && g_b_cv_Parachute) // KWo - 07.03.2010 (parachute support :) )
+	if (pBot->f_falldowntime + 0.5 < gpGlobals->time
+		&& pBot->f_falldowntime != 0.0 && g_b_cv_Parachute) // KWo - 07.03.2010 (parachute support :) )
 		pEdict->v.button |= IN_USE;
 
 	if (pBot->f_move_speed > 0.0)
@@ -9302,7 +9301,7 @@ void BotThink(bot_t* pBot)
 			pBot->name, pBot->f_move_speed, (int)pBot->f_moved_distance, (int)(pBot->pEdict->v.origin - pBot->dest_origin).Length(),
 			pBot->curr_wpt_index, g_TaskNames[iTask], gpGlobals->time);
 	}
-	if ((g_b_DebugEntities) && (BotGetSafeTask(pBot)->iTask == TASK_SHOOTBREAKABLE))
+	if (g_b_DebugEntities && BotGetSafeTask(pBot)->iTask == TASK_SHOOTBREAKABLE)
 	{
 		ALERT(at_logged, "[DEBUG] BotThink - Bot %s is trying to look at = [%i,%i,%i].\n",
 			pBot->name, (int)pBot->vecLookAt.x, (int)pBot->vecLookAt.y, (int)pBot->vecLookAt.z);
@@ -9328,12 +9327,12 @@ void BotThink(bot_t* pBot)
 	pBot->fTimePrevThink2 = gpGlobals->time;
 
 	i_msecvalrest = 0;                         // KWo - 17.03.2007
-	i_msecval = (int)(f_msecval);             // KWo - 17.03.2007
+	i_msecval = (int)f_msecval;             // KWo - 17.03.2007
 	if (i_msecval < 10)                        // KWo - 17.03.2007
 	{
-		f_msecval = f_msecval - (float)(i_msecval)+pBot->f_msecvalrest;
-		i_msecvalrest = (int)(f_msecval);
-		pBot->f_msecvalrest = f_msecval - (float)(i_msecvalrest);
+		f_msecval = f_msecval - (float)i_msecval+pBot->f_msecvalrest;
+		i_msecvalrest = (int)f_msecval;
+		pBot->f_msecvalrest = f_msecval - (float)i_msecvalrest;
 	}
 	i_msecval = i_msecval + i_msecvalrest;
 
@@ -9365,12 +9364,12 @@ void BotFreeAllMemory(void)
 	while (paths[0] != NULL)
 	{
 		pNextPath = paths[0]->next;
-		delete (paths[0]);
+		delete paths[0];
 		paths[0] = pNextPath;
 	}
 	paths[0] = NULL;
 
-	memset(paths, 0, sizeof(paths));
+	memset(paths, 0, sizeof paths);
 	g_iNumWaypoints = 0;
 	g_vecLastWaypoint = g_vecZero;
 
@@ -9407,13 +9406,13 @@ void BotFreeAllMemory(void)
 		while (pChatReplies->pReplies != NULL)
 		{
 			pNextNode = pChatReplies->pReplies->Next;
-			delete (pChatReplies->pReplies);
+			delete pChatReplies->pReplies;
 			pChatReplies->pReplies = pNextNode;
 		}
 		pChatReplies->pReplies = NULL;
 
 		pNextReply = pChatReplies->pNextReplyNode;
-		delete (pChatReplies);
+		delete pChatReplies;
 		pChatReplies = pNextReply;
 	}
 	pChatReplies = NULL;
